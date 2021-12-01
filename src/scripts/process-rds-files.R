@@ -12,9 +12,9 @@ source('src/utils/jonah_utils.R')
 
 
 
-mega_puck = mcreadRDS("/Users/mraj/Desktop/work/data/MBASS_1_For_Mukund/02_RDSs/Puck_210203_12_RCTD.RDS")
+mega_puck = mcreadRDS("../../../data/MBASS_1_For_Mukund/02_RDSs/Puck_210203_12_RCTD.RDS")
 
-object_seurat = mcreadRDS("/Users/mraj/Desktop/work/data/MBASS_1_For_Mukund/02_RDSs/Puck_210203_12_Seurat.RDS")
+object_seurat = mcreadRDS("../../../data/MBASS_1_For_Mukund/02_RDSs/Puck_210203_12_Seurat.RDS")
 
 # Read list of file names
 
