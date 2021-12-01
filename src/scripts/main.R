@@ -1,3 +1,7 @@
+## Initial main file for reading seurat/R objects from disk and plotting and 
+## writing nUMI image to disk.
+## Created on 01-Dec-2021 by Jonah Langlieb and Mukund Raj
+
 library(stringr)
 library(magrittr)
 library(dplyr)
@@ -5,7 +9,6 @@ library(pals)
 library(ggplot2)
 library(glue)
 library(purrr)
-
 
 # Plot GAPDH for mukund
 
