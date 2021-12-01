@@ -38,7 +38,6 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-/tmp_data/
 /output/
 
 .DS_Store
