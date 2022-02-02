@@ -13,7 +13,6 @@ mapper <- map_slseq_nissl(data_path)
 # Input folder path
 # input_path = "../../../data/MBASS_1_For_Mukund/02_RDSs/sdata"
 input_path <- "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
-
 input_path <- input_path2
 
 files = list.files(input_path, full.names=TRUE)
@@ -30,8 +29,14 @@ op_path <- "output/ss/nUMI_v2/"
 # Read list of file names
 
 # for (i in 1:length(files))
-for (i in 1:4)
+for (i in 1:15)
 {
+  nissl_id <- mapper[basename(files[i])]
+  nissl_id <- nissl_id[[1]]*2 - 1 # to align with Chuck's numbering scheme
+  # if (nissl_id!=219) # sample dataset id
+  #   next
+
+  
   print (paste("Processing", files[i]))
   object_seurat = mcreadRDS(files[i])
   
@@ -59,11 +64,11 @@ for (i in 1:4)
                                    alpha("yellow", 0.7)), alpha=T)(100)
   )
   
-  nissl_id <- mapper[basename(files[i])]
   
   
-  nissl_id <- nissl_id[[1]]*2 - 1 # to align with Chuck's numbering scheme
-  ggsave(paste(op_path,nissl_id,".png", sep=""), plot=last_plot(), dpi=96, scale=8, limitsize=FALSE)
+  
+  
+  ggsave(paste(op_path,nissl_id,".png", sep=""), plot=last_plot(), dpi=96, scale=8, limitsize=FALSE, height = 10, width = 10)
   
 }
 
