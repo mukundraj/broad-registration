@@ -3,16 +3,24 @@
 ## Created on 01-Dec-2021 by Mukund Raj
 
 
-
 source('src/utils/jonah_utils.R')
+source('src/utils/plot_puck.R')
+source('src/utils/mapper.R')
 
-
+data_path <- 'input/mapping_data.tsv' # data sheet mapping slide seq to nissl
+mapper <- map_slseq_nissl(data_path)
 
 # Input folder path
-input_path = "../../../data/MBASS_1_For_Mukund/02_RDSs/sdata"
+# input_path = "../../../data/MBASS_1_For_Mukund/02_RDSs/sdata"
+input_path <- "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
+
+input_path <- input_path2
+
 files = list.files(input_path, full.names=TRUE)
 
 # Output folder path
+#op_path = "output/ss/nUMI/"
+op_path <- "output/ss/nUMI_v2/"
 
 
 ## Sample code to read rctd and seurat objects
@@ -51,12 +59,16 @@ for (i in 1:4)
                                    alpha("yellow", 0.7)), alpha=T)(100)
   )
   
-  ggsave(paste("output/ss/nUMI/",i,".png", sep=""), plot=last_plot(), dpi=96, scale=8, limitsize=FALSE)
+  nissl_id <- mapper[basename(files[i])]
+  
+  
+  nissl_id <- nissl_id[[1]]*2 - 1 # to align with Chuck's numbering scheme
+  ggsave(paste(op_path,nissl_id,".png", sep=""), plot=last_plot(), dpi=96, scale=8, limitsize=FALSE)
   
 }
 
 
-# Process each file and save output
+
 
 
 

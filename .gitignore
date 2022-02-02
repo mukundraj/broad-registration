@@ -39,5 +39,6 @@ vignettes/*.pdf
 .Renviron
 
 /output/
+/input/
 
 .DS_Store
