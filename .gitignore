@@ -40,5 +40,6 @@ vignettes/*.pdf
 
 /output/
 /input/
+build
 
 .DS_Store
