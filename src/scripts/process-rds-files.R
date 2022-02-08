@@ -32,7 +32,7 @@ op_path <- config::get("op_path")
 # Read list of file names
 
 # for (i in 1:length(files))
-for (i in 1:2)
+for (i in 1:33)
 {
   nissl_id <- mapper[basename(files[i])]
   nissl_id <- nissl_id[[1]]*2 - 1 # to align with Chuck's numbering scheme
@@ -54,6 +54,11 @@ for (i in 1:2)
   gene_val = colSums(object_seurat@assays$Spatial@counts[, UMI_cutoff_bcds])
   gene_val_clamp =  gene_val %>% clamp(max=8000)
   
+# Note clamp doesn't remove, just clamps. Playing around fast, I like 0.95 - Jonah
+  clamp(gene_val, quantile(gene_val, 0.999)) %>% {plot(density(.))}
+  gene_val_clamp =  gene_val %>% {clamp(., max=quantile(., 0.99))}
+  gene_val_clamp  = log10(gene_val)
+  gene_val_clamp  = log10(gene_val_clamp)
   
   plot_puck(val = gene_val_clamp,
             # Could also pass in puck = mega_puck but wanted to subset UMI_cutoff
@@ -62,9 +67,11 @@ for (i in 1:2)
             raster=F,
             # Custom color scheme with alpha. Going from transparent blue -> opaque yellow
             # Orders by valye ut still nice to push down the opacity of background beads
-            pal=colorRampPalette(c(alpha("blue", 0.01),
-                                   alpha("green", 0.2),
-                                   alpha("yellow", 0.7)), alpha=T)(100)
+            # pal=colorRampPalette(c(alpha("blue", 0.01),
+            #                        alpha("green", 0.2),
+            #                        alpha("yellow", 0.7)), alpha=T)(100)
+            pal=colorRampPalette(c(alpha("white", 0.01),
+                                   alpha("black", 1)), alpha=T)(100)
   )
   
   
@@ -74,6 +81,12 @@ for (i in 1:2)
   ggsave(paste(op_path,nissl_id,".png", sep=""), plot=last_plot(), dpi=96, scale=8, limitsize=FALSE, height = 10, width = 10)
   
 }
+
+
+
+
+
+
 
 
 ## command stash
