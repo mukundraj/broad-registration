@@ -4,3 +4,7 @@ default:
 
 current:
   input_path: "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
+
+slide_seq:
+  ip_path_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/slide_seq_imgs"
+  op_rescaled_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/slide_seq_imgs_rescaled" 
