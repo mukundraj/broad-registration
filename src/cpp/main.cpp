@@ -1,7 +1,12 @@
 // Reads in 3 csv files, 1 NRRD file and outputs 1 csv
-// Inputs - From positions, to positions, positions to be transformed and id'ed,
-//          and 1 NRRD file with label ids
+// Inputs - From positions, 
+//          to positions, 
+//          positions to be transformed and id'ed,
+//          NRRD file with label ids,
+//          slice_index in NRRD to sample from
 // Output - a list of label ids stored in a csv 
+
+// Usage example: make -j4 && ./cmapper ../input/F.csv ../input/T.csv ../input/points_list.csv ../input/common_coords.nrrd 1 output.csv
 
 
 // References
@@ -63,6 +68,7 @@ main(int argc, char * argv[])
   using InterpolatorType =
     itk::LinearInterpolateImageFunction<InputImageType, double>;
   using DeformedImageWriterType = itk::ImageFileWriter<InputImageType>;
+  using InputPointType = itk::Transform<float, 3>::InputPointType;
 
 
   auto      sourceLandMarks = PointSetType::New();
@@ -77,11 +83,11 @@ main(int argc, char * argv[])
   std::string fileName;
   if (argc == 1) // No arguments were provided
   {
-    fileName = "../input/Transform.txt";
+    fileName = "/Users/mraj/Desktop/temp/TT.txt";
   }
   else
   {
-    fileName = argv[1];
+    fileName = argv[5];
   }
 
   // Read "From" and "To" csv files
@@ -89,6 +95,7 @@ main(int argc, char * argv[])
   CSVReader reader_T(argv[2]);  
   CSVRow row;
 
+  std::cout<<"Source Fiducials read:"<<std::endl;
   PointIdType id = itk::NumericTraits<PointIdType>::ZeroValue();
   while (reader_F.read_row(row)) {
     std::cout<<row[0].get<int>()<<" "<<row[1].get<double>()<<" "<<row[2].get<double>()<<"\n";
@@ -98,6 +105,7 @@ main(int argc, char * argv[])
   }
 
   std::cout<<"\n";
+  std::cout<<"Destination Fiducials read:"<<std::endl;
   id = itk::NumericTraits<PointIdType>::ZeroValue();
   while (reader_T.read_row(row)) {
     std::cout<<row[0].get<int>()<<" "<<row[1].get<double>()<<" "<<row[2].get<double>()<<"\n";
@@ -113,6 +121,7 @@ main(int argc, char * argv[])
 
   std::cout<<"\n";
 
+  std::cout<<"To be transformed points :"<<std::endl;
   // Read in query points as csv
 
   std::vector<double> points;
@@ -124,8 +133,10 @@ main(int argc, char * argv[])
     points.push_back(row[0].get<double>());
     points.push_back(row[1].get<double>());
   }
-
-  std::cout<<"points "<< points.size()<<std::endl;
+  std::cout<<std::endl;
+  std::cout<<"num points to be sampled:"<< points.size()/2<<std::endl;
+  int slice_index = std::stoi(argv[5]);
+  std::cout<< "slice_index used for sampling:"<<slice_index<<std::endl;
 
 
   // Compute the TPS transform
@@ -142,7 +153,7 @@ main(int argc, char * argv[])
   // std::cout<<p1[0]<<" "<<p1[1]<<" "<<p2[0]<<" "<<p2[1]<<"\n";
 
   // write out transformed points
-
+  std::cout<<"Transformed points :"<<std::endl;
   for (size_t i=0; i< points.size(); i+=2){
     p1[0] = points[i];
     p1[1] = points[i+1];
@@ -182,27 +193,37 @@ main(int argc, char * argv[])
 
   ImageType3D::SizeType size = region.GetSize();
 
-  std::cout << size << std::endl;
+
+  // std::cout << "size :"<<size << std::endl;
 
   // Record label of each transformed position
 
+  
   ImageType3D::IndexType indexInside;
-  indexInside[0] = 2154;
-  indexInside[1] = 2378;
-  indexInside[2] = 0;
-  ImageType::PixelType value = image3D->GetPixel(indexInside); 
-  std::cout << "pixelVal : "<< value<< std::endl;
+  // indexInside[0] = 2154;
+  // indexInside[1] = 2378;
+  // indexInside[2] = 0;
+  // ImageType::PixelType value = image3D->GetPixel(indexInside); 
+  // std::cout << "pixelVal : "<< value<< std::endl;
+
 
   // Write out label of each transformed position
-
+  std::cout<<"\n";
+  std::cout<<"Sampled label ids:"<<std::endl;
   std::stringstream ss; // Can also use ofstream, etc. 
   auto writer = make_csv_writer(ss);
   for (size_t i=0; i<points.size(); i+=2){
+
+    indexInside[0] = static_cast<int> (points[i]/size[0]);
+    indexInside[1] = static_cast<int> (points[i+1]/size[1]);
+    indexInside[2] = slice_index;
     ImageType::PixelType label = image3D->GetPixel(indexInside);
     writer << std::make_tuple(label);
+
+    std::cout<<label<<std::endl;
   }
 
-  std::ofstream myfile (argv[5], std::ios::trunc | std::ios::binary);
+  std::ofstream myfile (argv[6], std::ios::trunc | std::ios::binary);
   if (myfile.is_open()){
     myfile << ss.rdbuf();
 
@@ -280,20 +301,28 @@ main(int argc, char * argv[])
   // itk::TransformFactory<ThinPlateSplineKernelTransformType>::RegisterTransform();
 
 
-  // Register default transforms
+  // // Register default transforms
   // itk::TransformFactoryBase::RegisterDefaultTransforms();
 
   // #if (ITK_VERSION_MAJOR == 4 && ITK_VERSION_MINOR >= 5) || ITK_VERSION_MAJOR > 4
-  //   itk::TransformFileReaderTemplate<CoordinateRepType>::Pointer reader = itk::TransformFileReaderTemplate<CoordinateRepType>::New();
+  //   itk::TransformFileReaderTemplate<CoordinateRepType>::Pointer reader2 = itk::TransformFileReaderTemplate<CoordinateRepType>::New();
   // #else
   //   itk::TransformFileReader::Pointer writer = itk::TransformFileReader::New();
   // #endif
-  //   reader->SetFileName(fileName);
-  //   reader->Update();
+  //   reader2->SetFileName(fileName);
+  //   reader2->Update();
 
   //   // Display the transform
-  //   std::cout << *(reader->GetTransformList()->begin()) << std::endl;
+  //   std::cout << *(reader2->GetTransformList()->begin()) << std::endl;
 
-  std::cout << "ITK Hello World !" << std::endl;
+  //   InputPointType pt;
+  //   pt[0] = 1;
+  //   pt[1] = 1;
+  //   pt[2] = 1;
+
+  //   InputPointType pt_out;
+  //   // pt_out = *(reader2->GetTransformList()->begin()).TransformPoint(pt);
+
+  std::cout << "Done." << std::endl;
   return EXIT_SUCCESS;
 }
