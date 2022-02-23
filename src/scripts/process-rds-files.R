@@ -49,6 +49,7 @@ for (i in 1:33)
   ))
   
   coords = object_seurat@images$image@coordinates[UMI_cutoff_bcds, ]
+  write.table(coords,paste("output/ss/bead_coords/coords_", nissl_id, ".csv", sep=""), sep=",", row.names = FALSE, col.names=FALSE)
   
   
   gene_val = colSums(object_seurat@assays$Spatial@counts[, UMI_cutoff_bcds])
@@ -73,11 +74,11 @@ for (i in 1:33)
             pal=colorRampPalette(c(alpha("white", 0.01),
                                    alpha("black", 1)), alpha=T)(100)
   )
-  
-  
-  
-  
-  
+
+
+
+
+
   ggsave(paste(op_path,nissl_id,".png", sep=""), plot=last_plot(), dpi=96, scale=8, limitsize=FALSE, height = 10, width = 10)
   
 }
