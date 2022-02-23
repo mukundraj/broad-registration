@@ -9,9 +9,9 @@ Usage: python apply_t3a.py TRANSFORM_FILE IMAGE_TO_BE_TRANSFORMED TRANSFORMED_OU
 Usage example: 
 
 python src/python/scripts/apply_t3a.py \
-/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/transforms/79_t3a.txt \
-/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/slide_seq_imgs_rescaled/ss_79.png \
-/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/slide_seq_prealigned/pa_ss_79.png
+/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/s3a_transforms \
+/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/slide_seq_imgs_rescaled \
+/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/s3a_ss_imgs
 
 References:
 - Reading images - https://simpleitk.readthedocs.io/en/master/IO.html
@@ -24,9 +24,16 @@ References:
 import SimpleITK as sitk
 import numpy as np
 import sys
+import os
+from os import listdir
+from os.path import isfile, join
+import shutil
+import subprocess
 
 
 def transform_img(tfm, image):
+
+    tfm = tfm.GetInverse()
 
     # convert to 3D image
     nda = sitk.GetArrayFromImage(image)
@@ -45,8 +52,10 @@ def transform_img(tfm, image):
     max_x = max(extreme_points_transformed)[0]
     max_y = max(extreme_points_transformed, key=lambda p: p[1])[1]
 
+    # print (image.GetSpacing())
     # Use the original spacing (arbitrary decision).
     output_spacing = img3d.GetSpacing()
+    # output_spacing = (72, 72, 1)
 
     atfm = sitk.AffineTransform(tfm)
     M = atfm.GetMatrix()
@@ -76,32 +85,55 @@ def transform_img(tfm, image):
     # print('shape', nda.shape)
     img = sitk.GetImageFromArray(nda, isVector=True)
     resampled = img
+    resampled.SetSpacing(image.GetSpacing())
+    # img.output_spacing = image.GetSpacing()
+    # img.output_spacing = (72, 72)
     return resampled
 
-# read corresponding transform
-transform_file = "/Users/mraj/Desktop/temp/TT.txt"
-transform_file = sys.argv[1]
-tfm = sitk.ReadTransform(transform_file)
-atfm = sitk.AffineTransform(tfm)
+# loop over files in input folder
+
+transforms_path = sys.argv[1]
+input_folder = sys.argv[2]
+output_folder = sys.argv[3]
+
+path = transforms_path
+
+tfm_files = [f for f in listdir(path) if isfile(join(path, f))]
+files = [ fi for fi in tfm_files if fi.endswith(".txt") ]
+for i in range(len(files)):
+    filename = input_folder+'/'+files[i]
+    base = os.path.splitext(filename)[0]
+    # basefilename = base.replace("downsampled", "downsampled_gray")
+    basefilename = os.path.basename(base)
+
+    img_id = files[i].split('_')[0]
+    ip_img_file = input_folder+"/ss_"+img_id+".tif"
+    tfm_file = transforms_path+"/"+files[i]
+
+    # PreAligned (pa) prefix added to filenames
+    op_img_file = output_folder+"/pa_ss_"+str(img_id)+".tif"
+
+    print('img_id:', img_id)
+    print('ip_img_file:', ip_img_file)
+    print('tfm_file:' , tfm_file)
+    print('op_img_file:', op_img_file)
+
+    # read input file
+    reader = sitk.ImageFileReader()
+    # reader.SetImageIO("TIFFImageIO")
+    reader.SetFileName(ip_img_file)
+    image = reader.Execute();
+
+    # read corresponding transform
+    tfm = sitk.ReadTransform(tfm_file)
+    # atfm = sitk.AffineTransform(tfm)
+
+    # resample
+    resampled = transform_img(tfm, image)
 
 
-# read img to be transformed
-inputImageFileName = "/Users/mraj/Desktop/temp/smaller.png"
-inputImageFileName = sys.argv[2]
-reader = sitk.ImageFileReader()
-reader.SetImageIO("PNGImageIO")
-reader.SetFileName(inputImageFileName)
-image = reader.Execute();
+    # print ('resampled', resampled)
 
-# resample
-resampled = transform_img(tfm, image)
-
-# print ('resampled', resampled)
-
-outputImageFileName = "/Users/mraj/Desktop/temp/smaller_transformed.png"
-outputImageFileName = sys.argv[3]
-writer = sitk.ImageFileWriter()
-writer.SetFileName(outputImageFileName)
-writer.Execute(resampled)
-
-
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(op_img_file)
+    writer.Execute(resampled)
