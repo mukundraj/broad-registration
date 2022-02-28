@@ -43,3 +43,6 @@ vignettes/*.pdf
 build
 
 .DS_Store
+structures.json
+manifest.json
+annotation
