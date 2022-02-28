@@ -8,8 +8,10 @@ source('src/utils/mapper.R')
 
 Sys.setenv(R_CONFIG_ACTIVE = "current")
 
-data_path <- 'input/mapping_data.tsv' # data sheet mapping slide seq to nissl
+# data_path <- 'input/mapping_data.tsv' # data sheet mapping slide seq to nissl
 mapper <- map_slseq_nissl(data_path)
+
+data_path <- config::get("mapping_data") # data sheet mapping slide seq to nissl
 
 # Input folder path
 # input_path = "../../../data/MBASS_1_For_Mukund/02_RDSs/sdata"
@@ -31,8 +33,8 @@ op_path <- config::get("op_path")
 
 # Read list of file names
 
-# for (i in 1:length(files))
-for (i in 1:33)
+for (i in 1:length(files))
+# for (i in 1:33)
 {
   nissl_id <- mapper[basename(files[i])]
   nissl_id <- nissl_id[[1]]*2 - 1 # to align with Chuck's numbering scheme
@@ -40,7 +42,7 @@ for (i in 1:33)
   #   next
 
   
-  print (paste("Processing", files[i]))
+  print (paste(i, nissl_id, "Processing", files[i]))
   object_seurat = mcreadRDS(files[i])
   
   # Optional but remove outright beads with less than 150 UMU's

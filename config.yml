@@ -1,6 +1,7 @@
 default:
   input_path: "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
   op_path: "output/ss/nUMI_v2/"
+  mapping_data: "input/mapping_data.tsv"
 
 current:
   input_path: "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
