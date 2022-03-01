@@ -5,7 +5,7 @@ scripts to accomplish substeps.
 
 Created by Mukund on 2022-02-16
 
-Inputs: - path to folder with transform files
+Inputs: - path to folder with transform files ({slide_id}_f.csv {slide_id}_t.csv and {slide_id}_t3a.txt)
         - slide_idx (comes from nissl slide idx)
         - path to nrrd file with region ids
         - slice_idx (slice id in nrrd during sampling)
@@ -19,7 +19,7 @@ Usage example:
 python src/python/scripts/get_region_ids.py \
 /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/transforms \
 79 \
-/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/nrrds_from_8x_downsampled_gray/79_83.nrrd \
+/Users/mraj/Desktop/segmentations/79-83_143_labels.nrrd \
 0 \
 /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/testing/input_points.csv \
 output/output.csv
