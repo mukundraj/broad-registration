@@ -27,6 +27,7 @@ import subprocess
 import nrrd
 # import "src/python/utils/parsers.py" as parsers
 import parsers as parsers
+# from src.python.utils import parsers
 
 config_yaml = sys.argv[1]
 group_id = sys.argv[2]
