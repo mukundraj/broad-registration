@@ -7,13 +7,14 @@ references).
 
 Created by Mukund on 2022-02-16
 
-Usage: python script.py path_to_input_folder path_to_output_folder
+Usage: python script.py path_to_input_folder path_to_output_folder path_to_output_forslicer
 
 Usage example: 
 
 python src/python/scripts/convert_from_vsi.py \
 /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/vsi \
-/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi
+/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi \
+/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_forslicer
 
 References:
 - https://docs.openmicroscopy.org/bio-formats/5.7.3/users/comlinetools/conversion.html
@@ -28,6 +29,7 @@ import subprocess
 
 input_path = sys.argv[1]
 output_path = sys.argv[2]
+output_path_forslicer = sys.argv[3]
 opfileformat = "tiff"
 
 # read files
@@ -49,5 +51,9 @@ for file in files:
 subprocess.run(["fd", "^.*tiff$" , "-x", "convert", "{}", "-define", "tiff:tile-geometry=256x256", "ptif:{.}.tif" ], cwd=output_path)
 
 # delete intermediate tiff files produced after initial conversion from vsi
-subprocess.run(["fd", "tiff$", "-X", "rm"], cwd=output_path)
+# subprocess.run(["fd", "tiff$", "-X", "rm"], cwd=output_path)
+
+subprocess.run(["fd", "tiff$", "-x", "mv", "{}", output_path_forslicer], cwd=output_path)
+
+
 
