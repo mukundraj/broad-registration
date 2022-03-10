@@ -2,10 +2,18 @@ default:
   input_path: "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
   op_path: "output/ss/nUMI_v2/"
   mapping_data: "input/mapping_data.tsv"
+  mapping_nissl_names: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/names/mapping.tsv"
+  mapping_ss_names: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/names/mapping_ss.tsv"
 
 current:
   input_path: "/Users/mraj/Desktop/work/data/forMukund/allRDSs"
 
+nissl:
+  transformed_hz_tif: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_tif"
+  transformed_slicer_tif: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_slicer_tif"
+
 slide_seq:
   ip_path_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/slide_seq_imgs"
   op_rescaled_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/slide_seq_imgs_rescaled" 
+  ip_transformed_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_ss_tif"
+  op_transformed_ss_forslicer: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_ss_tif_forslicer"
