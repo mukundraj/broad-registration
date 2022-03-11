@@ -19,8 +19,10 @@ References:
 - https://stackoverflow.com/questions/42594695/how-to-apply-a-function-map-values-of-each-element-in-a-2d-numpy-array-matrix
 
 """
+from pathlib import Path
 import sys
-sys.path.append("src/python/utils")
+path_root = Path(__file__).parents[4]
+sys.path.append(str(path_root))
 
 import yaml
 from PIL import Image
@@ -30,7 +32,8 @@ import os
 import subprocess
 import nrrd
 # import "src/python/utils/parsers.py" as parsers
-import parsers as parsers
+# import parsers as parsers
+import src.python.utils.parsers as parsers
 # from src.python.utils import parsers
 
 config_yaml = sys.argv[1]
