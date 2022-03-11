@@ -17,3 +17,10 @@ slide_seq:
   op_rescaled_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/slide_seq_imgs_rescaled" 
   ip_transformed_ss: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_ss_tif"
   op_transformed_ss_forslicer: "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_ss_tif_forslicer"
+
+# File paths for label map testing
+
+histolozee_xml: "/Users/mraj/Desktop/sample-hz/sample.zee"
+
+labelsvgs:
+  - "/Users/mraj/Desktop/sample-hz/nis_143_checked.svg"
