@@ -11,6 +11,7 @@ python script.py\
     path to labelmap nrrds folder (lmap{nis_idx}.nrrd)\
     path to slide seq scaled images\
     path to nissl original images\
+    path to mapper to chuck segment ids \
     path to input csv with input bead coordinates as fraction of image width/height\
     path to output.csv - an output filename to store segment ids\
 
@@ -18,12 +19,13 @@ Usage example:
 
 python src/python/scripts/v2/s4_get_region_id.py \
     143 \
-    "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee" \
+    "/Users/mraj/Desktop/sample-hz/hz-project-ss.zee" \
     "/Users/mraj/Desktop/sample-hz/transforms" \
     "/Users/mraj/Desktop/sample-hz/sample.zee" \
     "/Users/mraj/Desktop/sample-hz/labelmaps" \
-    "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/slide_seq_imgs_rescaled" \
+    "/Users/mraj/Desktop/sample-hz/slide_seq_imgs_rescaled" \
     "/Users/mraj/Desktop/sample-hz"\
+    "/Users/mraj/Desktop/sample-hz/mapper_to_id.pickle" \
     "/Users/mraj/Desktop/sample-hz/input.csv" \
     "/Users/mraj/Desktop/sample-hz/output.csv"
 
@@ -50,6 +52,7 @@ import transforms3d as t3d
 import src.python.utils.transforms as tfms
 import subprocess
 import nrrd
+import pickle
 
 
 # file = "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee"
@@ -62,8 +65,9 @@ hz_project_file = sys.argv[4]
 labelmap_folder = sys.argv[5]
 ss_rescaled_folder = sys.argv[6]
 nissl_folder = sys.argv[7]
-input_csv_file = sys.argv[8]
-output_csv_file = sys.argv[9]
+mapper_to_id_file = sys.argv[8]
+input_csv_file = sys.argv[9]
+output_csv_file = sys.argv[10]
 
 # import xml.etree.ElementTree as ET
 import lxml.etree as ET
@@ -304,12 +308,14 @@ print(header)
 
 labels = [readdata[pt[0]][pt[1]] for pt in nissl_img_corrds]
 
+dbfile = open('output/mapper_to_id.pickle', 'rb')     
+mapper_to_id = pickle.load(dbfile)
 # write output file
 with open(output_csv_file, 'w', newline='\n') as csvfile:
     writer = csv.writer(csvfile)
     for row in labels:
-        writer.writerow([row])
-        print(row)
+        writer.writerow([row, mapper_to_id[row]])
+        print(row, mapper_to_id[row])
 
 
 # annotations=["00","10","01","11", "0.5,0"]

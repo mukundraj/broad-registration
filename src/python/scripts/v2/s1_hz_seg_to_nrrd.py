@@ -35,6 +35,7 @@ import nrrd
 # import parsers as parsers
 import src.python.utils.parsers as parsers
 # from src.python.utils import parsers
+import pickle
 
 config_yaml = sys.argv[1]
 histolozee_config_tag = sys.argv[2]
@@ -50,8 +51,12 @@ with open(config_yaml) as file:
     print("\nxml-path:", hz_xml_path)
 
 print("")
-mapper = parsers.get_label_dict(hz_xml_path)
+mapper, mapper_to_id = parsers.get_label_dict(hz_xml_path)
 mapper['ffffff'] = 0
+
+dbfile = open('output/mapper_to_id.pickle', 'ab')
+pickle.dump(mapper_to_id, dbfile)
+dbfile.close()
 
 def mapper_wrapper(e,f,g ):
     # key = format(e,'x')+str(f)+str(g)

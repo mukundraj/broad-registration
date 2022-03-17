@@ -42,15 +42,17 @@ def get_label_dict(file):
     root = tree.getroot()
 
     mapper = {}
+    mapper_to_id = {}
     seg_labels = root.find("segmentation-labels")
     for srno, label in enumerate(seg_labels.iter("label")):
         id = label.get("ID")
         color = label.get("color").replace("#", "")
         mapper[color] = srno+100
+        mapper_to_id[srno+100] = id
         print (id, color, mapper[color])
 
 
-    return mapper
+    return mapper, mapper_to_id
 
 """ Reads in histolozee project xml and nissl idx and returns stored
 corresponding affine transform.
