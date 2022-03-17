@@ -125,3 +125,5 @@ for file in files:
     nrrdfile = dirname+"/labelmaps/"+base.replace(".svg", ".nrrd").replace("nis", "lmap")
     print ("Output labelmap written to: ", nrrdfile)
     nrrd.write(nrrdfile, numpydata)
+
+
