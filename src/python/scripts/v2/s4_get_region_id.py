@@ -297,6 +297,15 @@ width = 3253
 
 nissl_img_corrds = [[int(math.floor(pt[0]*width)), int(math.floor(pt[1]*height))] for pt in nissl_frac_coords]
 
+out_of_bounds = [idx for idx in range(len(nissl_img_corrds)) if nissl_img_corrds[idx][0]>=width or nissl_img_corrds[idx][1]>=height]
+
+
+for idx in out_of_bounds:
+    nissl_img_corrds[idx] = [1,1]
+
+print("out of bounds")
+print(len(out_of_bounds))
+
 print("\nNissl img coords:")
 print(nissl_img_corrds)
 
@@ -310,6 +319,7 @@ labels = [readdata[pt[0]][pt[1]] for pt in nissl_img_corrds]
 
 dbfile = open('output/mapper_to_id.pickle', 'rb')     
 mapper_to_id = pickle.load(dbfile)
+mapper_to_id[0] = "NOLABEL"
 # write output file
 with open(output_csv_file, 'w', newline='\n') as csvfile:
     writer = csv.writer(csvfile)
