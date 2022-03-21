@@ -116,7 +116,7 @@ img = Image.open(ss_file_name)
 print("Img width and height:")
 print(img.width,img.height)
 
-puck_rescaled_img_coords_map = map(lambda pt: [int(math.floor(pt[0]*img.width)), int(math.floor(pt[1]*img.height))], input_pts_frac)
+puck_rescaled_img_coords_map = map(lambda pt: [int(math.floor(pt[0]*img.width)), img.height-int(math.floor(pt[1]*img.height))], input_pts_frac)
 puck_rescaled_img_coords = list(puck_rescaled_img_coords_map)
 
 
@@ -300,14 +300,18 @@ nissl_img_corrds = [[int(math.floor(pt[0]*width)), int(math.floor(pt[1]*height))
 out_of_bounds = [idx for idx in range(len(nissl_img_corrds)) if nissl_img_corrds[idx][0]>=width or nissl_img_corrds[idx][1]>=height]
 
 
-for idx in out_of_bounds:
-    nissl_img_corrds[idx] = [1,1]
-
-print("out of bounds")
-print(len(out_of_bounds))
 
 print("\nNissl img coords:")
 print(nissl_img_corrds)
+
+out_of_bounds_coords = []
+for idx in out_of_bounds:
+    out_of_bounds_coords.append([nissl_img_corrds[idx], nissl_img_corrds[idx]])
+    nissl_img_corrds[idx] = [1,1]
+
+print("out of bounds")
+print(out_of_bounds_coords)
+print(len(out_of_bounds))
 
 # sample from nrrd
 nrrd_path = labelmap_folder+"/lmap_"+nis_idx+".nrrd"
@@ -317,15 +321,20 @@ print(header)
 
 labels = [readdata[pt[0]][pt[1]] for pt in nissl_img_corrds]
 
-dbfile = open('output/mapper_to_id.pickle', 'rb')     
+dbfile = open('output/mapper_to_id.pickle', 'rb')
 mapper_to_id = pickle.load(dbfile)
 mapper_to_id[0] = "NOLABEL"
+mapper_to_id[-1] = "OUTDOM"
 # write output file
 with open(output_csv_file, 'w', newline='\n') as csvfile:
     writer = csv.writer(csvfile)
-    for row in labels:
-        writer.writerow([row, mapper_to_id[row]])
-        print(row, mapper_to_id[row])
+    for idx, row in enumerate(labels):
+        if (idx in out_of_bounds):
+            row = -1
+        # line = [row, mapper_to_id[row], nissl_img_corrds[idx][0], nissl_img_corrds[idx][1]]
+        line = [row, mapper_to_id[row]]
+        writer.writerow(line)
+        print(line)
 
 
 # annotations=["00","10","01","11", "0.5,0"]
