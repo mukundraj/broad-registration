@@ -331,8 +331,8 @@ with open(output_csv_file, 'w', newline='\n') as csvfile:
     for idx, row in enumerate(labels):
         if (idx in out_of_bounds):
             row = -1
-        # line = [row, mapper_to_id[row], nissl_img_corrds[idx][0], nissl_img_corrds[idx][1]]
-        line = [row, mapper_to_id[row]]
+        line = [row, mapper_to_id[row], nissl_img_corrds[idx][0], nissl_img_corrds[idx][1]]
+        # line = [row, mapper_to_id[row]]
         writer.writerow(line)
         print(line)
 
