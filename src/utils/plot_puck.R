@@ -16,7 +16,7 @@
 
 # requires library(pals), library(purrr)
 # optionally:ggrastr (https://github.com/VPetukhov/ggrastr)
-plot_puck <- function(val, puck=NULL, barcodes = NULL,
+plot_puck <- function(val, corners, puck=NULL, barcodes = NULL,
                       pal = pals::tableau20, # pal = pals::kovesi.rainbow,
                       alpha=0.001, raster=F, coords=NULL, alpha_bg = 0.2){
   # Take puck if available, then coords, or errors
@@ -57,6 +57,7 @@ plot_puck <- function(val, puck=NULL, barcodes = NULL,
       if(length(pal)!=nlevels(my_table$val)){
         stop(glue("NEED {nlevels(my_table$val)} manual classes in manual pal"))
       }
+      
       my_pal = pal
     }
     
@@ -135,15 +136,17 @@ plot_puck <- function(val, puck=NULL, barcodes = NULL,
   ggplot2::ggplot(my_table, ggplot2::aes(x=x, y=y)) +
     ggplot2::geom_point( ggplot2::aes(color=val), size=8.0, shape=19, show.legend = FALSE) +
     #scale_alpha_continuous(range = c(0.1, 0.2))
-    scale_colour_gradient(
-      
-      low = "#F7F7F788",
-      high = "#000000FF",
-      space = "Lab",
-      na.value = "grey50",
-      guide = "colourbar",
-      aesthetics = "colour"
-    ) +
+    # OLD
+    # scale_colour_gradient(
+    #   
+    #   low = "#F7F7F788",
+    #   high = "#000000FF",
+    #   space = "Lab",
+    #   na.value = "grey50",
+    #   guide = "colourbar",
+    #   aesthetics = "colour"
+    # ) +
+  plot_scale+
     theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
                          panel.grid.minor = element_blank(), axis.line = element_blank(), 
                        axis.text.x=element_blank(),

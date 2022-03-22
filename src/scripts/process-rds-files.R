@@ -41,10 +41,19 @@ for (i in 1:length(files))
   #nissl_id <- nissl_id[[1]]*2 - 1 # to align with Chuck's numbering scheme
   # if (nissl_id!=219) # sample dataset id
   #   next
-
+  
+ 
   
   print (paste(i, nissl_id, "Processing", files[i]))
+  # if (nissl_id==143){
+  #   print (paste(i, nissl_id, "Processing", files[i]))
+  # }
+  # else{
+  #   next
+  # }
   
+  
+ 
   object_seurat = mcreadRDS(files[i])
   
   # Optional but remove outright beads with less than 150 UMU's
@@ -65,9 +74,32 @@ for (i in 1:length(files))
   gene_val_clamp  = log10(gene_val)
   gene_val_clamp  = log10(gene_val_clamp)
   
-  plot_puck(val = gene_val_clamp,
+ 
+  # new extent code starts
+  
+  minmax_x = c(min(coords$x), max(coords$x))
+  minmax_y = c(min(coords$y), max(coords$y))
+  
+  print(paste("minmax_x", minmax_x))
+  print(paste("minmax_y", minmax_y))
+  xvals <- c(minmax_x[1], minmax_x[2], minmax_x[1], minmax_x[2])
+  yvals <- c(minmax_y[2], minmax_y[1], minmax_y[1], minmax_y[2])
+
+  corners <- data.frame(x=xvals, y=yvals)
+ 
+  print(corners)
+  
+  # new extent code ends
+  
+  
+  gene_val_cat = rep_along(gene_val_clamp, "FALSE")
+  gene_val_cat = c(gene_val_cat, "TRUE", "TRUE", "TRUE", "TRUE")
+  gene_val_cat  = factor(gene_val_cat)
+  plot_puck(val = gene_val_cat, #gene_val_clamp,
+            # corners = corners,
+            corners = NULL,
             # Could also pass in puck = mega_puck but wanted to subset UMI_cutoff
-            coords = coords,
+            coords = rbind(coords, corners),
             # Don't make vector with thousands of circles
             raster=F,
             # Custom color scheme with alpha. Going from transparent blue -> opaque yellow
@@ -75,8 +107,9 @@ for (i in 1:length(files))
             # pal=colorRampPalette(c(alpha("blue", 0.01),
             #                        alpha("green", 0.2),
             #                        alpha("yellow", 0.7)), alpha=T)(100)
-            pal=colorRampPalette(c(alpha("white", 0.01),
-                                   alpha("black", 1)), alpha=T)(100)
+            # pal=colorRampPalette(c(alpha("white", 0.01),
+            #                        alpha("black", 1)), alpha=T)(100)
+            pal = c("#AAAAAA", "RED")
   )
 
 
@@ -86,13 +119,6 @@ for (i in 1:length(files))
   ggsave(paste(op_path,nissl_id,".png", sep=""), plot=last_plot(), dpi=72, scale=8, limitsize=FALSE, height = 10, width = 10)
   
 }
-
-
-
-
-
-
-
 
 ## command stash
 # fd seurat -x cp {} sdata/
