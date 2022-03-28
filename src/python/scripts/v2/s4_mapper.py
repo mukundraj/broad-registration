@@ -60,7 +60,12 @@ op_folder = sys.argv[12]
 if (nissl_id<0):
     print("mapping all")
     # nissl_ids = [141, 143]
-    nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
+    # nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
+    nissl_ids = [1, 3, 133, 135, 137, 139, 143]
+    nissl_ids = [i for i in np.arange(1,228,2)]
+    nissl_ids.remove(5)
+    nissl_ids.remove(77)
+    nissl_ids.remove(167)
 else:
     nissl_ids = [nissl_id]
 
@@ -81,22 +86,47 @@ for nissl_id in nissl_ids:
             point = [row[0], row[1]]
             input_pts.append(point)
 
+    pts = np.array(input_pts)
+    print(np.amax(pts, axis=0), np.amin(pts, axis=0))
+    max_x, max_y = np.amax(pts, axis=0)
+    min_x, min_y = np.amin(pts, axis=0)
+    extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
 
+    # input_pts.append([5409, 4798])
+    x = 100
+    # input_pts = [[268+10, 274+10], [5497-10, 5497-10]]
+    # input_pts = []
+    # input_pts.append([268+x, 274+x])
+    # input_pts.append([5497-x, 5497-x])
+    # input_pts.append([2882, 2882])
 
-    # get normalized bead coords
-    input_pts_frac = tfms.perform_coordinate_normalization(corners[nissl_id]['topleft_x'],
-                                                   corners[nissl_id]['topleft_y'],
-                                                   corners[nissl_id]['botright_x'],
-                                                   corners[nissl_id]['botright_y'],
-                                                   corners[nissl_id]['topright_x'],
-                                                   corners[nissl_id]['topright_y'],
-                                                   corners[nissl_id]['botleft_x'],
-                                                   corners[nissl_id]['botleft_y'],
-                                                   input_pts)
+    # # get normalized bead coords
+    # input_pts_frac = tfms.perform_coordinate_normalization(corners[nissl_id]['topleft_x'],
+    #                                                        corners[nissl_id]['topleft_y'],
+    #                                                        corners[nissl_id]['botright_x'],
+    #                                                        corners[nissl_id]['botright_y'],
+    #                                                        corners[nissl_id]['topright_x'],
+    #                                                        corners[nissl_id]['topright_y'],
+    #                                                        corners[nissl_id]['botleft_x'],
+    #                                                        corners[nissl_id]['botleft_y'],
+    #                                                        extents,
+    #                                                        input_pts)
+
+    input_pts_frac = tfms.perform_coordinate_normalization(0,
+                                                           0,
+                                                           0,
+                                                           0,
+                                                           0,
+                                                           0,
+                                                           0,
+                                                           0,
+                                                           extents,
+                                                           input_pts)
 
 
     # get puck rescaled image coords
 
+    # puck_rescaled_img_coords_map = map(lambda pt: [int(math.floor(pt[0]*img_width_ss_rescaled)), img_height_ss_rescaled-int(math.floor(pt[1]*img_height_ss_rescaled))], input_pts_frac)
     puck_rescaled_img_coords_map = map(lambda pt: [int(math.floor(pt[0]*img_width_ss_rescaled)), img_height_ss_rescaled-int(math.floor(pt[1]*img_height_ss_rescaled))], input_pts_frac)
     puck_rescaled_img_coords = list(puck_rescaled_img_coords_map)
 
@@ -104,9 +134,12 @@ for nissl_id in nissl_ids:
     PIX_SIZE = 0.000507
     puck_rescaled_world = list(map(lambda pt:[-pt[0]*PIX_SIZE, -pt[1]*PIX_SIZE], puck_rescaled_img_coords))
 
+    # tfm_aff = tfms.get_histolozee_affine_tfm(hz_project_ss_file, nissl_id)
+    tfm_aff = tfms.get_histolozee_affine_tfm_contructed(hz_project_ss_file, nissl_id)
+    print(tfm_aff)
 
-
-    tfm_aff = tfms.get_histolozee_affine_tfm(hz_project_ss_file, nissl_id)
+    # tfm_1 = tfms.get_affine_transform(0, [1,1], [0.438048, 0.438048])
+    # tfm_1_inv = tfms.get_affine_transform(0, [1,1], [-0.438048, -0.438048])
 
     pts_tfmed_ss = []
     # transform to transformed ss world coordinates
@@ -118,7 +151,7 @@ for nissl_id in nissl_ids:
             # pts_tfmed_ss.append(tfm_mat@pt)
 
     ## flipping x axis to account for nifty coordinates
-    pts_tfmed_ss = [ [pt[0], pt[1]] for pt in pts_tfmed_ss]
+    # pts_tfmed_ss = [ [pt[0], pt[1]] for pt in pts_tfmed_ss]
 
 
     # get tfmed_ss_normalized
@@ -129,6 +162,7 @@ for nissl_id in nissl_ids:
     height = 1.02807
 
     pts_tfmed_ss_normalized = [[(-pt[0]-left)/width, abs(pt[1]+top)/height] for pt in pts_tfmed_ss]
+    # pts_tfmed_ss_normalized = [[-(pt[0]-left)/width, -(pt[1]-top)/height] for pt in pts_tfmed_ss]
 
     # get tfmed_ss_nifti
 
@@ -146,8 +180,8 @@ for nissl_id in nissl_ids:
         for row in pts_tfmed_ss_nifti:
             writer.writerow(row)
 
-    from_fiducials_file = tfm_folder+"/"+str(nis_idx)+"_f.csv"
-    to_fiducials_file = tfm_folder+"/"+str(nis_idx)+"_t.csv"
+    from_fiducials_file = tfm_folder+"/"+str(int(nis_idx))+"_f.csv"
+    to_fiducials_file = tfm_folder+"/"+str(int(nis_idx))+"_t.csv"
     # nrrd_path = labelmap_folder+"/lmap_"+nis_idx+".nrrd"
     temp_output_csv_file = tfm_folder+"/"+nis_idx+"_tmp_output.csv"
     # call cpp script to transform output of previous step with fiduals/TPS, sample from nrrd and write output
@@ -192,12 +226,15 @@ for nissl_id in nissl_ids:
     # convert to chuck_space_img_coords
     chuck_world_img_coords = [[-int(math.floor((pt[0]-left)*(img_width_nis_tfmed/width))), -int(math.floor((pt[1]-top)*(img_height_nis_tfmed/height)))] for pt in hz_nis_world_coords]
 
-    print(chuck_world_img_coords)
+    # print(chuck_world_img_coords)
 
-    print("top", top, "left", left, "height", height, "width", width)
+    # print("top", top, "left", left, "height", height, "width", width)
     op_file = op_folder+"/chuck_sp_img_coords_"+nis_idx+".csv"
     with open(op_file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)
+        # for idx, row in enumerate(pts_tfmed_ss):
+        # for idx, row in enumerate(pts_tfmed_ss_normalized):
+        # for idx, row in enumerate(puck_rescaled_img_coords):
         for idx, row in enumerate(chuck_world_img_coords):
             writer.writerow(row)
 

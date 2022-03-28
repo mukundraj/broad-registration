@@ -39,8 +39,8 @@ def get_TR_affine(angle_deg, translation):
     return TR
 
 
-"""
-Read histolozee slide seq xml and return transformation in affine matrix format
+""" Read histolozee slide seq xml and return transformation in affine matrix
+format stored in xml.
 
 Created by Mukund on 2022-03-22
 """
@@ -65,6 +65,39 @@ def get_histolozee_affine_tfm(hz_project_ss_file, nis_idx):
     return tfm_aff
 
 
+""" Read histolozee slide seq xml and return transformation matrix in affine
+format by manually constructing it from scale and reflection componencts in
+xml.
+
+Created by Mukund on 2022-03-23
+
+"""
+
+def get_histolozee_affine_tfm_contructed(hz_project_ss_file, nis_idx):
+
+    tree = ET.parse(hz_project_ss_file)
+    root = tree.getroot()
+    tfm_aff = None
+    for slide in root.iter("slide"):
+        # print (slide.tag, slide.attrib)
+        elm_idx = int(slide.get("image").split("_")[4])
+        if (elm_idx==nis_idx):
+            tfm = slide.find("transformation")
+            rot_deg = float(tfm[0].get("k"))
+            scale_i = float(tfm[1].get("i"))
+            scale_j = float(tfm[1].get("j"))
+            center_i = float(tfm[4].get("i"))
+            center_j = float(tfm[4].get("j"))
+
+            print(f"Transforms for id {elm_idx}: rot {rot_deg}, scale_i {scale_i}, scale_j {scale_j}, center_i {center_i}, center_j {center_j}")
+            t1 = get_affine_transform(0, [1, 1], [center_i,center_j])
+            t2 = get_affine_transform(0, [scale_i, scale_j], [0, 0])
+            t3 = get_affine_transform(rot_deg, [1, 1], [0, 0])
+            t4 = get_affine_transform(0, [1, 1], [-center_i, -center_j])
+            tfm_aff = t4@t3@t2@t1
+
+    return tfm_aff
+
 """
 Performs coordinate normalization including removal of padding
 
@@ -78,13 +111,19 @@ def perform_coordinate_normalization(topleft_x, topleft_y,
                                      botright_x, botright_y,
                                      topright_x, topright_y,
                                      botleft_x, botleft_y,
+                                     extents,
                                      input_pts):
 
-    s = np.array([[topleft_x, topleft_y, 1],
-                  [topright_x, topright_y, 1],
-                  [botleft_x, botleft_y, 1],
-                  [botright_x, botright_y, 1]], dtype=float).T
+    # s = np.array([[topleft_x, topleft_y, 1],
+    #               [topright_x, topright_y, 1],
+    #               [botleft_x, botleft_y, 1],
+    #               [botright_x, botright_y, 1]], dtype=float).T
+    s = np.array([[extents['min_x'], extents['min_x'], 1],
+                  [extents['max_x'], extents['min_y'], 1],
+                  [extents['min_x'], extents['max_y'], 1],
+                  [extents['max_x'], extents['max_y'], 1]], dtype=float).T
 
+    # d = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=float).T
     d = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=float).T
 
     M_rec,resid,rank,sing = np.linalg.lstsq(s.T,d.T)
@@ -98,7 +137,13 @@ def perform_coordinate_normalization(topleft_x, topleft_y,
     # transform input
     tfmed_pts = M_rec@pts
 
+    tfmed_pts = tfmed_pts[:-1]
+
     tfmed_pts = list(tfmed_pts.T)
+    # tpt = np.array([268, 274, 1])
+    # tpt = np.array([5409, 5497, 1])
+    # print(M_rec@tpt)
+    # exit(0)
 
     return tfmed_pts
 
