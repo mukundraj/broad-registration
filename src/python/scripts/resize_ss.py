@@ -1,6 +1,5 @@
-""" 
-Script to rescale slide seq files in folder to 50% smaller. Reads paths
-from config file.
+""" Script to rescale slide seq files in folder to 50% smaller and convert to
+Histolozee format. Reads paths from config file.
 
 Usage : python resize_ss.py path_to_config_file
 
@@ -31,9 +30,16 @@ op_path = conf["op_rescaled_ss"]
 
 path = ip_path
 
-onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
-files = [ fi for fi in onlyfiles if fi.endswith(".png") ]
+# print(listdir(path))
+# print("")
+# onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+# print(onlyfiles)
+# print("")
+print(listdir(path))
+print(len(listdir(path)))
+files = [ fi for fi in listdir(path) if fi.endswith(".png") ]
 
+print(len(files))
 print(files)
 
 for i in range(len(files)):
@@ -43,8 +49,12 @@ for i in range(len(files)):
     print (ip_filename)
 
     # op_filename = op_filename.replace("slide_seq_imgs", "slide_seq_imgs_rescaled")
-    op_filename = op_filename.split(".")[0]+".tif"
+    without_extn = op_filename.split(".")[0]
+    idx = os.path.basename(without_extn).replace("ss_", "").zfill(3)
+    op_filename = op_path+"/ss_"+idx+".tif"
     print(op_filename)
 
+    subprocess.run(["convert", ip_filename, "-resize", "50%", "-density", "72", "-units",  "pixelsperinch", "-define", "tiff:tile-geometry=256x256", op_filename])
 
-    subprocess.run(["convert", ip_filename, "-resize", "50%", "-density", "72", "-units",  "pixelsperinch", op_filename])
+    # convert to tif format needed by histolozee
+    # subprocess.run(["fd", "^.*tiff$" , "-x", "convert", "{}", "-define", "tiff:tile-geometry=256x256", "ptif:{.}.tif" ], cwd=op_path)
