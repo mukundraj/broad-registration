@@ -104,7 +104,7 @@ main(int argc, char * argv[])
     sourceLandMarkContainer->InsertElement(id++, p1);
   }
 
-  std::cout<<"\n";
+  // std::cout<<"\n";
   // std::cout<<"Destination Fiducials read:"<<std::endl;
   id = itk::NumericTraits<PointIdType>::ZeroValue();
   while (reader_T.read_row(row)) {
@@ -119,9 +119,9 @@ main(int argc, char * argv[])
   tps->SetTargetLandmarks(targetLandMarks);
   tps->ComputeWMatrix();
 
-  std::cout<<"\n";
+  // std::cout<<"\n";
 
-  std::cout<<"To be transformed points :"<<std::endl;
+  // std::cout<<"To be transformed points :"<<std::endl;
   // Read in query points as csv
 
   std::vector<double> points;
@@ -129,11 +129,11 @@ main(int argc, char * argv[])
   format.no_header();
   CSVReader reader_P(argv[3], format);
   while (reader_P.read_row(row)) {
-    std::cout<<row[0].get<double>()<<" "<<row[1].get<double>()<<"\n";
+    // std::cout<<row[0].get<double>()<<" "<<row[1].get<double>()<<"\n";
     points.push_back(row[0].get<double>());
     points.push_back(row[1].get<double>());
   }
-  std::cout<<std::endl;
+  // std::cout<<std::endl;
   std::cout<<"num points to be sampled:"<< points.size()/2<<std::endl;
   int slice_index = std::stoi(argv[5]);
   std::cout<< "slice_index used for sampling:"<<slice_index<<std::endl;
@@ -149,18 +149,18 @@ main(int argc, char * argv[])
   p2 = tps->TransformPoint(p1);
 
   
-  std::cout<<"\n";
+  // std::cout<<"\n";
   // std::cout<<p1[0]<<" "<<p1[1]<<" "<<p2[0]<<" "<<p2[1]<<"\n";
 
   // write out transformed points
-  std::cout<<"Transformed points :"<<std::endl;
+  // std::cout<<"Transformed points :"<<std::endl;
   for (size_t i=0; i< points.size(); i+=2){
     p1[0] = points[i];
     p1[1] = points[i+1];
 
     p2 = tps->TransformPoint(p1);
 
-    std::cout<<p2[0]<<" "<<p2[1]<<"\n";
+    // std::cout<<p2[0]<<" "<<p2[1]<<"\n";
 
     points[i]= p2[0];
     points[i+1] = p2[1];
@@ -207,7 +207,7 @@ main(int argc, char * argv[])
   // // std::cout << "pixelVal : "<< value<< std::endl;
 
 
-  std::cout<<"\n";
+  // std::cout<<"\n";
   std::stringstream ss; // Can also use ofstream, etc. 
   auto writer = make_csv_writer(ss);
   for (size_t i=0; i<points.size(); i+=2){
@@ -321,6 +321,6 @@ main(int argc, char * argv[])
   //   InputPointType pt_out;
   //   // pt_out = *(reader2->GetTransformList()->begin()).TransformPoint(pt);
 
-  std::cout << "Done." << std::endl;
+  std::cout << "Done." << std::endl<<std::endl;
   return EXIT_SUCCESS;
 }
