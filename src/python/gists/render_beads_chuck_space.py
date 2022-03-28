@@ -29,6 +29,7 @@ import cairo
 import src.python.utils.render2d as render2d
 import sys
 import csv
+import numpy as np
 
 nissl_id = int(sys.argv[1])
 WIDTH = int(sys.argv[2])
@@ -43,7 +44,13 @@ op_folder = sys.argv[5]
 if (nissl_id > -1):
     nissl_ids = [nissl_id]
 else:
-    nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
+    # nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
+    nissl_ids = [133, 135, 137, 139, 143]
+    nissl_ids = [1, 3, 133, 135, 137, 139, 143]
+    nissl_ids = [i for i in np.arange(1,228,2)]
+    nissl_ids.remove(5)
+    nissl_ids.remove(77)
+    nissl_ids.remove(167)
 
 for nissl_id in nissl_ids:
     nis_id_str = str(nissl_id).zfill(3)
