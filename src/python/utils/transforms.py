@@ -148,4 +148,45 @@ def perform_coordinate_normalization(topleft_x, topleft_y,
     return tfmed_pts
 
 
+def coordinate_normalization_in_padded_space(topleft_x, topleft_y,
+                                             botright_x, botright_y,
+                                             topright_x, topright_y,
+                                             botleft_x, botleft_y,
+                                             extents,
+                                             input_pts):
+
+    s = np.array([[extents['min_x'], extents['min_x'], 1],
+                  [extents['max_x'], extents['min_y'], 1],
+                  [extents['min_x'], extents['max_y'], 1],
+                  [extents['max_x'], extents['max_y'], 1]], dtype=float).T
+
+    # d = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=float).T
+    # d = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=float).T
+    # topleft, top right, bot left, bot right
+    d = np.array([[float(topleft_x)/5760, float(topleft_y)/5760, 1], 
+                  [float(topright_x)/5760, float(topright_y)/5760, 1],
+                  [float(botleft_x)/5760, float(botleft_y)/5760, 1],
+                  [float(botright_x)/5760, float(botright_y)/5760, 1]], dtype=float).T
+
+    M_rec,resid,rank,sing = np.linalg.lstsq(s.T,d.T)
+    M_rec = M_rec.T
+
+    # format input
+    N = len(input_pts)
+    pts = np.array(input_pts)
+    pts = np.hstack((pts, np.ones(N).reshape(N,1))).T
+
+    # transform input
+    tfmed_pts = M_rec@pts
+
+    tfmed_pts = tfmed_pts[:-1]
+
+    tfmed_pts = list(tfmed_pts.T)
+    # tpt = np.array([268, 274, 1])
+    # tpt = np.array([5409, 5497, 1])
+    # print(M_rec@tpt)
+    # exit(0)
+
+    return tfmed_pts
+
 
