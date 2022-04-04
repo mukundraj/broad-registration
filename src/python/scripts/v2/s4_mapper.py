@@ -17,7 +17,7 @@ python script.py\
 Usage example:
 
 python src/python/scripts/v2/s4_mapper.py \
-    143 \
+    97 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
     /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords \
     1728 1728 \
@@ -66,6 +66,7 @@ if (nissl_id<0):
     nissl_ids.remove(5)
     nissl_ids.remove(77)
     nissl_ids.remove(167)
+    # nissl_ids = [97, 143]
 else:
     nissl_ids = [nissl_id]
 
@@ -112,16 +113,28 @@ for nissl_id in nissl_ids:
     #                                                        extents,
     #                                                        input_pts)
 
-    input_pts_frac = tfms.perform_coordinate_normalization(0,
-                                                           0,
-                                                           0,
-                                                           0,
-                                                           0,
-                                                           0,
-                                                           0,
-                                                           0,
-                                                           extents,
-                                                           input_pts)
+    # get normalized bead coords
+    input_pts_frac = tfms.coordinate_normalization_in_padded_space(corners[nissl_id]['topleft_x'],
+                                                                   corners[nissl_id]['topleft_y'],
+                                                                   corners[nissl_id]['botright_x'],
+                                                                   corners[nissl_id]['botright_y'],
+                                                                   corners[nissl_id]['topright_x'],
+                                                                   corners[nissl_id]['topright_y'],
+                                                                   corners[nissl_id]['botleft_x'],
+                                                                   corners[nissl_id]['botleft_y'],
+                                                                   extents,
+                                                                   input_pts)
+    # input_pts_frac = tfms.perform_coordinate_normalization(0,
+    #                                                        0,
+    #                                                        0,
+    #                                                        0,
+    #                                                        0,
+    #                                                        0,
+    #                                                        0,
+    #                                                        0,
+    #                                                        extents,
+    #                                                        input_pts)
+    
 
 
     # get puck rescaled image coords
