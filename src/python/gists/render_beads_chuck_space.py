@@ -9,15 +9,20 @@ python render_beads_chuck_space.py \
     nissl_id or negative value for processing list of ids
     width height
     path to folder with positions
+    path to chuck space nissl folder for creating overlapped images
     path to output folder to store imgs
+    path to output folder with overlapped images
 
 Usage example:
 
 python src/python/gists/render_beads_chuck_space.py \
-    143 \
+    97 \
     4096 3606 \
     /Users/mraj/Desktop/forgif/chuck_space_img_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /Users/mraj/Desktop/forgif/chuck_space_recons_img \
+    /Users/mraj/Desktop/forgif/overlapped
+
 
 """
 from pathlib import Path
@@ -30,12 +35,15 @@ import src.python.utils.render2d as render2d
 import sys
 import csv
 import numpy as np
+import subprocess
 
 nissl_id = int(sys.argv[1])
 WIDTH = int(sys.argv[2])
 HEIGHT = int(sys.argv[3])
 ip_folder = sys.argv[4]
-op_folder = sys.argv[5]
+ip_nissl = sys.argv[5]
+op_folder = sys.argv[6]
+op_overlapped = sys.argv[7]
 
 
 # WIDTH, HEIGHT = 3253, 4643
@@ -51,6 +59,7 @@ else:
     nissl_ids.remove(5)
     nissl_ids.remove(77)
     nissl_ids.remove(167)
+    # nissl_ids = [97, 143]
 
 for nissl_id in nissl_ids:
     nis_id_str = str(nissl_id).zfill(3)
@@ -75,3 +84,18 @@ for nissl_id in nissl_ids:
 
     op_file = op_folder+"/csp_recons_"+nis_id_str+".png"
     surface.write_to_png(op_file)  # Output to PNG
+
+    # now moving on to overlapped image
+
+    nis_file = f'{ip_nissl}/nis_{nis_id_str}.png'
+    ss_file = f'{op_folder}/csp_recons_{nis_id_str}.png'
+    out_file = f'{op_overlapped}/overlapped_{nis_id_str}.png'
+
+    print(f'Writing {out_file}')
+    subprocess.run([
+        "composite",
+        ss_file,
+        nis_file,
+        out_file
+    ])
+
