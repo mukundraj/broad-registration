@@ -107,6 +107,14 @@ Outputs: normalized_coordinates
 
 Created by Mukund on 2022-03-21
 """
+
+# def perform_coordinate_normalization(topleft_x, topleft_y,
+#                                      botright_x, botright_y,
+#                                      topright_x, topright_y,
+#                                      botleft_x, botleft_y,
+#                                      extents,
+#                                      input_pts):
+
 def perform_coordinate_normalization(topleft_x, topleft_y,
                                      botright_x, botright_y,
                                      topright_x, topright_y,
@@ -155,7 +163,7 @@ def coordinate_normalization_in_padded_space(topleft_x, topleft_y,
                                              extents,
                                              input_pts):
 
-    s = np.array([[extents['min_x'], extents['min_x'], 1],
+    s = np.array([[extents['min_x'], extents['min_y'], 1],
                   [extents['max_x'], extents['min_y'], 1],
                   [extents['min_x'], extents['max_y'], 1],
                   [extents['max_x'], extents['max_y'], 1]], dtype=float).T
@@ -163,10 +171,12 @@ def coordinate_normalization_in_padded_space(topleft_x, topleft_y,
     # d = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=float).T
     # d = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=float).T
     # topleft, top right, bot left, bot right
-    d = np.array([[float(topleft_x)/5760, float(topleft_y)/5760, 1], 
-                  [float(topright_x)/5760, float(topright_y)/5760, 1],
-                  [float(botleft_x)/5760, float(botleft_y)/5760, 1],
-                  [float(botright_x)/5760, float(botright_y)/5760, 1]], dtype=float).T
+    side = 5760
+    # side = 1728 
+    d = np.array([[float(topleft_x)/side, float(topleft_y)/side, 1], 
+                  [float(topright_x)/side, float(topright_y)/side, 1],
+                  [float(botleft_x)/side, float(botleft_y)/side, 1],
+                  [float(botright_x)/side, float(botright_y)/side, 1]], dtype=float).T
 
     M_rec,resid,rank,sing = np.linalg.lstsq(s.T,d.T)
     M_rec = M_rec.T
