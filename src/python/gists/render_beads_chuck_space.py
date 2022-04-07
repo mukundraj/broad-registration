@@ -18,7 +18,7 @@ Usage example:
 python src/python/gists/render_beads_chuck_space.py \
     97 \
     4096 3606 \
-    /Users/mraj/Desktop/forgif/chuck_space_img_coords \
+    /Users/mraj/Desktop/forgif/fordebug \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /Users/mraj/Desktop/forgif/chuck_space_recons_img \
     /Users/mraj/Desktop/forgif/overlapped
@@ -59,6 +59,7 @@ else:
     nissl_ids.remove(5)
     nissl_ids.remove(77)
     nissl_ids.remove(167)
+    # nissl_ids = [i for i in np.arange(169, 186,2)]
     # nissl_ids = [97, 143]
 
 for nissl_id in nissl_ids:
