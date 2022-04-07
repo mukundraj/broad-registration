@@ -86,8 +86,21 @@ for nissl_id in nissl_ids:
     surface.write_to_png(op_file)  # Output to PNG
 
     # now moving on to overlapped image
+    
+    if (nissl_id==175):
+        corrected_nis_idx = str(173).zfill(3)
+    elif (nissl_id==177):
+        corrected_nis_idx = str(175).zfill(3)
+    elif (nissl_id==179):
+        corrected_nis_idx = str(177).zfill(3)
+    elif (nissl_id==181):
+        corrected_nis_idx = str(179).zfill(3)
+    elif (nissl_id==183):
+        corrected_nis_idx = str(181).zfill(3)
+    else:
+        corrected_nis_idx = nis_id_str
 
-    nis_file = f'{ip_nissl}/nis_{nis_id_str}.png'
+    nis_file = f'{ip_nissl}/nis_{corrected_nis_idx}.png'
     ss_file = f'{op_folder}/csp_recons_{nis_id_str}.png'
     out_file = f'{op_overlapped}/overlapped_{nis_id_str}.png'
 
