@@ -17,7 +17,7 @@ python script.py\
 Usage example:
 
 python src/python/scripts/v2/s4_mapper.py \
-    97 \
+    45 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
     /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords \
     1728 1728 \
@@ -26,6 +26,17 @@ python src/python/scripts/v2/s4_mapper.py \
     "/Users/mraj/Desktop/forgif/transforms" \
     4096 3606 \
     /Users/mraj/Desktop/forgif/chuck_space_img_coords \
+
+python src/python/scripts/v2/s4_mapper.py \
+    45 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
+    /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords \
+    1728 1728 \
+    "/Users/mraj/Desktop/sample-hz/hz-project-ss.zee" \
+    2048 2048 \
+    "/Users/mraj/Desktop/forgif/transforms" \
+    4096 3606 \
+    /Users/mraj/Desktop/forgif/fordebug \
 
 Created by Mukund on 2022-03-21
 
