@@ -16,13 +16,26 @@ nissl_path = sys.argv[1]
 ss_path = sys.argv[2]
 overlapped_path = sys.argv[3]
 
-ids = list(range(1, 228, 2))
+ids = list(range(169, 186, 2))
 
 for id in ids:
     nis_idx = str(id).zfill(3)
     print(nis_idx)
 
-    nis_file = f'{nissl_path}/nis_{nis_idx}.png'
+    if (id==175):
+        corrected_nis_idx = str(173).zfill(3)
+    elif (id==177):
+        corrected_nis_idx = str(175).zfill(3)
+    elif (id==179):
+        corrected_nis_idx = str(177).zfill(3)
+    elif (id==181):
+        corrected_nis_idx = str(179).zfill(3)
+    elif (id==183):
+        corrected_nis_idx = str(181).zfill(3)
+    else:
+        corrected_nis_idx = nis_idx
+
+    nis_file = f'{nissl_path}/nis_{corrected_nis_idx}.png'
     ss_file = f'{ss_path}/csp_recons_{nis_idx}.png'
     out_file = f'{overlapped_path}/overlapped_{nis_idx}.png'
 
