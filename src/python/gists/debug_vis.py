@@ -19,6 +19,12 @@ python src/python/gists/debug_vis.py \
     /Users/mraj/Desktop/forgif/chuck_space_img_coords \
     /Users/mraj/Desktop/forgif/chuck_space_recons_img \
 
+python src/python/gists/debug_vis.py \
+    45 \
+    2048 2048 \
+    /Users/mraj/Desktop/forgif/fordebug \
+    /Users/mraj/Desktop/forgif/fordebug \
+
 """
 
 from pathlib import Path
