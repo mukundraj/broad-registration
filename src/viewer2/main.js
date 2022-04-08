@@ -82,8 +82,28 @@ export function main(){
 }
 
 
-export function create_babylon () {
-    get_data("data/allen_img_coords_143.csv")
+let myFunc = function (particle, i, s){
+    particle.position = new BABYLON.Vector3(pts[i]["x"], pts[i]["y"], pts[i]["z"]);
+    // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
+    particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
+}
+
+let makeFunc = function(inps){
+    var pts = inps;
+    function myFunc2(particle, i, s){
+        particle.position = new BABYLON.Vector3(pts[i]["x"], pts[i]["y"], pts[i]["z"]);
+        // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
+        particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
+
+    }
+    return myFunc2;
+
+}
+
+
+export async function create_babylon () {
+    let pts = await get_data("data/allen_img_coords_143.csv")
+    console.log(pts)
     var canvas = document.getElementById('renderCanvas')
 
     var sceneToRender = null
@@ -94,26 +114,49 @@ export function create_babylon () {
             disableWebGL2Support: false
         })
     }
-    const createScene = (engine) => {
-        const scene = new BABYLON.Scene(engine)
 
-        const camera = new BABYLON.ArcRotateCamera('Camera', 3 * Math.PI / 4, Math.PI / 4, 4, BABYLON.Vector3.Zero(), scene)
-        camera.attachControl()
-        const light = new BABYLON.HemisphericLight(
-            'light',
-            new BABYLON.Vector3(1, 1, 0),
-            scene, // Always pass this argument explicitly
-        )
+    var createDefaultEngine = function(engine) { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
 
-        const box = BABYLON.MeshBuilder.CreateBox(
-            'box',
-            {height: 1, width: 0.75, depth: 0.25},
-            scene, // Always pass this argument explicitly
-        )
+    const createScene =  () => {
+        const scene = new BABYLON.Scene(engine);
 
-        return scene
+        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 3, new BABYLON.Vector3(0, 0, 0));
+        camera.attachControl(canvas, true);
 
+        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
+
+        // const box = BABYLON.MeshBuilder.CreateBox("box", {});
+
+        var pcs = new BABYLON.PointsCloudSystem("pcs", 2, scene) 
+        //pcs.mesh.material.pointSize = 1;
+
+        // pcs.addPoints(10000);
+        let myFunc3 = makeFunc(pts);
+        pcs.addPoints(pts.length, myFunc3)
+        pcs.buildMeshAsync();
+
+        return scene;
     }
+    // const createScene = (engine) => {
+    //     const scene = new BABYLON.Scene(engine)
+
+    //     const camera = new BABYLON.ArcRotateCamera('Camera', 3 * Math.PI / 4, Math.PI / 4, 4, BABYLON.Vector3.Zero(), scene)
+    //     camera.attachControl()
+    //     const light = new BABYLON.HemisphericLight(
+    //         'light',
+    //         new BABYLON.Vector3(1, 1, 0),
+    //         scene, // Always pass this argument explicitly
+    //     )
+
+    //     const box = BABYLON.MeshBuilder.CreateBox(
+    //         'box',
+    //         {height: 1, width: 0.75, depth: 0.25},
+    //         scene, // Always pass this argument explicitly
+    //     )
+
+    //     return scene
+
+    // }
 
     window.initFunction = async function () {
 

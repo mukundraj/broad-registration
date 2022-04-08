@@ -1,6 +1,6 @@
 import * as d3 from "https://cdn.skypack.dev/d3@7";
 
-export function get_data(filename){
+export async function get_data(filename){
 
     const div = d3.selectAll("div");
     console.log(div);
@@ -12,11 +12,18 @@ export function get_data(filename){
     //     console.log(data[i]);
     // }
 
-    d3.text("data/allen_img_coords_143.csv").then(function(data){
+    let pts = {"a":1};
+    await d3.text("data/allen_img_coords_143.csv").then(function(data){
         data = "sr,x,y,z\n" + data;
         var newData = d3.csvParse(data);
         console.log(newData.length);
+        pts = newData;
+        console.log(pts.length)
+        return (pts)
     });
+
+    console.log("end");
+    return (pts);
     
 }
 
