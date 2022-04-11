@@ -100,6 +100,20 @@ let makeFunc = function(inps){
 
 }
 
+let sliceSelector = function(state){
+
+    let showState = state;
+    function updateParticle(particle){
+        if (showState==true){
+            particle.color = new BABYLON.Color4(1.0, 0, 0, 1.0);
+        }else{
+            particle.color = new BABYLON.Color4(0.8, 0.8, 0.8, 0.1);
+
+        }
+    }
+    return updateParticle;
+}
+
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 export async function create_babylon () {
@@ -108,7 +122,7 @@ export async function create_babylon () {
 
     const nis_ids = [];
     const avoid_list = [5, 77, 167, 181, 205, 223, 225, 227];
-    for (let i=1; i<228; i++){
+    for (let i=1; i<50; i++){
         if (!avoid_list.includes(i) && (i%2==1))
             nis_ids.push(i);
         
@@ -154,61 +168,37 @@ export async function create_babylon () {
 
         // const box = BABYLON.MeshBuilder.CreateBox("box", {});
 
+        let pcs_map = new Map();
         let point_size = 2;
         var pcs = new BABYLON.PointsCloudSystem("pcs", point_size, scene) 
-
-        pcs.updateParticle = function(particle){
-            particle.rotation.y +=30;
-        }
-
-
-        for (const [key,pts] of data_map){
-            console.log(key)
+        nis_ids.forEach((nisid, idx) => {
+            pcs_map.set(nisid, new BABYLON.PointsCloudSystem(`pcs{nisid}`, point_size, scene));  
+            let pts = data_map.get(nisid);
+            console.log(pts);
             let myFunc = makeFunc(pts);
-            pcs.addPoints(pts.length, myFunc)
-        }
-
-        pcs.buildMeshAsync();
-
-        // scene.registerAfterRender(() => {
-        //     pcs.setParticles();
-
-        // });
-
-        scene.onKeyboardObservable.add((kbInfo) => {
-            switch (kbInfo.type) {
-                case BABYLON.KeyboardEventTypes.KEYDOWN:
-                    console.log("KEY DOWN: ", kbInfo.event.key);
-                    // pcs.setParticles();
-                    break;
-                case BABYLON.KeyboardEventTypes.KEYUP:
-                    console.log("KEY UP: ", kbInfo.event.code);
-                    break;
-            }
+            let pcs = pcs_map.get(nisid);
+            pcs.addPoints(pts.length, myFunc);
+            pcs.buildMeshAsync();
         });
+
+        // pcs.updateParticle = function(particle){
+        //     particle.rotation.y +=0.1;
+        // }
+
+        // scene.onKeyboardObservable.add((kbInfo) => {
+        //     switch (kbInfo.type) {
+        //         case BABYLON.KeyboardEventTypes.KEYDOWN:
+        //             console.log("KEY DOWN: ", kbInfo.event.key);
+        //             pcs.setParticles();
+        //             break;
+        //         case BABYLON.KeyboardEventTypes.KEYUP:
+        //             console.log("KEY UP: ", kbInfo.event.code);
+        //             break;
+        //     }
+        // });
 
         return scene;
     }
-    // const createScene = (engine) => {
-    //     const scene = new BABYLON.Scene(engine)
-
-    //     const camera = new BABYLON.ArcRotateCamera('Camera', 3 * Math.PI / 4, Math.PI / 4, 4, BABYLON.Vector3.Zero(), scene)
-    //     camera.attachControl()
-    //     const light = new BABYLON.HemisphericLight(
-    //         'light',
-    //         new BABYLON.Vector3(1, 1, 0),
-    //         scene, // Always pass this argument explicitly
-    //     )
-
-    //     const box = BABYLON.MeshBuilder.CreateBox(
-    //         'box',
-    //         {height: 1, width: 0.75, depth: 0.25},
-    //         scene, // Always pass this argument explicitly
-    //     )
-
-    //     return scene
-
-    // }
 
     window.initFunction = async function () {
 
