@@ -108,7 +108,7 @@ export async function create_babylon () {
 
     const nis_ids = [];
     const avoid_list = [5, 77, 167, 181, 205, 223, 225, 227];
-    for (let i=1; i<181; i++){
+    for (let i=1; i<228; i++){
         if (!avoid_list.includes(i) && (i%2==1))
             nis_ids.push(i);
     }
@@ -144,7 +144,7 @@ export async function create_babylon () {
     const createScene =  () => {
         const scene = new BABYLON.Scene(engine);
 
-        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 3, new BABYLON.Vector3(0, 0, 0));
+        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 1200, new BABYLON.Vector3(250, 250, 250));
         camera.attachControl(canvas, true);
 
         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
