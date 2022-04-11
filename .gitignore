@@ -51,3 +51,8 @@ annotation
 # Python cache files
 .pyc
 __pycache__
+
+# node
+node_modules
+
+src/viewer2/data/
