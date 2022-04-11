@@ -83,7 +83,7 @@ export function main(){
 
 
 let myFunc = function (particle, i, s){
-    particle.position = new BABYLON.Vector3(pts[i]["x"], pts[i]["y"], pts[i]["z"]);
+    particle.position = new BABYLON.Vector3(pts[s]["x"], pts[s]["y"], pts[s]["z"]);
     // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
     particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
 }
@@ -91,7 +91,7 @@ let myFunc = function (particle, i, s){
 let makeFunc = function(inps){
     var pts = inps;
     function myFunc2(particle, i, s){
-        particle.position = new BABYLON.Vector3(pts[i]["x"], pts[i]["y"], pts[i]["z"]);
+        particle.position = new BABYLON.Vector3(pts[s]["x"], pts[s]["y"], pts[s]["z"]);
         // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
         particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
 
@@ -100,10 +100,34 @@ let makeFunc = function(inps){
 
 }
 
+const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 export async function create_babylon () {
-    let pts = await get_data("data/allen_img_coords_143.csv")
-    console.log(pts)
+
+    let data_map = new Map();
+
+    const nis_ids = [];
+    const avoid_list = [5, 77, 167, 181, 205, 223, 225, 227];
+    for (let i=1; i<181; i++){
+        if (!avoid_list.includes(i) && (i%2==1))
+            nis_ids.push(i);
+    }
+    console.log(nis_ids);
+
+    // for (let i=141; i<144; i+=2){
+    for (const i of nis_ids){
+        let zpadded_i = zeroPad(i, 3);
+        let file = `data/allen_img_coords_${zpadded_i}.csv`;
+        console.log(file);
+        let pts_data = await get_data(file);
+        data_map.set(i, pts_data);
+    }
+
+    // let pts = await get_data("data/allen_img_coords_141.csv")
+    // let pts143 = await get_data("data/allen_img_coords_143.csv")
+
+    // console.log(pts);
+    // console.log(pts143);
     var canvas = document.getElementById('renderCanvas')
 
     var sceneToRender = null
@@ -131,8 +155,18 @@ export async function create_babylon () {
         //pcs.mesh.material.pointSize = 1;
 
         // pcs.addPoints(10000);
-        let myFunc3 = makeFunc(pts);
-        pcs.addPoints(pts.length, myFunc3)
+        // let myFunc3 = makeFunc(pts);
+        // let myFunc143 = makeFunc(pts143);
+        // pcs.addPoints(pts.length, myFunc3)
+        // pcs.addPoints(pts143.length, myFunc143)
+
+
+        for (const [key,pts] of data_map){
+            console.log(key)
+            let myFunc = makeFunc(pts);
+            pcs.addPoints(pts.length, myFunc)
+        }
+
         pcs.buildMeshAsync();
 
         return scene;
@@ -191,3 +225,4 @@ export async function create_babylon () {
 
 // References
 // https://forum.babylonjs.com/t/create-babylon-instance-with-a-function-uncaught-in-promise-engine-should-not-be-null/26588/11
+// https://stackoverflow.com/questions/2998784/how-to-output-numbers-with-leading-zeros-in-javascript

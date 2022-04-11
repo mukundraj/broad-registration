@@ -13,7 +13,7 @@ export async function get_data(filename){
     // }
 
     let pts = {"a":1};
-    await d3.text("data/allen_img_coords_143.csv").then(function(data){
+    await d3.text(filename).then(function(data){
         data = "sr,x,y,z\n" + data;
         var newData = d3.csvParse(data);
         console.log(newData.length);
