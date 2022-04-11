@@ -151,7 +151,8 @@ export async function create_babylon () {
 
         // const box = BABYLON.MeshBuilder.CreateBox("box", {});
 
-        var pcs = new BABYLON.PointsCloudSystem("pcs", 2, scene) 
+        let point_size = 2;
+        var pcs = new BABYLON.PointsCloudSystem("pcs", point_size, scene) 
         //pcs.mesh.material.pointSize = 1;
 
         // pcs.addPoints(10000);
@@ -168,6 +169,17 @@ export async function create_babylon () {
         }
 
         pcs.buildMeshAsync();
+
+        scene.onKeyboardObservable.add((kbInfo) => {
+            switch (kbInfo.type) {
+                case BABYLON.KeyboardEventTypes.KEYDOWN:
+                    console.log("KEY DOWN: ", kbInfo.event.key);
+                    break;
+                case BABYLON.KeyboardEventTypes.KEYUP:
+                    console.log("KEY UP: ", kbInfo.event.code);
+                    break;
+            }
+        });
 
         return scene;
     }
