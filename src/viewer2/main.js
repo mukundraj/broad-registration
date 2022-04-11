@@ -111,23 +111,26 @@ export async function create_babylon () {
     for (let i=1; i<228; i++){
         if (!avoid_list.includes(i) && (i%2==1))
             nis_ids.push(i);
+        
     }
     console.log(nis_ids);
 
+    const get_data_promises = [];
     // for (let i=141; i<144; i+=2){
-    for (const i of nis_ids){
-        let zpadded_i = zeroPad(i, 3);
+    // for (const i of nis_ids){
+    nis_ids.forEach(function (nisid, idx) {
+        let zpadded_i = zeroPad(nisid, 3);
         let file = `data/allen_img_coords_${zpadded_i}.csv`;
-        console.log(file);
-        let pts_data = await get_data(file);
-        data_map.set(i, pts_data);
-    }
+        get_data_promises.push(get_data(file));
+    });
 
-    // let pts = await get_data("data/allen_img_coords_141.csv")
-    // let pts143 = await get_data("data/allen_img_coords_143.csv")
+    let all_slice_data = await Promise.all(get_data_promises);
 
-    // console.log(pts);
-    // console.log(pts143);
+    nis_ids.forEach(function (nisid, idx) {
+        console.log('%d: %s', idx, nisid);
+        data_map.set(nisid, all_slice_data[idx] )
+    });
+
     var canvas = document.getElementById('renderCanvas')
 
     var sceneToRender = null
@@ -153,13 +156,10 @@ export async function create_babylon () {
 
         let point_size = 2;
         var pcs = new BABYLON.PointsCloudSystem("pcs", point_size, scene) 
-        //pcs.mesh.material.pointSize = 1;
 
-        // pcs.addPoints(10000);
-        // let myFunc3 = makeFunc(pts);
-        // let myFunc143 = makeFunc(pts143);
-        // pcs.addPoints(pts.length, myFunc3)
-        // pcs.addPoints(pts143.length, myFunc143)
+        pcs.updateParticle = function(particle){
+            particle.rotation.y +=30;
+        }
 
 
         for (const [key,pts] of data_map){
@@ -170,10 +170,16 @@ export async function create_babylon () {
 
         pcs.buildMeshAsync();
 
+        // scene.registerAfterRender(() => {
+        //     pcs.setParticles();
+
+        // });
+
         scene.onKeyboardObservable.add((kbInfo) => {
             switch (kbInfo.type) {
                 case BABYLON.KeyboardEventTypes.KEYDOWN:
                     console.log("KEY DOWN: ", kbInfo.event.key);
+                    // pcs.setParticles();
                     break;
                 case BABYLON.KeyboardEventTypes.KEYUP:
                     console.log("KEY UP: ", kbInfo.event.code);
