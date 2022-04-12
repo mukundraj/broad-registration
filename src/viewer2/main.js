@@ -1,5 +1,6 @@
 
 import {get_data} from './loaders.js'
+import {draw_bounding_box} from './vis/helpers.js'
 // import 'https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js'
 // import "https://assets.babylonjs.com/generated/Assets.js"
 import "https://preview.babylonjs.com/ammo.js"
@@ -122,7 +123,7 @@ export async function create_babylon () {
 
     const nis_ids = [];
     const avoid_list = [5, 77, 167, 181, 205, 223, 225, 227];
-    for (let i=1; i<50; i++){
+    for (let i=1; i<228; i++){ // change here to 228 for full data
         if (!avoid_list.includes(i) && (i%2==1))
             nis_ids.push(i);
         
@@ -224,6 +225,12 @@ export async function create_babylon () {
                 //     break;
             }
         });
+
+        const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:50});
+        let origin = [0, 0, 0];
+        let corner = [528, 320, 456];
+        // PIR orientation (+x = posterior, +y = inferior, +z = right).
+        draw_bounding_box(origin, corner, scene);
 
         return scene;
     }
