@@ -107,7 +107,7 @@ let sliceSelector = function(state){
         if (showState==true){
             particle.color = new BABYLON.Color4(1.0, 0, 0, 1.0);
         }else{
-            particle.color = new BABYLON.Color4(0.8, 0.8, 0.8, 0.1);
+            particle.color = new BABYLON.Color4(0.8, 0.8, 0.8, 0.0);
 
         }
     }
@@ -177,25 +177,53 @@ export async function create_babylon () {
             console.log(pts);
             let myFunc = makeFunc(pts);
             let pcs = pcs_map.get(nisid);
+            // console.log(pcs.mesh.material);
             pcs.addPoints(pts.length, myFunc);
-            pcs.buildMeshAsync();
+            pcs.buildMeshAsync().then(()=>{
+                console.log(pcs.mesh.visibility);
+                // pcs.mesh.visibility = 0.1;
+
+            });
         });
 
         // pcs.updateParticle = function(particle){
         //     particle.rotation.y +=0.1;
         // }
 
-        // scene.onKeyboardObservable.add((kbInfo) => {
-        //     switch (kbInfo.type) {
-        //         case BABYLON.KeyboardEventTypes.KEYDOWN:
-        //             console.log("KEY DOWN: ", kbInfo.event.key);
-        //             pcs.setParticles();
-        //             break;
-        //         case BABYLON.KeyboardEventTypes.KEYUP:
-        //             console.log("KEY UP: ", kbInfo.event.code);
-        //             break;
-        //     }
-        // });
+        let selected_slice = -1; // modify here to jump directly to slice
+        let next_slice = -1;
+        let nSlices = nis_ids.length;
+
+        scene.onKeyboardObservable.add((kbInfo) => {
+            if (kbInfo.event.key==='j')
+                next_slice = (selected_slice+2)%(nSlices*2);
+            else if (kbInfo.event.key==='k'){
+                next_slice = (selected_slice-2)%(nSlices*2);
+                if (next_slice<0)
+                    next_slice = (nSlices*2-1);
+            }
+            switch (kbInfo.type) {
+                case BABYLON.KeyboardEventTypes.KEYDOWN:
+                    // console.log("KEY DOWN: ", kbInfo.event.key);
+                    selected_slice = next_slice;
+                    nis_ids.forEach((nisid, idx) => {
+                        pcs = pcs_map.get(nisid);
+                        if (nisid==selected_slice){
+                            pcs.updateParticle = sliceSelector(true);
+                            pcs.mesh.visibility = 1.0;
+                        }else{
+                            pcs.updateParticle = sliceSelector(false);
+                            pcs.mesh.visibility = 0.02;
+                        }
+                        pcs.setParticles();
+                    });
+                    console.log("KEY DOWN: ", kbInfo.event.key==='j', "selected_slice", selected_slice, "nSlices*2", nSlices*2, "selected_slice", selected_slice);
+                    break;
+                // case BABYLON.KeyboardEventTypes.KEYUP:
+                //     console.log("KEY UP: ", kbInfo.event.code);
+                //     break;
+            }
+        });
 
         return scene;
     }
