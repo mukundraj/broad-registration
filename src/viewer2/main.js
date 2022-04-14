@@ -227,8 +227,9 @@ export async function create_babylon () {
         });
 
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:50});
-        let origin = [0, 0, 0];
-        let corner = [528, 320, 456];
+        sphere.position = new BABYLON.Vector3(0, 320, 0);
+        let origin = [0, 320, 0];
+        let corner = [528, 0, 456];
         // PIR orientation (+x = posterior, +y = inferior, +z = right).
         draw_bounding_box(origin, corner, scene);
 
