@@ -19,7 +19,7 @@ import "https://preview.babylonjs.com/babylon.js"
 export function main(){
 
     console.log("in main");
-    get_data("data/allen_img_coords_143.csv")
+    get_data("data/babylon_img_coords_143.csv")
 
     console.log("done")
 
@@ -135,7 +135,7 @@ export async function create_babylon () {
     // for (const i of nis_ids){
     nis_ids.forEach(function (nisid, idx) {
         let zpadded_i = zeroPad(nisid, 3);
-        let file = `data/allen_img_coords_${zpadded_i}.csv`;
+        let file = `data/babylon_img_coords_${zpadded_i}.csv`;
         get_data_promises.push(get_data(file));
     });
 
