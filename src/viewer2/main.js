@@ -175,14 +175,15 @@ export async function create_babylon () {
         nis_ids.forEach((nisid, idx) => {
             pcs_map.set(nisid, new BABYLON.PointsCloudSystem(`pcs{nisid}`, point_size, scene));  
             let pts = data_map.get(nisid);
-            console.log(pts);
+            // console.log(pts);
             let myFunc = makeFunc(pts);
             let pcs = pcs_map.get(nisid);
             // console.log(pcs.mesh.material);
+
             pcs.addPoints(pts.length, myFunc);
             pcs.buildMeshAsync().then(()=>{
                 console.log(pcs.mesh.visibility);
-                // pcs.mesh.visibility = 0.1;
+                pcs.mesh.visibility = 0.02;
 
             });
         });
@@ -193,6 +194,7 @@ export async function create_babylon () {
 
         let selected_slice = -1; // modify here to jump directly to slice
         let next_slice = -1;
+        let prev_slice = -1;
         let nSlices = nis_ids.length;
 
         scene.onKeyboardObservable.add((kbInfo) => {
@@ -205,20 +207,25 @@ export async function create_babylon () {
             }
             switch (kbInfo.type) {
                 case BABYLON.KeyboardEventTypes.KEYDOWN:
-                    // console.log("KEY DOWN: ", kbInfo.event.key);
+
+                    prev_slice = selected_slice;
                     selected_slice = next_slice;
-                    nis_ids.forEach((nisid, idx) => {
-                        pcs = pcs_map.get(nisid);
-                        if (nisid==selected_slice){
-                            pcs.updateParticle = sliceSelector(true);
-                            pcs.mesh.visibility = 1.0;
-                        }else{
-                            pcs.updateParticle = sliceSelector(false);
-                            pcs.mesh.visibility = 0.02;
-                        }
+
+                    if (nis_ids.includes(selected_slice)){
+                        pcs = pcs_map.get(selected_slice);
+                        pcs.updateParticle = sliceSelector(true);
+                        pcs.mesh.visibility = 1.0;
                         pcs.setParticles();
-                    });
-                    console.log("KEY DOWN: ", kbInfo.event.key==='j', "selected_slice", selected_slice, "nSlices*2", nSlices*2, "selected_slice", selected_slice);
+                    }
+                    if(nis_ids.includes(prev_slice)){
+                        
+                        pcs = pcs_map.get(prev_slice);
+                        pcs.updateParticle = sliceSelector(false);
+                        pcs.mesh.visibility = 0.02;
+                        pcs.setParticles();
+                        
+                    }
+                    console.log("selected_slice", selected_slice, "nSlices*2", nSlices*2, "selected_slice", selected_slice);
                     break;
                 // case BABYLON.KeyboardEventTypes.KEYUP:
                 //     console.log("KEY UP: ", kbInfo.event.code);
