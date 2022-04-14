@@ -162,7 +162,7 @@ export async function create_babylon () {
     const createScene =  () => {
         const scene = new BABYLON.Scene(engine);
 
-        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 1200, new BABYLON.Vector3(250, 250, 250));
+        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 1200, new BABYLON.Vector3(528/2, 320/2, 456/2));
         camera.attachControl(canvas, true);
 
         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
