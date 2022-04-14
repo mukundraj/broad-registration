@@ -6,22 +6,33 @@ python s6b_linear.py \
     nissl ids to process \
     path to input csv files with chuck space image coordinates \
     quick nii json file with transform parameters \
-    path to output.csv files
+    path to output.csv files in allen coordinates
+    path to output.csv files visualization in babylon
 
-Usage example:
+Usage example(s):
 
 python src/python/scripts/v2/s6b_linear.py \
     143 \
     /Users/mraj/Desktop/forgif/chuck_space_img_coords \
     /Users/mraj/Desktop/transformed_hz_png/March23_Full_CCF.json \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords
+    4096 3606 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_babylon_coords
+
+python src/python/scripts/v2/s6b_linear.py \
+    143 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_visualigned_coords \
+    /Users/mraj/Desktop/transformed_hz_png/March23_Full_CCF.json \
+    4096 3606 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_babylon_coords
 
 Created by Mukund on 2022-03-29
 
 References:
 
 - 25 micro meter resolution
-- dims = [528 320 456];
+- dims = [528 320 456] in PIR coordinate system (as opposed to RAS+ of NIfTI)
 - http://dirsig.cis.rit.edu/docs/new/affine.html
 - https://medium.com/geekculture/right-and-left-matrix-multiplication-d21947f195d8
 
@@ -39,7 +50,10 @@ import json
 nissl_id = int(sys.argv[1])
 ip_coords_folder = sys.argv[2]
 quicknii_json_file = sys.argv[3]
-op_folder = sys.argv[4]
+img_width = int(sys.argv[4])
+img_height = int(sys.argv[5])
+op_folder_allen = sys.argv[6]
+op_folder_babylon = sys.argv[7]
 
 if (nissl_id<0):
     print("mapping all")
@@ -50,6 +64,12 @@ if (nissl_id<0):
     nissl_ids.remove(5)
     nissl_ids.remove(77)
     nissl_ids.remove(167)
+
+    nissl_ids.remove(181)
+    nissl_ids.remove(205)
+    nissl_ids.remove(223)
+    nissl_ids.remove(225)
+    nissl_ids.remove(227)
 else:
     nissl_ids = [nissl_id]
 
@@ -86,6 +106,9 @@ for nissl_id in nissl_ids:
             point = [row[0], row[1]]
             input_pts.append(point)
 
+    # convert from left/right coordinate from left of image to left of animal
+    input_pts = [[img_width-pt[0], pt[1]] for pt in input_pts]
+
     pts = np.array(input_pts)
 
     # create normalized, homogeneous coords
@@ -96,6 +119,7 @@ for nissl_id in nissl_ids:
     ones = np.ones(N).reshape((N,1))
     pts = np.concatenate((pts, ones), axis=1)
     # print(np.shape(ones),np.shape(pts))
+    print("den", den)
     pts = pts.T/den
     pts = pts.T
     print("Pts normalized, homogeous:\n")
@@ -121,25 +145,42 @@ for nissl_id in nissl_ids:
                         [0, -25, 0, 0],
                         [13175, 7975, 0, 1]])
 
+    # to convert to Allen image space
     T_allen2 = np.array([[0.04, 0, 0, 0],
                         [0, 0.04, 0, 0],
                         [0, 0, 0.04, 0],
                         [0, 0, 0, 1]])
-    pts = pts@T_allen
-    pts = pts@T_allen2 # to convert to Allen image space
+
+    # To invert the y axis for visualization in Babylon js coordinates
+    T_allen3 = np.array([[1, 0, 0, 0],
+                        [0, -1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 320, 0, 1]])
+
+    pts_allen = pts@T_allen@T_allen2
+
+    pts_babylon = pts_allen@T_allen3
 
     print("\nPts in allen img space:\n")
-    print(pts)
+    print(pts_allen)
 
     print("\n")
-    print(np.amax(pts, axis=0), np.amin(pts, axis=0))
+    print(np.amax(pts_allen, axis=0), np.amin(pts_allen, axis=0))
 
     pts = list(pts)
+
     # write out coords after converting to int
-    op_file = op_folder+"/allen_img_coords_"+nis_idx+".csv"
-    with open(op_file, 'w', newline='\n') as csvfile:
+    op_file_allen = op_folder_allen+"/allen_img_coords_"+nis_idx+".csv"
+    with open(op_file_allen, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)
-        for idx, pt in enumerate(pts_physical):
+        for idx, pt in enumerate(pts_allen):
+            row = [idx, int(pt[0]), int(pt[1]), int(pt[2])]
+            writer.writerow(row)
+
+    op_file_babylon = op_folder_babylon+"/babylon_img_coords_"+nis_idx+".csv"
+    with open(op_file_babylon, 'w', newline='\n') as csvfile:
+        writer = csv.writer(csvfile)
+        for idx, pt in enumerate(pts_babylon):
             row = [idx, int(pt[0]), int(pt[1]), int(pt[2])]
             writer.writerow(row)
 
