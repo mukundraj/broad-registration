@@ -1,13 +1,16 @@
-// Reads in 3 csv files, 1 NRRD file and outputs 1 csv
-// Inputs - From positions, 
-//          to positions, 
-//          positions to be transformed and id'ed,
-//          NRRD file with label ids,
-//          slice_index in NRRD to sample from
-// Output - a list of label ids stored in a csv 
+// Reads in 'from' fiducials, 'to' fiducials, list of points to transform, and
+// produces list of transformed points using thin plate spline to interpolate
+// between fiducials.  Currently works in 2D. CSV files have serial number in
+// first column.
 
-// Usage example: make -j4 && ./cmapper ../input/F.csv ../input/T.csv ../input/points_list.csv ../input/common_coords.nrrd 1 output.csv
+// Inputs - Path to 'from' fiducials csv 
+//          Path to 'to' fiducials csv 
+//          Path to input positions to be transformed (csv file)
+//          ANY_STRING (to preserve legacy interface)
+//          ANY_INTEGER (to preserve legacy interface)
+//          Path to output.csv - output is a list transformed points in a csv 
 
+// Usage example: make -j4 && ./cmapper2 ./path/to/F.csv ./path/to/T.csv ./path/to/points_list.csv ANY_STRING ANY_INTEGER ./path/to/output.csv
 
 // References
 // - https://itk.org/Doxygen/html/Examples_2RegistrationITKv4_2ThinPlateSplineWarp_8cxx-example.html
