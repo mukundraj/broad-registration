@@ -69,15 +69,11 @@ if (nissl_id<0):
     # nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
     nissl_ids = [1, 3, 133, 135, 137, 139, 143]
     nissl_ids = [i for i in np.arange(1,228,2)]
+    nissl_ids = [i for i in np.arange(1,208,2)]
     nissl_ids.remove(5)
     nissl_ids.remove(77)
     nissl_ids.remove(167)
 
-    nissl_ids.remove(181)
-    nissl_ids.remove(205)
-    nissl_ids.remove(223)
-    nissl_ids.remove(225)
-    nissl_ids.remove(227)
 else:
     nissl_ids = [nissl_id]
 
@@ -93,6 +89,9 @@ img_dims = {}
 for item in qnii_data_unsorted:
     nissl_id = int(item["filename"][4:7])
     anch = item["anchoring"]
+    print(nissl_id)
+    if nissl_id > 208:
+        break
     qnii_data[nissl_id] = np.array([[anch[3], anch[4], anch[5]],
                                     [anch[6], anch[7], anch[8]],
                                     [anch[0], anch[1], anch[2]]])

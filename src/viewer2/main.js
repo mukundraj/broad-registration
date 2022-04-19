@@ -123,7 +123,7 @@ export async function create_babylon () {
 
     const nis_ids = [];
     const avoid_list = [5, 77, 167, 181, 205, 223, 225, 227];
-    for (let i=1; i<228; i++){ // change here to 228 for full data
+    for (let i=1; i<208; i++){ // change here to 228 for full data
         if (!avoid_list.includes(i) && (i%2==1))
             nis_ids.push(i);
         
