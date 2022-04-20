@@ -3,14 +3,6 @@ For coordinate normalization after accounting for ggplot induced padding
 
 Usage:
 
-python
-    topleft_x topleft_y
-    botright_x botright_y
-    topright_x topright_y
-    botleft_x botleft_y
-    bead_coords.csv
-    output_file.csv
-
 python s4a_coord_norm.py \
     inp: nissl_id \
     inp: path to corners csv file \
@@ -18,11 +10,6 @@ python s4a_coord_norm.py \
     out: path to folder to place normalized coord files
 
 Usage example:
-
-python src/python/scripts/v2/s4a_coord_norm.py \
-268 274 5497 5502 5497 274 274 5520 \
-/Users/mraj/Desktop/sample-hz/coords_143.csv \
-/Users/mraj/Desktop/sample-hz/input.csv
 
 python src/python/scripts/v2/s4a_coord_norm.py \
     -1 \
