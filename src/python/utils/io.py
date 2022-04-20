@@ -28,3 +28,23 @@ def get_corners_info(corners_csv):
 
 
     return corners
+
+""" Reads in filename mapper file to convert from between old to new nissl
+filenames(and vice versa) and returns two dicts.
+
+Created by Mukund on 2022-04-20
+"""
+def get_filenames_map(mapperfile_csv):
+    map_to_new_filename = {}
+    map_to_old_filename = {}
+    with open(mapperfile_csv, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        # next(reader)
+        for row in reader:
+            nissl_id = int(row[1])
+            if (nissl_id>0):
+                nis_id_str = str(nissl_id).zfill(3)
+                map_to_new_filename[row[0]] = nis_id_str
+                map_to_old_filename[nissl_id] = row[0]
+
+    return map_to_new_filename, map_to_old_filename
