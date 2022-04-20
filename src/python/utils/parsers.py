@@ -32,7 +32,8 @@ def get_np_array_from_tfm_string(tfm_aff):
     return tfm_aff
 
 """ Reads in histolozee project xml path and returns a dictionary with label
-colors mapped to integers
+colors mapped to integers and another dictionary with label colors mapped to
+ids from .zee file
 
 Created by Mukund on 2022-03-07
 """
