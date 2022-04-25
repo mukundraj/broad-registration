@@ -4,6 +4,7 @@ import math
 import numpy as np
 import src.python.utils.parsers as parsers
 import lxml.etree as ET
+import os
 
 def get_affine_transform(angle_deg, scaling, translation):
 
@@ -95,6 +96,44 @@ def get_histolozee_affine_tfm_contructed(hz_project_ss_file, nis_idx):
             t3 = get_affine_transform(rot_deg, [1, 1], [0, 0])
             t4 = get_affine_transform(0, [1, 1], [-center_i, -center_j])
             tfm_aff = t4@t3@t2@t1
+
+    return tfm_aff
+
+def get_histolozee_affine_tfm_contructed2(hz_project_ss_file, nis_idx):
+
+    tree = ET.parse(hz_project_ss_file)
+    root = tree.getroot()
+    tfm_aff = None
+    for slide in root.iter("slide"):
+        # print (slide.tag, slide.attrib)
+        # print(slide.get("image"))
+        # elm_idx = int(slide.get("image").split("_")[4])
+        img_relative_path = slide.get("image")
+        basename = os.path.basename(img_relative_path)
+        # elm_idx = slide.get("image").split("_")[1]
+        elm_idx = basename.split("_")[1] # invariant to dirname path
+        # print(elm_idx)
+        if (elm_idx.find(".tif")>0):    # to deal with nissl names witout 01 suffix
+            elm_idx = elm_idx.split(".")[0]
+        if (elm_idx==nis_idx):
+            print(elm_idx, nis_idx)
+            tfm = slide.find("transformation")
+            rot_deg = float(tfm[0].get("k"))
+            scale_i = float(tfm[1].get("i"))
+            scale_j = float(tfm[1].get("j"))
+            translation_i = float(tfm[3].get("i"))
+            translation_j = float(tfm[3].get("j"))
+            center_i = float(tfm[4].get("i"))
+            center_j = float(tfm[4].get("j"))
+
+            print(f"Transforms for id {elm_idx}: rot {rot_deg}, scale_i {scale_i}, scale_j {scale_j}, center_i {center_i}, center_j {center_j} translation {translation_i} {translation_j}")
+            t1 = get_affine_transform(0, [1, 1], [center_i,center_j])
+            t2 = get_affine_transform(0, [scale_i, scale_j], [0, 0])
+            t3 = get_affine_transform(rot_deg, [1, 1], [0, 0])
+            t4 = get_affine_transform(0, [1, 1], [-center_i, -center_j])
+            t5 = get_affine_transform(0, [1, 1], [-translation_i, -translation_j])
+
+            tfm_aff = t5@t4@t3@t2@t1
 
     return tfm_aff
 

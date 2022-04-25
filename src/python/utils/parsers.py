@@ -71,7 +71,10 @@ def get_tfm_from_hz_xml(hz_project_file, nis_idx):
         # print (slide.tag, slide.attrib)
         img_relative_path = slide.get("image")
         basename = os.path.basename(img_relative_path)
-        elm_idx = slide.get("image").split("_")[1]
+        # elm_idx = slide.get("image").split("_")[1]
+        elm_idx = basename.split("_")[1] # invariant to dirname path
+        if (elm_idx.find(".tif")>0):    # to deal with nissl names witout 01 suffix
+            elm_idx = elm_idx.split(".")[0]
         if (int(elm_idx)==int(nis_idx)):
             # print("elm_idx:", elm_idx)
             tfm = slide.find("transformation")
@@ -80,3 +83,29 @@ def get_tfm_from_hz_xml(hz_project_file, nis_idx):
 
     return tfm_aff
 
+
+""" Reads in histolozee ss (slide-seq) project xml and nissl idx and returns
+stored corresponding affine transform.
+
+Created by Mukund on 2022-04-21
+"""
+def get_tfm_from_hz_ss_xml(hz_project_file, nis_idx):
+
+    tree = ET.parse(hz_project_file)
+    root = tree.getroot()
+
+
+    tfm_aff = None
+    for slide in root.iter("slide"):
+        # print (slide.tag, slide.attrib)
+        img_relative_path = slide.get("image")
+        basename = os.path.basename(img_relative_path)
+        elm_idx = basename.split("_")[1]
+        # elm_idx = slide.get("image").split("_")[1]
+        if (int(elm_idx)==int(nis_idx)):
+            # print("elm_idx:", elm_idx)
+            tfm = slide.find("transformation")
+            tfm = str(tfm[5])
+            tfm_aff = get_np_array_from_tfm_string(tfm)
+
+    return tfm_aff

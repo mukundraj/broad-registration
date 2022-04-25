@@ -48,3 +48,23 @@ def get_filenames_map(mapperfile_csv):
                 map_to_old_filename[nissl_id] = row[0]
 
     return map_to_new_filename, map_to_old_filename
+
+
+""" Reads in filename mapper file and returns dict containing img dimensions.
+The mapper file is same file used to map between old and new nissl names, with
+additional columns added later storing corresponding image dimensions.
+
+Created by Mukund on 2022-04-20
+"""
+def get_img_dimensions(mapperfile_csv):
+
+    img_dims = {}
+    with open(mapperfile_csv, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        # next(reader)
+        for row in reader:
+            nissl_id = int(row[1])
+            if (nissl_id>0):
+                img_dims[nissl_id] = [int(row[2]), int(row[3])]
+
+    return img_dims
