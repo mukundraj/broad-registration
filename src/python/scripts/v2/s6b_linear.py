@@ -35,6 +35,14 @@ python src/python/scripts/v2/s6b_linear.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_babylon_coords
 
+python src/python/scripts/v2/s6b_linear.py \
+    143 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_qnii_nlaligned_coords  \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png_copy/QuickNii_4-17-22-mod.json \
+    4096 3606 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_babylon_coords
+
 Created by Mukund on 2022-03-29
 
 References:
@@ -103,7 +111,8 @@ for nissl_id in nissl_ids:
 
     # read bead positions
     nis_idx = str(nissl_id).zfill(3)
-    coords_file = ip_coords_folder+"/chuck_sp_img_coords_"+str(nis_idx)+".csv"
+    # coords_file = ip_coords_folder+"/chuck_sp_img_coords_"+str(nis_idx)+".csv"
+    coords_file = ip_coords_folder+"/qnii_coords_"+str(nis_idx)+".csv"
     input_pts = []
     with open(coords_file, newline='\n') as csvfile:
         reader = csv.reader(csvfile)
