@@ -5,9 +5,24 @@ Usage:
 
 python input_csv_file output_png_file
 
+python render_tfmed_poses.py \
+    inp: nissl_id \
+    inp: path to file mapping old and new nissl names (needed to determine labelmap nrrd filenames)
+    inp: input_folder \
+    out: output_folder 
+
 Usage example:
 
 python src/python/gists/render_tfmed_poses.py /Users/mraj/Desktop/sample-hz/output.csv /Users/mraj/Desktop/sample-hz/example.png
+
+python src/python/gists/render_tfmed_poses.py \
+    65 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_segid \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_segid
+
+
+Created updated version on 2022-04-22
 
 """
 
@@ -16,6 +31,10 @@ import math
 import numpy as np
 import csv
 import sys
+from pathlib import Path
+path_root = Path(__file__).parents[3]
+sys.path.append(str(path_root))
+import src.python.utils.io as io
 
 def draw(surface, pts, radius, colors):
     for i, pt in enumerate(pts):
@@ -29,7 +48,28 @@ def draw(surface, pts, radius, colors):
         ctx.set_source_rgb(colors[i][0], colors[i][1], colors[i][2])
         ctx.stroke()
 
-WIDTH, HEIGHT = 3253, 4643
+
+nissl_id = int(sys.argv[1])
+mapperfile_csv = sys.argv[2]
+ip_folder = sys.argv[3]
+op_folder = sys.argv[4]
+
+img_dims = io.get_img_dimensions(mapperfile_csv)
+nis_idx = str(nissl_id).zfill(3)
+
+input_csv_file = f'{ip_folder}/bead_to_segid_{nis_idx}.csv'
+op_file = f'{op_folder}/bead_to_segid_{nis_idx}.png'
+
+print(input_csv_file)
+
+# WIDTH, HEIGHT = 3253, 4643
+WIDTH, HEIGHT = img_dims[nissl_id][0], img_dims[nissl_id][1]
+# WIDTH, HEIGHT = 1728, 1728
+# WIDTH, HEIGHT = 2048, 2048
+# WIDTH, HEIGHT = 4096, 3606
+
+print("WIDTH:", WIDTH, "HEIGHT:", HEIGHT)
+
 
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
 ctx = cairo.Context(surface)
@@ -69,7 +109,6 @@ radius = 5
 
 # surface.write_to_png("example.png")  # Output to PNG
 
-input_csv_file = sys.argv[1]
 input_pts = []
 labels = []
 with open(input_csv_file, newline='\n') as csvfile:
@@ -77,14 +116,14 @@ with open(input_csv_file, newline='\n') as csvfile:
     for row in reader:
         # print(row['first_name'], row['last_name'])
         # row = list(map(float, row))
-        point = [int(row[2]), int(row[3])]
+        point = [int(float(row[2])), int(float(row[3]))]
         input_pts.append(point)
         labels.append(int(row[0]))
 
 # input_pts = np.array(input_pts)
 # print(input_pts)
 xmax, ymax = np.array(input_pts).max(axis=0)
-print(xmax,ymax)
+print('xmax:', xmax,'ymax:', ymax)
 
 colors = []
 for label in labels:
@@ -98,5 +137,4 @@ for label in labels:
 
 draw(surface, input_pts, radius, colors)
 
-op_file = sys.argv[2]
 surface.write_to_png(op_file)  # Output to PNG
