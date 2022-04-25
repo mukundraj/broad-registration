@@ -4,18 +4,6 @@ visually verifying output.
 
 Usage:
 
-python script.py\
-    nis_idx (nissl slide index)\
-    path to histolozee project xml with slide-seq initial transforms\
-    path to folder with transform files ({nis_idx}_f.csv {nis_idx}_t.csv)\
-    path to histolozee project xml with nissl initial transforms\
-    path to labelmap nrrds folder (lmap{nis_idx}.nrrd)\
-    path to slide seq scaled images\
-    path to nissl original images\
-    path to mapper to chuck segment ids \
-    path to input csv with input bead coordinates as fraction of image width/height\
-    path to output.csv - an output filename to store segment ids\
-
 python s4_get_region_id.py \
     inp: nissl_id \
     inp: path to slide-seq histolozee .zee file
@@ -29,18 +17,6 @@ python s4_get_region_id.py \
     out: path to output folder to store csv files mapping beads to segment ids
 
 Usage example:
-
-python src/python/scripts/v2/s4_get_region_id.py \
-    143 \
-    "/Users/mraj/Desktop/sample-hz/hz-project-ss.zee" \
-    "/Users/mraj/Desktop/sample-hz/transforms" \
-    "/Users/mraj/Desktop/sample-hz/sample.zee" \
-    "/Users/mraj/Desktop/sample-hz/labelmaps" \
-    "/Users/mraj/Desktop/sample-hz/slide_seq_imgs_rescaled" \
-    "/Users/mraj/Desktop/sample-hz"\
-    "/Users/mraj/Desktop/sample-hz/mapper_to_id.pickle" \
-    "/Users/mraj/Desktop/sample-hz/input.csv" \
-    "/Users/mraj/Desktop/sample-hz/output.csv"
 
 python src/python/scripts/v2/s4_get_region_id.py \
     -1 \
