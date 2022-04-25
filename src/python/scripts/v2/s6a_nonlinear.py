@@ -5,24 +5,24 @@ Usage:
 
 python s6a_nonlinear.py \
     nissl ids to process \
-    path to VisuAlign json \
-    path to input images \
+    REMOVE \
+    REMOVE \
     path to bead coords to be transformed \
     path to slicer fiducials folder \
-    path for intrim fiducial files converted to csv format \
-    path to output images \
+    REMOVE \
+    REMOVE \
     path to output transformed bead coords
 
 Usage example:
 
 python src/python/scripts/v2/s6a_nonlinear.py \
     141 \
-    /Users/mraj/Desktop/transformed_hz_png/March23_Full_CCF.json \
-    /Users/mraj/Desktop/transformed_hz_png \
+    REMOVE \
+    REMOVE \
     /Users/mraj/Desktop/forgif/chuck_space_img_coords \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_fiducial_csvs \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_fiducial_csvs \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_visualigned_imgs \
+    REMOVE \
+    REMOVE \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_qnii_nlaligned_coords
 
 Created by Mukund on 2022-03-30
@@ -41,12 +41,12 @@ import json
 import subprocess
 
 nissl_id = int(sys.argv[1])
-visualign_json =  sys.argv[2]
-input_imgs = sys.argv[3]
+# visualign_json =  sys.argv[2]
+# input_imgs = sys.argv[3]
 chuck_space_coords_folder = sys.argv[4]
 tfm_folder = sys.argv[5]
-intrim_fiducial_folder = sys.argv[6]
-op_imgs_folder = sys.argv[7]
+# intrim_fiducial_folder = sys.argv[6]
+# op_imgs_folder = sys.argv[7]
 op_qnii_coords_folder = sys.argv[8]
 
 if (nissl_id<0):
@@ -73,21 +73,21 @@ print (nissl_id)
 # read json and create csv fiducial files for cmapper
 
 # read json
-f = open(visualign_json)
+# f = open(visualign_json)
 
 # returns JSON object as
 # a dictionary
-qnii_data_unsorted = json.load(f)["slices"]
+# qnii_data_unsorted = json.load(f)["slices"]
 
-qnii_data = {}
+# qnii_data = {}
 
-for item in qnii_data_unsorted:
-    try:
-        nissl_id = int(item["filename"][4:7])
-        markers = item["markers"]
-        qnii_data[nissl_id] = markers
-    except:
-        print("VisuAlign transform missing for :", nissl_id)
+# for item in qnii_data_unsorted:
+#     try:
+#         nissl_id = int(item["filename"][4:7])
+#         markers = item["markers"]
+#         qnii_data[nissl_id] = markers
+#     except:
+#         print("VisuAlign transform missing for :", nissl_id)
 
     # img_dims[nissl_id] = {"height": item["height"], "width":item["width"]}
 # print(qnii_data_unsorted)
