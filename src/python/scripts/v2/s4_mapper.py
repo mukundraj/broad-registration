@@ -1,42 +1,31 @@
 """ Mapper function that reads in bead coordinates and transforms to chuck
 (aligned nissl) space.
- 
+
 Usage:
 
 python script.py\
-    nis_idx (nissl slide index) or negative value to process all images\
-    path to corners file \
-    path to folder with bead coordinates files \
-    img_width_ss_rescaled img_height_ss_rescaled \
-    path to histolozee ss project xml with slide-seq initial transforms\
-    img_width_ss_tfmed img_height_ss_tfmed \
-    path to folder with transform files ({nis_idx}_f.csv {nis_idx}_t.csv)\
-    img_width_nis_tfmed img_height_nis_tfmed \
-    path to folder to store outputs \
+    inp: nis_idx (nissl slide index) or negative value to process all images\
+    inp: path to corners file \
+    inp: path to folder with bead coordinates files \
+    inp: img_width_ss_rescaled img_height_ss_rescaled \
+    inp: path to histolozee ss project xml with slide-seq initial transforms\
+    inp: img_width_ss_tfmed img_height_ss_tfmed \
+    inp: path to folder with transform files ({nis_idx}_f.csv {nis_idx}_t.csv)\
+    inp inp: img_width_nis_tfmed img_height_nis_tfmed \
+    out: path to folder to store outputs \
 
 Usage example:
 
 python src/python/scripts/v2/s4_mapper.py \
-    45 \
+    -1 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
-    /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/bead_coords \
     1728 1728 \
-    "/Users/mraj/Desktop/sample-hz/hz-project-ss.zee" \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee \
     2048 2048 \
-    "/Users/mraj/Desktop/forgif/transforms" \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/transforms \
     4096 3606 \
-    /Users/mraj/Desktop/forgif/chuck_space_img_coords \
-
-python src/python/scripts/v2/s4_mapper.py \
-    45 \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
-    /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords \
-    1728 1728 \
-    "/Users/mraj/Desktop/sample-hz/hz-project-ss.zee" \
-    2048 2048 \
-    "/Users/mraj/Desktop/forgif/transforms" \
-    4096 3606 \
-    /Users/mraj/Desktop/forgif/fordebug \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_space_img_coords
 
 Created by Mukund on 2022-03-21
 
