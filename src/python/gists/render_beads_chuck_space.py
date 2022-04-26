@@ -23,6 +23,14 @@ python src/python/gists/render_beads_chuck_space.py \
     /Users/mraj/Desktop/forgif/chuck_space_recons_img \
     /Users/mraj/Desktop/forgif/overlapped
 
+python src/python/gists/render_beads_chuck_space.py \
+    -1 \
+    4096 3606 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_space_img_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_space_recons_img \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_space_overlapped
+
 
 """
 from pathlib import Path
