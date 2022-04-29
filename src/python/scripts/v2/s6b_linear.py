@@ -6,7 +6,7 @@ python s6b_linear.py \
     inp: nissl ids to process \
     inp: path to input csv files with chuck space image coordinates \
     inp: quick nii json file with transform parameters \
-    out: path to output.csv files in allen coordinates
+    out: path to output.csv files in allen coordinates \
     out: path to output.csv files visualization in babylon
 
 Usage example(s):
@@ -99,7 +99,7 @@ for nissl_id in nissl_ids:
             input_pts.append(point)
 
     # convert from left/right coordinate from left of image to left of animal
-    input_pts = [[img_width-pt[0], pt[1]] for pt in input_pts]
+    # input_pts = [[img_width-pt[0], pt[1]] for pt in input_pts]
 
     pts = np.array(input_pts)
 
@@ -144,14 +144,14 @@ for nissl_id in nissl_ids:
                         [0, 0, 0, 1]])
 
     # To invert the y axis for visualization in Babylon js coordinates
-    T_allen3 = np.array([[1, 0, 0, 0],
+    T_allen3 = np.array([[-1, 0, 0, 0],
                         [0, -1, 0, 0],
                         [0, 0, 1, 0],
-                        [0, 320, 0, 1]])
+                        [528, 320, 0, 1]])
 
     pts_allen = pts@T_allen@T_allen2
 
-    pts_babylon = pts_allen@T_allen3
+    # pts_babylon = pts_allen@T_allen3
 
     print("\nPts in allen img space:\n")
     print(pts_allen)
@@ -169,12 +169,12 @@ for nissl_id in nissl_ids:
             row = [idx, int(pt[0]), int(pt[1]), int(pt[2])]
             writer.writerow(row)
 
-    op_file_babylon = op_folder_babylon+"/babylon_img_coords_"+nis_idx+".csv"
-    with open(op_file_babylon, 'w', newline='\n') as csvfile:
-        writer = csv.writer(csvfile)
-        for idx, pt in enumerate(pts_babylon):
-            row = [idx, int(pt[0]), int(pt[1]), int(pt[2])]
-            writer.writerow(row)
+    # op_file_babylon = op_folder_babylon+"/babylon_img_coords_"+nis_idx+".csv"
+    # with open(op_file_babylon, 'w', newline='\n') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     for idx, pt in enumerate(pts_babylon):
+    #         row = [idx, int(pt[0]), int(pt[1]), int(pt[2])]
+    #         writer.writerow(row)
 
 
 
