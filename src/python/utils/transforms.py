@@ -5,6 +5,126 @@ import numpy as np
 import src.python.utils.parsers as parsers
 import lxml.etree as ET
 import os
+import csv
+import subprocess
+import json
+
+def chuck_sp_to_allen3d(in_pts, nissl_id, tfm_folder, qnii_json_file, tmp_storage):
+    """
+    Reads in points in chuck space and returns points transformed to Allen CCF
+    space.
+
+    """
+    nis_id_str = str(nissl_id).zfill(3)
+    # write back negative
+    intrim_pts_file = f'{tmp_storage}/chuck_space_coords_neg_{nis_id_str}.csv'
+    with open(intrim_pts_file, 'w', newline='\n') as csvfile:
+        writer = csv.writer(csvfile)
+        for row in in_pts:
+            # print (row)
+            writer.writerow([-row[0], -row[1]])
+
+    from_fiducials_file = tfm_folder+"/"+str(nissl_id)+"_f.csv"
+    to_fiducials_file = tfm_folder+"/"+str(nissl_id)+"_t.csv"
+    # nrrd_path = labelmap_folder+"/lmap_"+nis_idx+".nrrd"
+    print(tmp_storage)
+    temp_output_csv_file = tmp_storage+"/qnii_coords_"+nis_id_str+".csv"
+    # call cpp script to transform output of previous step with fiduals/TPS, sample from nrrd and write output
+    subprocess.run(["./build/cmapper2",
+                    from_fiducials_file,
+                    to_fiducials_file,
+                    intrim_pts_file,
+                    "None",
+                    nis_id_str,
+                    temp_output_csv_file])
+
+    warped_coords = []
+    with open(temp_output_csv_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            # print(row['first_name'], row['last_name'])
+            row = list(map(float, row))
+            point = [-row[0], -row[1]]
+            warped_coords.append(point)
+
+    # moving on to qnii transformation
+    f = open(qnii_json_file)
+
+    # returns JSON object as
+    # a dictionary
+    qnii_data_unsorted = json.load(f)["slices"]
+    qnii_data = {}
+    img_dims = {}
+
+    for item in qnii_data_unsorted:
+        nissl_id_inloop = int(item["filename"][4:7])
+        anch = item["anchoring"]
+        # print(nissl_id)
+        if nissl_id_inloop > 208:
+            break
+        qnii_data[nissl_id_inloop] = np.array([[anch[3], anch[4], anch[5]],
+                                        [anch[6], anch[7], anch[8]],
+                                        [anch[0], anch[1], anch[2]]])
+        img_dims[nissl_id_inloop] = {"height": item["height"], "width":item["width"]}
+
+    img_width = 4096 # fixme - hardcoding
+    img_width = 3096
+
+    input_pts = warped_coords
+    # convert from left/right coordinate from left of image to left of animal
+    # input_pts = [[img_width-pt[0], pt[1]] for pt in input_pts] # checkme - why this is not needed here but needed in other parts e.g mapper/get get id code
+
+    pts = np.array(input_pts)
+
+    # create normalized, homogeneous coords
+    # pts = pts/np.array
+    print ("width: ", img_dims[nissl_id]["width"], "height:", img_dims[nissl_id]["height"])
+    den = np.array([img_dims[nissl_id]["width"], img_dims[nissl_id]["height"], 1]).reshape((3,1))
+    N = len(pts)
+    ones = np.ones(N).reshape((N,1))
+    pts = np.concatenate((pts, ones), axis=1)
+    # print(np.shape(ones),np.shape(pts))
+    # print("den", den)
+    pts = pts.T/den
+    pts = pts.T
+    # print("Pts normalized, homogeous:\n")
+    # print(pts)
+    # print("\n")
+    # print(np.amax(pts, axis=0), np.amin(pts, axis=0))
+
+    pts = pts@qnii_data[nissl_id]
+    # print("\nPts in physical space:\n")
+    # print(pts)
+    pts_physical = pts
+    print("\n")
+    print(np.amax(pts, axis=0), np.amin(pts, axis=0))
+
+    # transform to allen space
+    ones = np.ones(N).reshape((N,1))
+    pts = np.concatenate((pts, ones), axis=1)
+
+    # print("\nPts in physical space homogenized:\n")
+    # print(pts)
+    T_allen = np.array([[0, 0, 25, 0],
+                        [-25, 0, 0, 0],
+                        [0, -25, 0, 0],
+                        [13175, 7975, 0, 1]])
+
+    # to convert to Allen image space
+    T_allen2 = np.array([[0.04, 0, 0, 0],
+                        [0, 0.04, 0, 0],
+                        [0, 0, 0.04, 0],
+                        [0, 0, 0, 1]])
+
+    pts_allen = pts@T_allen@T_allen2
+
+    print("\n Allen coords max and min")
+    print(np.amax(pts_allen, axis=0), np.amin(pts_allen, axis=0))
+    print("")
+
+    pts_allen = list(pts_allen)
+    return pts_allen
+
 
 def get_affine_transform(angle_deg, scaling, translation):
 
