@@ -1,6 +1,5 @@
-
-import {get_data} from './loaders.js'
-import {draw_bounding_box} from './vis/helpers.js'
+import {get_data_with_rgb} from '../loaders.js'
+import {draw_bounding_box} from './helpers.js'
 // import 'https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js'
 // import "https://assets.babylonjs.com/generated/Assets.js"
 import "https://preview.babylonjs.com/ammo.js"
@@ -16,85 +15,19 @@ import "https://preview.babylonjs.com/babylon.js"
 // import "https://preview.babylonjs.com/gui/babylon.gui.min.js"
 // import "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"
 
-export function main(){
 
-    console.log("in main");
-    get_data("data/babylon_coords/babylon_img_coords_143.csv")
-
-    console.log("done")
-
-
-    var canvas = document.getElementById("renderCanvas");
-
-    var startRenderLoop = function (engine, canvas) {
-        engine.runRenderLoop(function () {
-            if (sceneToRender && sceneToRender.activeCamera) {
-                sceneToRender.render();
-            }
-        });
-    }
-
-    var engine = null;
-    var scene = null;
-    var sceneToRender = null;
-    var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
-
-    const createScene =  () => {
-        const scene = new BABYLON.Scene(engine);
-
-        const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 3, new BABYLON.Vector3(0, 0, 0));
-        camera.attachControl(canvas, true);
-
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0));
-
-        const box = BABYLON.MeshBuilder.CreateBox("box", {});
-
-        var pcs= new BABYLON.PointsCloudSystem("pcs", 5, scene) 
-        //pcs.mesh.material.pointSize = 1;
-
-        pcs.addPoints(10000);
-        pcs.buildMeshAsync();
-
-        return scene;
-    }
-    window.initFunction = async function() {
-
-
-        var asyncEngineCreation = async function() {
-            try {
-                return createDefaultEngine();
-            } catch(e) {
-                console.log("the available createEngine function failed. Creating the default engine instead");
-                return createDefaultEngine();
-            }
-        }
-
-        window.engine = await asyncEngineCreation();
-        if (!engine) throw 'engine should not be null.';
-        startRenderLoop(engine, canvas);
-        window.scene = createScene();};
-    initFunction().then(() => {sceneToRender = scene                    
-    });
-
-    // Resize
-    window.addEventListener("resize", function () {
-        engine.resize();
-    });
-}
-
-
-let myFunc = function (particle, i, s){
-    particle.position = new BABYLON.Vector3(pts[s]["x"], pts[s]["y"], pts[s]["z"]);
-    // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
-    particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
-}
+// let myFunc = function (particle, i, s){
+//     particle.position = new BABYLON.Vector3(pts[s]["x"], pts[s]["y"], pts[s]["z"]);
+//     // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
+//     particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
+// }
 
 let makeFunc = function(inps){
     var pts = inps;
     function myFunc2(particle, i, s){
         particle.position = new BABYLON.Vector3(pts[s]["x"], pts[s]["y"], pts[s]["z"]);
         // particle.position = new BABYLON.Vector3(0.5+0.25*Math.random(), i/5000, 0.25*Math.random());
-        particle.color = new BABYLON.Color4(Math.random(), Math.random(), Math.random(), Math.random());
+        particle.color = new BABYLON.Color4(pts[s]["r"], pts[s]["g"], pts[s]["b"], 1.0);
 
     }
     return myFunc2;
@@ -122,7 +55,7 @@ export async function create_babylon () {
     let data_map = new Map();
 
     const nis_ids = [];
-    const avoid_list = [5, 77, 167, 181, 205, 223, 225, 227];
+    const avoid_list = [5, 77, 167];
     for (let i=1; i<208; i++){ // change here to 228 for full data
         if (!avoid_list.includes(i) && (i%2==1))
             nis_ids.push(i);
@@ -135,8 +68,8 @@ export async function create_babylon () {
     // for (const i of nis_ids){
     nis_ids.forEach(function (nisid, idx) {
         let zpadded_i = zeroPad(nisid, 3);
-        let file = `data/babylon_img_coords_${zpadded_i}.csv`;
-        get_data_promises.push(get_data(file));
+        let file = `data/bead_ccf_rgb/babylon_coords_rgb_${zpadded_i}.csv`;
+        get_data_promises.push(get_data_with_rgb(file));
     });
 
     let all_slice_data = await Promise.all(get_data_promises);

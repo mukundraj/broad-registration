@@ -27,6 +27,32 @@ export async function get_data(filename){
     
 }
 
+export async function get_data_with_rgb(filename){
+
+    const div = d3.selectAll("div");
+    console.log(div);
+
+
+    // d3.csv("data/allen_img_coords_143.csv", function(data) {
+    // console.log(data.length);
+    // for (var i = 0; i < data.length; i++) {
+    //     console.log(data[i]);
+    // }
+
+    let pts = {"a":1};
+    await d3.text(filename).then(function(data){
+        data = "x,y,z,r,g,b\n" + data;
+        var newData = d3.csvParse(data);
+        console.log(newData.length);
+        pts = newData;
+        console.log(pts.length)
+        return (pts)
+    });
+
+    console.log("end");
+    return (pts);
+    
+}
 
 // References
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
