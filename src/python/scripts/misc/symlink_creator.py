@@ -15,6 +15,11 @@ python src/python/scripts/misc/symlink_creator.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_babylon_coords \
     babylon_img_coords
 
+python src/python/scripts/misc/symlink_creator.py \
+    /Users/mraj/Desktop/work/projects/active/broad-registration/src/viewer2/data/bead_ccf_rgb \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_rgb \
+    babylon_coords_rgb
+
 
 Created by Mukund on 2022-04-10
 
