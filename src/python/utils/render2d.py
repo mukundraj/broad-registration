@@ -31,3 +31,13 @@ def draw_disk(surface, pts, radius, colors):
             # ctx.set_source_rgb(1, 1, 1)
             ctx.set_source_rgb(colors[i][0], colors[i][1], colors[i][2])
             ctx.stroke()
+
+
+def draw_image(pts, width, height, op_file, colors =[[0.5, 0.5, 0.5]], radius=2):
+
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+    # ctx = cairo.Context(surface)
+    # colors =[[0.5, 0.5, 0.5]]
+    # radius = 2
+    draw_disk(surface, pts, radius, colors)
+    surface.write_to_png(op_file)  # Output to PNG
