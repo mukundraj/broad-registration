@@ -12,7 +12,7 @@ python s7_bead_to_ccf_labels.py \
 
 Usage example:
 
-python src/python/scripts/v2/s7_bead_to_ccf_labels.py \
+python src/python/scripts/v2/s7_bead_to_ccf_anno.py \
     -1 \
     annotation/ccf_2017/annotation_25.nrrd \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords \

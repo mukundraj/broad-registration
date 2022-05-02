@@ -16,7 +16,7 @@ python script.py\
 
 Usage example:
 
-python src/python/scripts/v2/s4_mapper.py \
+python src/python/scripts/v2/s3_mapper.py \
     -1 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/bead_coords \
