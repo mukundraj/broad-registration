@@ -83,8 +83,9 @@ for nissl_id in nissl_ids:
             z = int(row[3])
             if (x>=readdata.shape[0] or y>= readdata.shape[1] or z>= readdata.shape[2] or \
                     x<0 or y<0 or z<0):
-                continue
-            id = readdata[x, y, z]
+                id = 0
+            else:
+                id = readdata[x, y, z]
             # if (id>0):
             if (True):
                 name = name_map[id]
