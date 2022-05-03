@@ -25,7 +25,7 @@ python src/python/scripts/v2/s3_mapper.py \
     2048 2048 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/transforms \
     4096 3606 \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_space_img_coords
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds
 
 Created by Mukund on 2022-03-21
 
@@ -134,7 +134,6 @@ for nissl_id in nissl_ids:
     #                                                        0,
     #                                                        extents,
     #                                                        input_pts)
-    
 
 
     # get puck rescaled image coords

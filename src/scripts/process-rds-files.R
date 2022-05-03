@@ -58,7 +58,8 @@ for (i in 1:length(files))
   
   # Optional but remove outright beads with less than 150 UMU's
   UMI_cutoff_bcds = names(which(
-    colSums(object_seurat@assays$Spatial@counts) > 150
+    # colSums(object_seurat@assays$Spatial@counts) > 150
+    colSums(object_seurat@assays$Spatial@counts) > -1
   ))
   
   coords = object_seurat@images$image@coordinates[UMI_cutoff_bcds, ]

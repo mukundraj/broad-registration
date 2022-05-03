@@ -15,9 +15,9 @@ Usage example:
 python src/python/scripts/v2/s7_bead_to_ccf_anno.py \
     -1 \
     annotation/ccf_2017/annotation_25.nrrd \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_rgb
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_allen_coords_allbds \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_rgb_allbds
 
 References:
 
@@ -65,14 +65,16 @@ rspc = ReferenceSpaceCache(resolution, reference_space_key, manifest='manifest.j
 # ID 1 is the adult mouse structure graph
 tree = rspc.get_structure_tree(structure_graph_id=1)
 name_map = tree.get_name_map()
+name_map[0] = "Cerebrum" # just placeholder value - can be any one of valid allen annotation string
 
 for nissl_id in nissl_ids:
     print(f'processing {nissl_id}')
     nis_id_str = str(nissl_id).zfill(3)
     allen_coods_file = f'{allen_coords_folder}/allen_img_coords_{nis_id_str}.csv'
-    in_beads = []
-    in_beads_names = []
-    in_beads_ids = []
+    all_beads = []
+    all_beads_names = []
+    all_beads_ids = []
+    discard_status = []
     with open(allen_coods_file, newline='\n') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
@@ -83,7 +85,8 @@ for nissl_id in nissl_ids:
                     x<0 or y<0 or z<0):
                 continue
             id = readdata[x, y, z]
-            if (id>0):
+            # if (id>0):
+            if (True):
                 name = name_map[id]
                 # structure = tree.get_structures_by_name([name])
                 # allen_id = structure[0]['acronym']
@@ -92,38 +95,40 @@ for nissl_id in nissl_ids:
                 # row = list(map(float, row))
                 # point = [-row[0], -row[1]]
                 # in_pts.append(point)
-                in_beads.append([x,y,z])
-                in_beads_names.append(name)
-                in_beads_ids.append(id)
+                all_beads.append([x,y,z])
+                all_beads_names.append(name)
+                all_beads_ids.append(id)
+            if (id>0):
+                discard_status.append("F")
+            else:
+                discard_status.append("T")
 
-    in_beads_structures = tree.get_structures_by_name(in_beads_names)
-    in_beads_acronyms = list(map(lambda x: x["acronym"], in_beads_structures))
-    in_beads_rgb = list(map(lambda x: x["rgb_triplet"], in_beads_structures))
+    all_beads_structures = tree.get_structures_by_name(all_beads_names)
+    all_beads_acronyms = list(map(lambda x: x["acronym"], all_beads_structures))
+    all_beads_rgb = list(map(lambda x: x["rgb_triplet"], all_beads_structures))
     in_beads_babylon = []
     # print(in_beads_acronyms)
     # print(len(in_beads))
+    for idx, disc_stat in enumerate(discard_status):
+        if (disc_stat == "T"):
+            all_beads_structures[idx] = "NA"
+            all_beads_acronyms[idx] = "NA"
+            all_beads_rgb[idx] = [0,0,0]
+        else:
+            in_beads_babylon.append([all_beads[idx][0], 320-all_beads[idx][1], 456-all_beads[idx][2], all_beads_rgb[idx][0], all_beads_rgb[idx][1], all_beads_rgb[idx][2]])
 
     op_file = f'{op_folder_anno}/allen_anno_data_{nis_id_str}.csv'
     with open(op_file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)
-        for idx, row in enumerate(in_beads):
-            line = [row[0], row[1], row[2], in_beads_acronyms[idx], in_beads_names[idx], in_beads_rgb[idx][0], in_beads_rgb[idx][1], in_beads_rgb[idx][2]]
+        for idx, row in enumerate(all_beads):
+            line = [row[0], row[1], row[2], all_beads_acronyms[idx], all_beads_names[idx], all_beads_rgb[idx][0], all_beads_rgb[idx][1], all_beads_rgb[idx][2], discard_status[idx]]
             writer.writerow(line)
-            in_beads_babylon.append([row[0], 320-row[1], 456-row[2]])
 
-    # # To invert the y axis for visualization in Babylon js coordinates
-    # T_babylon = np.array([[1, 0, 0, 0],
-    #                     [0, -1, 0, 0],
-    #                     [0, 0, 1, 0],
-    #                     [0, 320, 0, 1]])
-    # in_beads = np.array(in_beads)
-
-    # in_beads_babylon = in_beads.T@T_babylon
 
     op_file = f'{op_folder_rgb}/babylon_coords_rgb_{nis_id_str}.csv'
     with open(op_file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)
         for idx, row in enumerate(in_beads_babylon):
-            line = [row[0], row[1], row[2], round(float(in_beads_rgb[idx][0])/255,2), round(float(in_beads_rgb[idx][1])/255, 2) , round(float(in_beads_rgb[idx][2])/255,2)]
+            line = [row[0], row[1], row[2], round(float(row[3])/255,2), round(float(row[4])/255, 2) , round(float(row[5])/255,2)]
             writer.writerow(line)
 

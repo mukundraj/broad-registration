@@ -7,17 +7,17 @@ python s6a_nonlinear.py \
     inp: nissl ids to process \
     inp: path to bead coords to be transformed \
     inp: path to slicer fiducials folder \
-    inp: path for storing intrim chuck space coords with sign change \
+    out: path for storing intrim chuck space coords with sign change \
     out: path to output transformed bead coords
 
 Usage example:
 
 python src/python/scripts/v2/s6a_nonlinear.py \
     -1 \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_space_img_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_fiducial_csvs \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_intrim_for_nlalign \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_nlaligned_coords
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s6_register_to_allen/s6_nlaligned_coords_allbds
 
 References:
 
