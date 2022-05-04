@@ -3,5 +3,41 @@
 ## 
 ## Created by Mukund on 2022-05-03
 
+install.packages("anndata")
+library(qs)
+library(anndata)
+
+
+setwd("/home/mraj/Desktop/work/projects/active/broad-registration")
+data_path <- "/home/mraj/data/forMukund/2022-05-03/11_allSeurats_CCF.qs"
+
 
 # read in Seurat object
+df1 = qread(data_path)
+ad_counts_1 <- AnnData(X = df1[[1]]@assays$Spatial@counts )
+ad_coords_1 <- AnnData(X = df1[[1]]@images$image@coordinates )
+
+ad_counts_2 <- AnnData(X = df1[[2]]@assays$Spatial@counts )
+ad_coords_2 <- AnnData(X = df1[[2]]@images$image@coordinates )
+
+ad_counts_3 <- AnnData(X = df1[[3]]@assays$Spatial@counts )
+ad_coords_3 <- AnnData(X = df1[[3]]@images$image@coordinates )
+
+dim(ad_counts_1)
+dim(ad_coords_1)
+
+write_h5ad(anndata=ad_counts_1, filename="output/integrated_mats/ad_counts_1.h5ad", compression="gzip")
+write_h5ad(anndata=ad_coords_1, filename="output/integrated_mats/ad_coords_1.h5ad", compression="gzip")
+
+write_h5ad(anndata=ad_counts_2, filename="output/integrated_mats/ad_counts_2.h5ad", compression="gzip")
+write_h5ad(anndata=ad_coords_2, filename="output/integrated_mats/ad_coords_2.h5ad", compression="gzip")
+
+write_h5ad(anndata=ad_counts_3, filename="output/integrated_mats/ad_counts_3.h5ad", compression="gzip")
+write_h5ad(anndata=ad_coords_3, filename="output/integrated_mats/ad_coords_3.h5ad", compression="gzip")
+
+# useful info about qc data object
+# df1[[1]] - first Seurat object
+# df1[[1]]@images$image@coordinates - coordinates
+# df1[[1]]@assays$Spatial@counts - gene counts (gene/dim1 x barcode/dim2)
+# df1[[1]]@assays$Spatial@counts@Dimnames
+# df1[[1]]@seurat.obj@meta.data - misc other per cell data
