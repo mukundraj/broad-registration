@@ -14,17 +14,30 @@ data_path <- "/home/mraj/data/forMukund/2022-05-03/11_allSeurats_CCF.qs"
 
 # read in Seurat object
 df1 = qread(data_path)
-ad_counts_1 <- AnnData(X = df1[[1]]@assays$Spatial@counts )
+obsnames <- rownames(df1[[1]]@assays$Spatial@counts)
+
+varnames1 <- colnames(df1[[1]]@assays$Spatial@counts)
+ad_counts_1 <- AnnData(X = df1[[1]]@assays$Spatial@counts, 
+                       obs = data.frame(row.names=obsnames ), 
+                       var = data.frame(row.names=varnames1))
 ad_coords_1 <- AnnData(X = df1[[1]]@images$image@coordinates )
 
-ad_counts_2 <- AnnData(X = df1[[2]]@assays$Spatial@counts )
+varnames2 <- colnames(df1[[2]]@assays$Spatial@counts)
+ad_counts_2 <- AnnData(X = df1[[2]]@assays$Spatial@counts,
+                       obs = data.frame(row.names=obsnames), 
+                       var = data.frame(row.names=varnames2))
 ad_coords_2 <- AnnData(X = df1[[2]]@images$image@coordinates )
 
-ad_counts_3 <- AnnData(X = df1[[3]]@assays$Spatial@counts )
+varnames3 <- colnames(df1[[3]]@assays$Spatial@counts)
+ad_counts_3 <- AnnData(X = df1[[3]]@assays$Spatial@counts, 
+                       obs = data.frame(row.names=obsnames), 
+                       var = data.frame(row.names=varnames3))
 ad_coords_3 <- AnnData(X = df1[[3]]@images$image@coordinates )
 
 dim(ad_counts_1)
+dim(ad_counts_2)
 dim(ad_coords_1)
+dim(ad_coords_2)
 
 write_h5ad(anndata=ad_counts_1, filename="output/integrated_mats/ad_counts_1.h5ad", compression="gzip")
 write_h5ad(anndata=ad_coords_1, filename="output/integrated_mats/ad_coords_1.h5ad", compression="gzip")
@@ -37,7 +50,10 @@ write_h5ad(anndata=ad_coords_3, filename="output/integrated_mats/ad_coords_3.h5a
 
 # useful info about qc data object
 # df1[[1]] - first Seurat object
-# df1[[1]]@images$image@coordinates - coordinates
+
 # df1[[1]]@assays$Spatial@counts - gene counts (gene/dim1 x barcode/dim2)
 # df1[[1]]@assays$Spatial@counts@Dimnames
 # df1[[1]]@seurat.obj@meta.data - misc other per cell data
+
+# copy command as template
+# scp -r [external ip]:~/Desktop/work/projects/active/broad-registration/output/integrated_mats ~/Desktop/work/data/temp_data/2022-05-04/
