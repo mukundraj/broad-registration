@@ -64,20 +64,6 @@ for pid in range(1,4):
 
     genes = list(counts.obs_names)
 
-    # counts_dense = counts_X.todense().astype(int)
-
-    # npz_file = f'{op_folder}/temp.npz'
-    # np.savez_compressed(npz_file, counts_dense=counts_dense)
-    # v = np.load(npz_file)
-    # counts_dense = v['counts_dense']
-    # umi_counts = np.squeeze(np.sum(counts_dense, axis=1))
-    # dprint("counts_dense shape ", np.shape(counts_dense))
-    # dprint("umi_counts shape ", np.shape(umi_counts))
-    # bead_inds = np.where(umi_counts>100)
-    # dprint(bead_inds[0])
-    # dprint(len(list(bead_inds[0])))
-
-
     gene_cnts = {}
     for gene in genes_list:
         gene_idx = genes.index(gene)
