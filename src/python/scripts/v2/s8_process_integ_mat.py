@@ -48,15 +48,25 @@ for pid in range(1,4):
     counts_X = csr_matrix(counts.X).transpose()
     coords_X = csr_matrix(coords.X)
     coords_dense_np = np.array(coords_X.todense())
-    data = {'x': coords_dense_np[:, 0].astype(int).tolist(),
-            'y': coords_dense_np[:, 1].astype(int).tolist(),
-            'z': coords_dense_np[:, 2].astype(int).tolist()}
+    xs = coords_dense_np[:, 0].astype(int).tolist()
+    ys = coords_dense_np[:, 1].astype(int).tolist()
+    zs = coords_dense_np[:, 2].astype(int).tolist()
+    data = {'x': xs,
+            'y': ys,
+            'z': zs}
     json_string = json.dumps(data)
 
     puck_folder = f'{op_folder}/puck{pid}'
     if os.path.exists(puck_folder):
         shutil.rmtree(puck_folder)
     os.mkdir(puck_folder)
+
+    # writing coords tsv
+    coords_csv_name = f'{puck_folder}/coords.csv'
+    dprint(np.shape(coords_dense_np))
+    dprint(coords_csv_name)
+    np.savetxt(coords_csv_name, np.array([xs,ys,zs]).T, fmt='%i', header="x,y,z", comments='', delimiter=",")
+
     json_file = f'{puck_folder}/coords.json'
     # Directly from dictionary
     with open(json_file, 'w') as outfile:
@@ -68,15 +78,16 @@ for pid in range(1,4):
     for gene in genes_list:
         gene_idx = genes.index(gene)
         specific_gene_cnts = counts_X.getcol(gene_idx)
-        spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense()))
-        gene_cnts[gene]=json.dumps(spec_gene_cnts_dense.astype(int).tolist())
-        # gene_cnts['Calb1'] = 
+        spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
+        gene_cnts[gene]=spec_gene_cnts_dense
 
     for key in gene_cnts:
+        gene_csv_name = f'{puck_folder}/gene_{key}.csv'
+        np.savetxt(gene_csv_name, gene_cnts[key], fmt='%i', header="count", comments='',delimiter=',')
         json_file = f'{puck_folder}/gene_{key}.json'
         # Directly from dictionary
         with open(json_file, 'w') as outfile:
-            tmp_dict = {key:gene_cnts[key]}
+            tmp_dict = {key:json.dumps(gene_cnts[key].tolist())}
             json.dump(tmp_dict, outfile, separators=(',', ':'))
 
     dprint(f'puck {pid} done')
