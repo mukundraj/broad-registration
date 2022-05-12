@@ -75,10 +75,13 @@ for pid in range(1,4):
     genes = list(counts.obs_names)
 
     gene_cnts = {}
+    gene_metadata = {}
     for gene in genes_list:
         gene_idx = genes.index(gene)
         specific_gene_cnts = counts_X.getcol(gene_idx)
         spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
+        dprint(np.max(spec_gene_cnts_dense))
+        gene_metadata[gene]={"maxCount":np.max(spec_gene_cnts_dense)}
         gene_cnts[gene]=spec_gene_cnts_dense
 
     for key in gene_cnts:
@@ -88,6 +91,13 @@ for pid in range(1,4):
         # Directly from dictionary
         with open(json_file, 'w') as outfile:
             tmp_dict = {key:json.dumps(gene_cnts[key].tolist())}
+            json.dump(tmp_dict, outfile, separators=(',', ':'))
+
+        metadata_json_file = f'{puck_folder}/metadata_gene_{key}.json'
+        with open(metadata_json_file, 'w') as outfile:
+            dprint(gene_metadata[key])
+            dprint(key)
+            tmp_dict = {'maxCount':str(gene_metadata[key]['maxCount'])}
             json.dump(tmp_dict, outfile, separators=(',', ':'))
 
     dprint(f'puck {pid} done')
