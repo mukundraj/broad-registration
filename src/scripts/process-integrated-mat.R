@@ -16,37 +16,35 @@ data_path <- "/home/mraj/data/forMukund/2022-05-03/11_allSeurats_CCF.qs"
 df1 = qread(data_path)
 obsnames <- rownames(df1[[1]]@assays$Spatial@counts)
 
-varnames1 <- colnames(df1[[1]]@assays$Spatial@counts)
-ad_counts_1 <- AnnData(X = df1[[1]]@assays$Spatial@counts, 
-                       obs = data.frame(row.names=obsnames ), 
-                       var = data.frame(row.names=varnames1))
-ad_coords_1 <- AnnData(X = df1[[1]]@images$image@coordinates )
 
-varnames2 <- colnames(df1[[2]]@assays$Spatial@counts)
-ad_counts_2 <- AnnData(X = df1[[2]]@assays$Spatial@counts,
-                       obs = data.frame(row.names=obsnames), 
-                       var = data.frame(row.names=varnames2))
-ad_coords_2 <- AnnData(X = df1[[2]]@images$image@coordinates )
+for (ssid in seq(67, 207, 2)){
+  
+  dfid = (ssid+1)/2 # data frame id
+  if (ssid>=167 ){
+    dfid = (ssid-5)/2
+  }else if(ssid>=77){
+    dfid=(ssid-3)/2
+  }else if(ssid>=5){
+    dfid = (ssid-2)/2;
+  }
 
-varnames3 <- colnames(df1[[3]]@assays$Spatial@counts)
-ad_counts_3 <- AnnData(X = df1[[3]]@assays$Spatial@counts, 
-                       obs = data.frame(row.names=obsnames), 
-                       var = data.frame(row.names=varnames3))
-ad_coords_3 <- AnnData(X = df1[[3]]@images$image@coordinates )
+  
+  varnames1 <- colnames(df1[[dfid]]@assays$Spatial@counts)
+  ad_counts_1 <- AnnData(X = df1[[dfid]]@assays$Spatial@counts,
+                         obs = data.frame(row.names=obsnames ),
+                         var = data.frame(row.names=varnames1))
+  ad_coords_1 <- AnnData(X = df1[[dfid]]@images$image@coordinates )
+  
+  op_counts_file = paste0("output/integrated_mats/ad_counts_", ssid, ".h5ad")
+  op_coords_file = paste0("output/integrated_mats/ad_coords_", ssid, ".h5ad")
+  print(op_counts_file)
+  print(op_coords_file)
+  write_h5ad(anndata=ad_counts_1, filename=op_counts_file, compression="gzip")
+  write_h5ad(anndata=ad_coords_1, filename=op_coords_file, compression="gzip")
 
-dim(ad_counts_1)
-dim(ad_counts_2)
-dim(ad_coords_1)
-dim(ad_coords_2)
+}
 
-write_h5ad(anndata=ad_counts_1, filename="output/integrated_mats/ad_counts_1.h5ad", compression="gzip")
-write_h5ad(anndata=ad_coords_1, filename="output/integrated_mats/ad_coords_1.h5ad", compression="gzip")
 
-write_h5ad(anndata=ad_counts_2, filename="output/integrated_mats/ad_counts_2.h5ad", compression="gzip")
-write_h5ad(anndata=ad_coords_2, filename="output/integrated_mats/ad_coords_2.h5ad", compression="gzip")
-
-write_h5ad(anndata=ad_counts_3, filename="output/integrated_mats/ad_counts_3.h5ad", compression="gzip")
-write_h5ad(anndata=ad_coords_3, filename="output/integrated_mats/ad_coords_3.h5ad", compression="gzip")
 
 # useful info about qc data object
 # df1[[1]] - first Seurat object
