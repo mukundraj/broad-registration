@@ -4,8 +4,11 @@
 ## Created by Mukund on 2022-05-03
 
 install.packages("anndata")
+install.packages("stringr")
 library(qs)
 library(anndata)
+library(stringr)
+
 
 
 setwd("/home/mraj/Desktop/work/projects/active/broad-registration")
@@ -17,31 +20,35 @@ df1 = qread(data_path)
 obsnames <- rownames(df1[[1]]@assays$Spatial@counts)
 
 
-for (ssid in seq(67, 207, 2)){
+for (id in 10:20){
   
-  dfid = (ssid+1)/2 # data frame id
-  if (ssid>=167 ){
-    dfid = (ssid-5)/2
-  }else if(ssid>=77){
-    dfid=(ssid-3)/2
-  }else if(ssid>=5){
-    dfid = (ssid-2)/2;
-  }
+  # dfid = (ssid+1)/2 # data frame id
+  # if (ssid>=167 ){
+  #   dfid = (ssid-3)/2
+  # }else if(ssid>=77){
+  #   dfid=(ssid-1)/2
+  # }else if(ssid>=5){
+  #   dfid = (ssid+1)/2;
+  # }
 
+  print(id)
+  val = str_split(names(df1)[id], "_")
+  print(strtoi(substr(val[[1]][2], 2, 100)))
   
-  varnames1 <- colnames(df1[[dfid]]@assays$Spatial@counts)
-  ad_counts_1 <- AnnData(X = df1[[dfid]]@assays$Spatial@counts,
+  did = strtoi(substr(val[[1]][2], 2, 100)) # depth based id
+
+  varnames1 <- colnames(df1[[id]]@assays$Spatial@counts)
+  ad_counts_1 <- AnnData(X = df1[[id]]@assays$Spatial@counts,
                          obs = data.frame(row.names=obsnames ),
                          var = data.frame(row.names=varnames1))
-  ad_coords_1 <- AnnData(X = df1[[dfid]]@images$image@coordinates )
-  
-  op_counts_file = paste0("output/integrated_mats/ad_counts_", ssid, ".h5ad")
-  op_coords_file = paste0("output/integrated_mats/ad_coords_", ssid, ".h5ad")
+  ad_coords_1 <- AnnData(X = df1[[id]]@images$image@coordinates )
+
+  op_counts_file = paste0("output/integrated_mats/ad_counts_", did, ".h5ad")
+  op_coords_file = paste0("output/integrated_mats/ad_coords_", did, ".h5ad")
   print(op_counts_file)
   print(op_coords_file)
   write_h5ad(anndata=ad_counts_1, filename=op_counts_file, compression="gzip")
   write_h5ad(anndata=ad_coords_1, filename=op_coords_file, compression="gzip")
-
 }
 
 
@@ -55,3 +62,12 @@ for (ssid in seq(67, 207, 2)){
 
 # copy command as template
 # scp -r [external ip]:~/Desktop/work/projects/active/broad-registration/output/integrated_mats ~/Desktop/work/data/temp_data/2022-05-04/
+
+# xx = qs::qread(qs_list)
+# Try
+# View(xx)
+# names(xx) gives the names
+# If one name was "MBASS_d5" and that is the 5th item
+# Can do
+# xx["MBASS_d5"] or xx[5] 
+# which is similar too
