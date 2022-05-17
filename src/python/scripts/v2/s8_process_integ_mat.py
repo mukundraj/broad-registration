@@ -35,9 +35,14 @@ import shutil
 in_folder = sys.argv[1]
 op_folder = sys.argv[2]
 
-genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6']
+genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
+              'Mbp', 'Plp1', 'Mag', 
+              'Myoc', 'Agt', 'Gfap', 'Slc1a3', 'Aqp4',
+              'Dcn', 'Flt1', 
+              'Rarres2', 'Foxj1']
 
-for pid in range(1,4):
+for pid in range(1,70,2):
+
 
     ip_coords_file  = f'{in_folder}/ad_coords_{str(pid)}.h5ad'
     ip_counts_file  = f'{in_folder}/ad_counts_{str(pid)}.h5ad'
