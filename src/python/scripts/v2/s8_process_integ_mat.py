@@ -5,13 +5,14 @@ downstream for interactive visualization.
 Usage:
 
 python s8_process_integ_mat.py
-    inp: input folder
-    out: intermediate zarr dir
-    out: final zarr dir
+    inp: path to bead_ccf_labels_allbds with bead metadata in csv format
+    inp: input to integrated_mats folder with processed gene counts in annodata h5ad format
+    out: output dir to write gene jsons to
 
 Usage example:
 
 python src/python/scripts/v2/s8_process_integ_mat.py \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/gene_jsons
 
@@ -31,21 +32,26 @@ import json
 from produtils import dprint
 import os
 import shutil
+import csv
 
-in_folder = sys.argv[1]
-op_folder = sys.argv[2]
+label_data_folder = sys.argv[1]
+in_folder = sys.argv[2]
+op_folder = sys.argv[3]
 
 genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
-              'Mbp', 'Plp1', 'Mag', 
+              'Mbp', 'Plp1', 'Mag',
               'Myoc', 'Agt', 'Gfap', 'Slc1a3', 'Aqp4',
-              'Dcn', 'Flt1', 
+              'Dcn', 'Flt1',
               'Rarres2', 'Foxj1']
 
-for pid in range(1,70,2):
+for pid in range(1,42,2):
 
+    apid = pid
+    if (pid==5 or pid==77 or pid==167):
+        apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
-    ip_coords_file  = f'{in_folder}/ad_coords_{str(pid)}.h5ad'
-    ip_counts_file  = f'{in_folder}/ad_counts_{str(pid)}.h5ad'
+    ip_coords_file  = f'{in_folder}/ad_coords_{str(apid)}.h5ad'
+    ip_counts_file  = f'{in_folder}/ad_counts_{str(apid)}.h5ad'
 
     counts = ann.read_h5ad(ip_counts_file)
     coords = ann.read_h5ad(ip_coords_file)
@@ -61,6 +67,20 @@ for pid in range(1,70,2):
             'z': zs}
     json_string = json.dumps(data)
 
+    # reading csv for label data
+
+    nis_id_str = str(apid).zfill(3)
+    labels_csv_file = f'{label_data_folder}/allen_anno_data_{nis_id_str}.csv'
+    dprint(labels_csv_file)
+    region_names = []
+    out_tissue = []
+    with open(labels_csv_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            region_names.append(row[4])
+            out_tissue.append(row[8])
+
+    dprint(len(region_names), len(out_tissue))
     puck_folder = f'{op_folder}/puck{pid}'
     if os.path.exists(puck_folder):
         shutil.rmtree(puck_folder)
@@ -69,8 +89,16 @@ for pid in range(1,70,2):
     # writing coords tsv
     coords_csv_name = f'{puck_folder}/coords.csv'
     dprint(np.shape(coords_dense_np))
-    dprint(coords_csv_name)
-    np.savetxt(coords_csv_name, np.array([xs,ys,zs]).T, fmt='%i', header="x,y,z", comments='', delimiter=",")
+    dprint(coords_csv_name, pid, apid)
+    # np.savetxt(coords_csv_name, np.array([xs,ys,zs]).T, fmt='%i', header="x,y,z", comments='', delimiter=",")
+    in_tissue_inds = []
+    with open(coords_csv_name, 'w') as outfile:
+        writer = csv.writer(outfile, delimiter=':')
+        writer.writerow(['x', 'y', 'z', 'rname'])
+        for i, status in enumerate(out_tissue):
+            if (status=='F'):
+                writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
+                in_tissue_inds.append(i)
 
     json_file = f'{puck_folder}/coords.json'
     # Directly from dictionary
@@ -85,6 +113,7 @@ for pid in range(1,70,2):
         gene_idx = genes.index(gene)
         specific_gene_cnts = counts_X.getcol(gene_idx)
         spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
+        spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
         dprint(np.max(spec_gene_cnts_dense))
         gene_metadata[gene]={"maxCount":np.max(spec_gene_cnts_dense)}
         gene_cnts[gene]=spec_gene_cnts_dense
@@ -105,5 +134,5 @@ for pid in range(1,70,2):
             tmp_dict = {'maxCount':str(gene_metadata[key]['maxCount'])}
             json.dump(tmp_dict, outfile, separators=(',', ':'))
 
-    dprint(f'puck {pid} done')
+    dprint(f'puck {apid} done')
 
