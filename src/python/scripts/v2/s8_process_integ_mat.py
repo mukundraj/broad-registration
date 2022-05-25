@@ -6,15 +6,21 @@ Usage:
 
 python s8_process_integ_mat.py
     inp: path to bead_ccf_labels_allbds with bead metadata in csv format
+    inp: path to bead_ccf_coords_allbds with bead coords in chuck space in csv format
     inp: input to integrated_mats folder with processed gene counts in annodata h5ad format
+    inp: path to nissl images folder
+    inp: path to atlas images folder
     out: output dir to write gene jsons to
 
 Usage example:
 
 python src/python/scripts/v2/s8_process_integ_mat.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
-    /Users/mraj/Desktop/work/data/temp_data/2022-05-04/gene_jsons
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/chuck_sp_grid_labels \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons
 
 Created by Mukund on 2022-05-04
 
@@ -33,10 +39,14 @@ from produtils import dprint
 import os
 import shutil
 import csv
+import subprocess
 
 label_data_folder = sys.argv[1]
-in_folder = sys.argv[2]
-op_folder = sys.argv[3]
+ip_folder_chuck_coords = sys.argv[2]
+in_folder = sys.argv[3]
+ip_folder_nissl = sys.argv[4]
+ip_folder_atlas = sys.argv[5]
+op_folder = sys.argv[6]
 
 genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
               'Mbp', 'Plp1', 'Mag',
@@ -86,6 +96,25 @@ for pid in range(1,42,2):
         shutil.rmtree(puck_folder)
     os.mkdir(puck_folder)
 
+
+    # get chuck space img coords
+    chuck_sp_img_coords_file = f'{ip_folder_chuck_coords}/chuck_sp_img_coords_{nis_id_str}.csv'
+    chuck_sp_img_coords = []
+    with open(chuck_sp_img_coords_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            chuck_sp_img_coords.append([int(row[0]), int(row[1])])
+
+    # copy nissl and atlas images to puck directory
+    from_nis_file = f'{ip_folder_nissl}/nis_{nis_id_str}.png'
+    to_nis_file = f'{puck_folder}/nis_{nis_id_str}.png'
+    from_atlas_file = f'{ip_folder_atlas}/chuck_sp_labelmap_{nis_id_str}.png'
+    to_atlas_file = f'{puck_folder}/chuck_sp_labelmap_{nis_id_str}.png'
+    dprint(from_atlas_file)
+    dprint(to_atlas_file)
+    subprocess.run(["cp", from_nis_file, to_nis_file])
+    subprocess.run(["cp", from_atlas_file, to_atlas_file])
+
     # writing coords tsv
     coords_csv_name = f'{puck_folder}/coords.csv'
     dprint(np.shape(coords_dense_np))
@@ -94,10 +123,12 @@ for pid in range(1,42,2):
     in_tissue_inds = []
     with open(coords_csv_name, 'w') as outfile:
         writer = csv.writer(outfile, delimiter=':')
-        writer.writerow(['x', 'y', 'z', 'rname'])
+        # writer.writerow(['x', 'y', 'z', 'rname'])
+        writer.writerow(['x', 'y', 'rname'])
         for i, status in enumerate(out_tissue):
             if (status=='F'):
-                writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
+                # writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
+                writer.writerow([chuck_sp_img_coords[i][0], chuck_sp_img_coords[i][1], region_names[i]])
                 in_tissue_inds.append(i)
 
     json_file = f'{puck_folder}/coords.json'

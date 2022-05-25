@@ -5,16 +5,22 @@ Usage:
 
 python s9_region_counts.py \
     inp: path to bead_ccf_labels_allbds with bead metadata in csv format
+    inp: path to bead_ccf_coords_allbds with bead coords in chuck space in csv format
     inp: input to integrated_mats folder with processed gene counts in annodata h5ad format
     inp: file (json) with region names in alphabetical order with associated index
+    inp: path to nissl images folder
+    inp: path to atlas images folder
     out: output dir to write gene_csvs
 
 Usage example:
 
 python src/python/scripts/analysis/s9b_region_counts.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/ccf_regions.json \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/chuck_sp_grid_labels \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_csvs \
 
 Created by Mukund on 2022-05-19
@@ -39,16 +45,19 @@ from produtils import dprint
 import os
 import shutil
 import csv
+import subprocess
 
 ip_folder_labels = sys.argv[1]
-ip_folder_counts = sys.argv[2]
-ip_file_ccf_regions = sys.argv[3]
-op_folder_gene_csvs = sys.argv[4]
+ip_folder_chuck_coords = sys.argv[2]
+ip_folder_counts = sys.argv[3]
+ip_file_ccf_regions = sys.argv[4]
+ip_folder_nissl = sys.argv[5]
+ip_folder_atlas = sys.argv[6]
+op_folder_gene_csvs = sys.argv[7]
 
 genes_list = ['Gad1', 'Gad2', 'Slc17a7']
 
 region_names_dict = {}
-# region_bead_counts = {}
 
 with open(ip_file_ccf_regions) as json_file:
     region_names_dict = json.load(json_file)
@@ -64,7 +73,7 @@ for pid in range(1,42,2):
     if (pid==5 or pid==77 or pid==167):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
-    ip_coords_file  = f'{ip_folder_counts}/ad_coords_{str(apid)}.h5ad'
+    # ip_coords_file  = f'{ip_folder_counts}/ad_coords_{str(apid)}.h5ad'
     ip_counts_file  = f'{ip_folder_counts}/ad_counts_{str(apid)}.h5ad'
 
     # get region names/labels
@@ -80,8 +89,19 @@ for pid in range(1,42,2):
 
     # get indices of beads on puck inside tissue region, write out coords to destination folder
     puck_folder = io.recreate_puck_folder(op_folder_gene_csvs, apid)
-    in_tissue_inds = io.read_mask_write_beads(apid, ip_folder_labels, ip_folder_counts, op_folder_gene_csvs)
+    in_tissue_inds = io.read_mask_write_beads(apid, ip_folder_labels, ip_folder_chuck_coords, ip_folder_counts, op_folder_gene_csvs)
     dprint(len(in_tissue_inds))
+
+    # copy nissl and atlas images to puck directory
+    from_nis_file = f'{ip_folder_nissl}/nis_{nis_id_str}.png'
+    to_nis_file = f'{puck_folder}/nis_{nis_id_str}.png'
+    from_atlas_file = f'{ip_folder_atlas}/chuck_sp_labelmap_{nis_id_str}.png'
+    to_atlas_file = f'{puck_folder}/chuck_sp_labelmap_{nis_id_str}.png'
+    dprint(from_atlas_file)
+    dprint(to_atlas_file)
+    subprocess.run(["cp", from_nis_file, to_nis_file])
+    subprocess.run(["cp", from_atlas_file, to_atlas_file])
+
 
     counts = ann.read_h5ad(ip_counts_file)
     counts_X = csr_matrix(counts.X).transpose()
@@ -116,13 +136,13 @@ for pid in range(1,42,2):
         # write out gene csv file with total regional count for each bead
         gene_csv_name = f'{puck_folder}/rc_{gene}.csv'
         np.savetxt(gene_csv_name, bead_counts, fmt='%i', header="count", comments='',delimiter=',')
-        json_file = f'{puck_folder}/gene_{gene}.json'
+        # json_file = f'{puck_folder}/gene_{gene}.json'
 
 
         # write out gene csv file with normalized regional count for each bead
         gene_csv_name = f'{puck_folder}/rnc_{gene}.csv'
         np.savetxt(gene_csv_name, bead_normed_counts, fmt='%f', header="count", comments='',delimiter=',')
-        json_file = f'{puck_folder}/gene_{gene}.json'
+        # json_file = f'{puck_folder}/gene_{gene}.json'
 
         max_count = np.max(bead_counts)
         max_normed_count = np.max(bead_normed_counts)

@@ -35,20 +35,28 @@ Returns indices of on-tissue beads.
 Created by Mukund on 2022-05-19
 """
 
-def read_mask_write_beads(pid, ip_folder_labels, ip_folder_counts, op_folder_gene_csvs):
+def read_mask_write_beads(pid, ip_folder_labels, ip_folder_chuck_coords, ip_folder_counts, op_folder_gene_csvs):
 
-    ip_coords_file  = f'{ip_folder_counts}/ad_coords_{str(pid)}.h5ad'
-    coords = ann.read_h5ad(ip_coords_file)
+    # ip_coords_file  = f'{ip_folder_counts}/ad_coords_{str(pid)}.h5ad'
+    # coords = ann.read_h5ad(ip_coords_file)
 
-    coords_X = csr_matrix(coords.X)
-    coords_dense_np = np.array(coords_X.todense())
-    xs = coords_dense_np[:, 0].astype(int).tolist()
-    ys = coords_dense_np[:, 1].astype(int).tolist()
-    zs = coords_dense_np[:, 2].astype(int).tolist()
+    # coords_X = csr_matrix(coords.X)
+    # coords_dense_np = np.array(coords_X.todense())
+    # xs = coords_dense_np[:, 0].astype(int).tolist()
+    # ys = coords_dense_np[:, 1].astype(int).tolist()
+    # zs = coords_dense_np[:, 2].astype(int).tolist()
+
+    nis_id_str = str(pid).zfill(3)
+    # get chuck space img coords
+    chuck_sp_img_coords_file = f'{ip_folder_chuck_coords}/chuck_sp_img_coords_{nis_id_str}.csv'
+    chuck_sp_img_coords = []
+    with open(chuck_sp_img_coords_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            chuck_sp_img_coords.append([int(row[0]), int(row[1])])
 
     # reading csv for label data
 
-    nis_id_str = str(pid).zfill(3)
     labels_csv_file = f'{ip_folder_labels}/allen_anno_data_{nis_id_str}.csv'
     dprint(labels_csv_file)
     region_names = []
@@ -64,15 +72,15 @@ def read_mask_write_beads(pid, ip_folder_labels, ip_folder_counts, op_folder_gen
     puck_folder = f'{op_folder_gene_csvs}/puck{pid}'
     # writing coords tsv
     coords_csv_name = f'{puck_folder}/coords.csv'
-    dprint(np.shape(coords_dense_np))
     # np.savetxt(coords_csv_name, np.array([xs,ys,zs]).T, fmt='%i', header="x,y,z", comments='', delimiter=",")
     in_tissue_inds = []
     with open(coords_csv_name, 'w') as outfile:
         writer = csv.writer(outfile, delimiter=':')
-        writer.writerow(['x', 'y', 'z', 'rname'])
+        writer.writerow(['x', 'y', 'rname'])
         for i, status in enumerate(out_tissue):
             if (status=='F'):
-                writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
+                # writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
+                writer.writerow([chuck_sp_img_coords[i][0], chuck_sp_img_coords[i][1], region_names[i]])
                 in_tissue_inds.append(i)
 
     return in_tissue_inds
