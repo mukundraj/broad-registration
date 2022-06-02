@@ -30,6 +30,18 @@ python src/python/scripts/v2/s4_get_region_id.py \
     1728 1728 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_segid
 
+python src/python/scripts/v2/s4_get_region_id.py \
+    -1 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/transforms \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project.zee \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/seg_output \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/bead_coords \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
+    1728 1728 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_segid
+
 Created by Mukund on 2022-03-11
 
 """
@@ -54,6 +66,7 @@ import subprocess
 import nrrd
 import pickle
 import src.python.utils.io as io
+from produtils import dprint
 
 
 # file = "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee"
@@ -83,8 +96,10 @@ if (nissl_id<0):
     nissl_ids = [i for i in np.arange(1,228,2)]
     nissl_ids.remove(5)
     nissl_ids.remove(77)
-    nissl_ids.remove(167)
-    nissl_ids = [65, 67]
+    nissl_ids = [159, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181]
+    nissl_ids = [i for i in np.arange(199, 228, 2)]
+    nissl_ids = [i for i in np.arange(143, 159, 2)]
+    # nissl_ids.remove(167)
 else:
     nissl_ids = [nissl_id]
 
@@ -294,10 +309,13 @@ for nissl_id in nissl_ids:
     mapper_to_new_filename, mapper_to_old_filename = io.get_filenames_map(mapperfile_csv)
     old_nis_filename = mapper_to_old_filename[nissl_id]
     old_nis_id = old_nis_filename.split("_")
+    dprint('old_nis_id->',old_nis_id)
     if(len(old_nis_id)==3):
         old_nis_id = int(old_nis_id[1])
-    elif (old_nis_id==2):
-        old_nis_id = int(old_nis_id.split(".")[0])
+    elif (len(old_nis_id)==2):
+        old_nis_id = int(old_nis_id[1].split(".")[0])
+    elif nissl_id==201:
+        old_nis_id=202
     else:
         assert(False)
     print("old_nis_id: ", old_nis_id)
