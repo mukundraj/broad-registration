@@ -20,7 +20,7 @@ df1 = qread(data_path)
 obsnames <- rownames(df1[[1]]@assays$Spatial@counts)
 
 
-for (id in 10:20){
+for (id in 35:39){
   
   # dfid = (ssid+1)/2 # data frame id
   # if (ssid>=167 ){
@@ -49,6 +49,8 @@ for (id in 10:20){
   print(op_coords_file)
   write_h5ad(anndata=ad_counts_1, filename=op_counts_file, compression="gzip")
   write_h5ad(anndata=ad_coords_1, filename=op_coords_file, compression="gzip")
+  
+  gc()
 }
 
 
