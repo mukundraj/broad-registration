@@ -20,13 +20,15 @@ args = commandArgs(trailingOnly=TRUE)
 print(args)
 # 
 # gene = 'Ndnf'
-# ip_folder_labels <- "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds"
+# gene = 'Gad1'
+# ip_folder_labels <- "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/aggregated_labels"
 # ip_folder_counts <- "/Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats"
 # r_op_filename <- "/Users/mraj/Desktop/work/data/mouse_atlas/temp/Ndnf.csv"
 # region_ids <- '1089'
 # start_pid <- 79
-# end_pid <- 83
+# end_pid <- 80
 # nonzero <- FALSE
+# region_ids <- '1;2;3;4;5'
 # region_ids <- '1006;670;1086;1111;9;461;1089'
 
 gene <- args[1]
@@ -94,9 +96,9 @@ for (pid in pucks) {
   
   
   # get labels factor
-  ip_labels_file = paste0(ip_folder_labels, '/allen_anno_data_',sprintf("%03d", apid),'.csv')
+  ip_labels_file = paste0(ip_folder_labels, '/agg_labels_',sprintf("%03d", apid),'.csv')
   print(ip_labels_file)
-  labels <- factor(read.csv(file=ip_labels_file, header=FALSE)$V10)
+  labels <- factor(read.csv(file=ip_labels_file, header=FALSE)$V1)
   
   # aggregate over regions
   b<-aggregate.Matrix(X_filt,labels, FUN=sum())
