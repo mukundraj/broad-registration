@@ -6,7 +6,37 @@ Helper functions related to allen sdk
 Created by Mukund on 2022-04-27
 """
 
+from produtils import dprint
 from allensdk.core.reference_space_cache import ReferenceSpaceCache
+
+def get_cortex_layer_ids_lists():
+    """
+    Gets a list of lists with each list having region ids of regions in Allen 
+    reference atlas that belong to a layer in cortex. Initially created for 
+    purpose of QC heatmaps
+
+    """
+
+    reference_space_key = 'annotation/ccf_2017'
+    resolution = 25
+    rspc = ReferenceSpaceCache(resolution, reference_space_key, manifest='manifest.json')
+    # ID 1 is the adult mouse structure graph
+    tree = rspc.get_structure_tree(structure_graph_id=1) 
+
+    name_map = tree.get_name_map()
+    id_map = {v: k for k, v in name_map.items()}
+
+    l1= [value for key, value in id_map.items() if 'layer 1' in key.lower()]
+    l2l3= [value for key, value in id_map.items() if 'layer 2/3' in key.lower()]
+    l4 = [value for key, value in id_map.items() if 'layer 4' in key.lower()]
+    l5 = [value for key, value in id_map.items() if 'layer 5' in key.lower()]
+    l6 = [value for key, value in id_map.items() if 'layer 6' in key.lower()]
+    dprint(len(l1), len(l2l3), len(l4), len(l5), len(l6))
+    # dprint(len(id_map.keys()))
+
+    cortex_layer_ids = [l1, l2l3, l4,l5, l6]
+    return cortex_layer_ids
+
 
 def sample_allen_annotation(in_pts, nrrd_path):
     """
