@@ -30,6 +30,7 @@ from pathlib import Path
 path_root = Path(__file__).parents[4]
 sys.path.append(str(path_root))
 import src.python.utils.allen as allen
+import datetime
 
 data_root = sys.argv[1]
 ip_folder_labels = data_root+sys.argv[2]
@@ -114,11 +115,11 @@ for gene in genes_list:
     n_regions,n_pucks = np.shape(data_z)
     # dprint(data_z.tolist())
     dprint(n_regions,n_pucks)
-    data_dict = {"x": list(range(1, n_pucks+1)), "y": list(range(1, n_regions+1)), "z":data_z.tolist()}
+    data_dict = {"x": list(range(int(start_pid), int(end_pid)+1,2)), "y": list(range(1, n_regions+1)), "z":data_z.tolist()}
 
     # write out gene data json
     fname_val = "fnz" if nonzero else "fumi"
-    fname = f'{fname_val}_{gene}.json'
+    fname = f'{fname_val}_{gene}_{start_pid}_{end_pid}.json'
     op_gene_data_file = f'{op_folder}/{fname}'
     dprint(nonzero, fname_val)
     with open(op_gene_data_file, 'w') as outfile:
@@ -126,9 +127,10 @@ for gene in genes_list:
 
     # prepare metadata
     desc_val = "nonzero count" if nonzero else "count"
-    metadata_dict = {"name":f'{gene}',
-                     "desc":f'gene {desc_val} normalized by nUMI in region',
-                     "filename":f'{fname}'}
+    metadata_dict = {"name":f'{gene}_{start_pid}_{end_pid}',
+                     "desc":f'gene {desc_val} normalized by nUMI in region, with start_pid: {start_pid} and end_pid:{end_pid}',
+                     "filename":f'{fname}',
+                     "timestamp": f'{datetime.datetime.now()}'}
 
     dprint(metadata_dict)
 
@@ -141,7 +143,8 @@ for gene in genes_list:
         with open(metadata_path, 'r') as f:
             metadata = json.load(f)
         dprint(metadata[meta_key_val])
-        idxs = list(i for i, x in enumerate(metadata[meta_key_val]) if x['name'] == 'Ndnf')
+        idxs = list(i for i, x in enumerate(metadata[meta_key_val]) if x['name'] == metadata_dict["name"])
+        dprint("printing idxes", idxs)
         if (len(idxs)>0):
             metadata[meta_key_val][idxs[0]] = metadata_dict
         else:
