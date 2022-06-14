@@ -127,7 +127,7 @@ for gene in genes_list:
 
     # prepare metadata
     desc_val = "nonzero count" if nonzero else "count"
-    metadata_dict = {"name":f'{gene}_{start_pid}_{end_pid}',
+    metadata_dict = {"name":f'{gene}_{desc_val}_{start_pid}_{end_pid}',
                      "desc":f'gene {desc_val} normalized by nUMI in region, with start_pid: {start_pid} and end_pid:{end_pid}',
                      "filename":f'{fname}',
                      "timestamp": f'{datetime.datetime.now()}'}

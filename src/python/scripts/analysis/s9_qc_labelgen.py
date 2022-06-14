@@ -30,8 +30,7 @@ data_root = sys.argv[1]
 ip_folder_labels = data_root+sys.argv[2]
 op_folder = sys.argv[1]+sys.argv[3]
 
-regions_ids = allen.get_cortex_layer_ids_lists()
-
+regions_ids = allen.get_cortex_layer_and_hippo_ids_lists()
 dprint(len(regions_ids))
 dprint(regions_ids[0])
 
@@ -61,6 +60,7 @@ for pid in range(1, 208, 2):
     region_ids = [-3 if x in regions_ids[2] else x for x in region_ids]
     region_ids = [-4 if x in regions_ids[3] else x for x in region_ids]
     region_ids = [-5 if x in regions_ids[4] else x for x in region_ids]
+    region_ids = [-6 if x in regions_ids[5] else x for x in region_ids]
 
     region_ids = [-x if (int(x) < 0) else 99999 for x in region_ids]
 
