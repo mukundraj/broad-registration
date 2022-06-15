@@ -54,7 +54,8 @@ genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
               'Dcn', 'Flt1',
               'Rarres2', 'Foxj1']
 
-for pid in range(1,42,2):
+# for pid in range(1,42,2):
+for pid in range(71,85,2):
 
     apid = pid
     if (pid==5 or pid==77 or pid==167):
@@ -152,11 +153,11 @@ for pid in range(1,42,2):
     for key in gene_cnts:
         gene_csv_name = f'{puck_folder}/gene_{key}.csv'
         np.savetxt(gene_csv_name, gene_cnts[key], fmt='%i', header="count", comments='',delimiter=',')
-        json_file = f'{puck_folder}/gene_{key}.json'
-        # Directly from dictionary
-        with open(json_file, 'w') as outfile:
-            tmp_dict = {key:json.dumps(gene_cnts[key].tolist())}
-            json.dump(tmp_dict, outfile, separators=(',', ':'))
+        # json_file = f'{puck_folder}/gene_{key}.json'
+        # # Directly from dictionary
+        # with open(json_file, 'w') as outfile:
+        #     tmp_dict = {key:json.dumps(gene_cnts[key].tolist())}
+        #     json.dump(tmp_dict, outfile, separators=(',', ':'))
 
         metadata_json_file = f'{puck_folder}/metadata_gene_{key}.json'
         with open(metadata_json_file, 'w') as outfile:
