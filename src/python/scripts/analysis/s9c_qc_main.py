@@ -8,11 +8,12 @@ python src/python/scripts/analysis/s9c_qc_main.py \
     /Users/mraj/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/aggregated_labels \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
-    /temp \
+    /data_v3_nissl_post_qc/s9_analysis/qc_mats/aggr_data \
     /data_v3_nissl_post_qc/s9_analysis/qc_mats/processed \
     "Ndnf" \
     79 83 \
     False \
+    "1;2;3;4;5;6" \
     /data_v3_nissl_post_qc/s9_analysis/qc_mats/processed
 
 Created by Mukund on 2022-06-11
@@ -35,21 +36,23 @@ import datetime
 data_root = sys.argv[1]
 ip_folder_labels = data_root+sys.argv[2]
 ip_folder_counts = sys.argv[3]
-op_folder_tmp = data_root+sys.argv[4]
+r_op_folder_aggr = data_root+sys.argv[4]
 op_folder = data_root+sys.argv[5]
 genes_list_str = sys.argv[6]
 start_pid = sys.argv[7]
 end_pid = sys.argv[8]
 nonzero = sys.argv[9]=='True' # note its == and not =
-op_folder = sys.argv[1]+sys.argv[10]
+regions_ids_str = sys.argv[10]
+op_folder = sys.argv[1]+sys.argv[11]
 
 def stringToList(string):
-    listRes = list(string.split(" "))
+    listRes = list(string.split(","))
     return listRes
 
 genes_list = stringToList(genes_list_str)
 
 
+genes = genes_list_str
 
 # regions_names = [
 #    [ "Primary somatosensory area, trunk, layer 1"],
@@ -85,7 +88,7 @@ genes_list = stringToList(genes_list_str)
 # dprint(regions_ids_str)
 # regions_ids_str = '68,107;667,219;12995,865;229,648;644,947'
 
-regions_ids_str = '1;2;3;4;5'
+# regions_ids_str = '1;2;3;4;5;6'
 
 # genes_list = ['Dcn', 'Ndnf']
 # genes_list = ['Gad1']
@@ -93,23 +96,29 @@ regions_ids_str = '1;2;3;4;5'
 # region_ids = '234,234,234;33,33,32;'
 
 # subprocess.run(["fd", "^.*tif$" , "-x", "convert", "{}", "-alpha", "off", "{}" ], cwd=op_path)
+subprocess.run(["Rscript", "src/python/scripts/analysis/s9c_qc_prep.R", \
+                genes, ip_folder_labels, ip_folder_counts, r_op_folder_aggr, \
+                regions_ids_str, \
+                start_pid, end_pid, \
+                str(nonzero)])
+
 
 
 # iterate over genes_list
 
 for gene in genes_list:
 
-    # call R script
-    r_op_file_name = f'{op_folder_tmp}/{gene}.csv'
-    dprint(ip_folder_labels)
-    dprint(ip_folder_counts)
-    dprint(r_op_file_name)
-    subprocess.run(["Rscript", "src/python/scripts/analysis/s9c_qc_prep.R", \
-                    gene, ip_folder_labels, ip_folder_counts, r_op_file_name, \
-                    regions_ids_str, \
-                    start_pid, end_pid, \
-                    str(nonzero)])
-
+    # # call R script
+    # r_op_file_name = f'{r_op_folder_aggr}'
+    # dprint(ip_folder_labels)
+    # dprint(ip_folder_counts)
+    # dprint(r_op_file_name)
+    # subprocess.run(["Rscript", "src/python/scripts/analysis/s9c_qc_prep.R", \
+    #                 genes, ip_folder_labels, ip_folder_counts, r_op_file_name, \
+    #                 regions_ids_str, \
+    #                 start_pid, end_pid, \
+    #                 str(nonzero)])
+    r_op_file_name = f'{r_op_folder_aggr}/{gene}_{start_pid}_{end_pid}.csv'
     # read gene matrix and prepare dict object
     data_z = np.genfromtxt(r_op_file_name, delimiter=',')
     n_regions,n_pucks = np.shape(data_z)
@@ -126,7 +135,7 @@ for gene in genes_list:
         json.dump(data_dict, outfile)
 
     # prepare metadata
-    desc_val = "nonzero count" if nonzero else "count"
+    desc_val = "nonzero-count" if nonzero else "count"
     metadata_dict = {"name":f'{gene}_{desc_val}_{start_pid}_{end_pid}',
                      "desc":f'gene {desc_val} normalized by nUMI in region, with start_pid: {start_pid} and end_pid:{end_pid}',
                      "filename":f'{fname}',
