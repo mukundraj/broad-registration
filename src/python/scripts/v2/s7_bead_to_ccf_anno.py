@@ -107,6 +107,7 @@ for nissl_id in nissl_ids:
     all_beads_structures = tree.get_structures_by_name(all_beads_names)
     all_beads_acronyms = list(map(lambda x: x["acronym"], all_beads_structures))
     all_beads_rgb = list(map(lambda x: x["rgb_triplet"], all_beads_structures))
+    all_beads_allenid = list(map(lambda x: x["id"], all_beads_structures))
     in_beads_babylon = []
     # print(in_beads_acronyms)
     # print(len(in_beads))
@@ -122,7 +123,7 @@ for nissl_id in nissl_ids:
     with open(op_file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)
         for idx, row in enumerate(all_beads):
-            line = [row[0], row[1], row[2], all_beads_acronyms[idx], all_beads_names[idx], all_beads_rgb[idx][0], all_beads_rgb[idx][1], all_beads_rgb[idx][2], discard_status[idx]]
+            line = [row[0], row[1], row[2], all_beads_acronyms[idx], all_beads_names[idx], all_beads_rgb[idx][0], all_beads_rgb[idx][1], all_beads_rgb[idx][2], discard_status[idx], all_beads_allenid[idx]]
             writer.writerow(line)
 
 
