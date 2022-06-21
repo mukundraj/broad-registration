@@ -8,7 +8,7 @@ Usage:
 python s1_hz_seg_to_nrrd.py \
     inp: slide_id \
     inp: path to filenames map csv to convert between old and new nissl filenames \
-    inp: path to histolozee file \
+    inp: path to an hz file with all colors label information \
     inp: to folder with labelmap svgs \
     out: path to output folder to store nrrd and color to region_id mapper pickle files
 
@@ -19,6 +19,13 @@ python src/python/scripts/v2/s1_hz_seg_to_nrrd.py \
     -1 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/segs_66_68.zee \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/tiff_from_vsi_segs \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/seg_output
+
+python src/python/scripts/v2/s1_hz_seg_to_nrrd.py \
+    -1 \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/hzfiles/01.zee \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/tiff_from_vsi_segs \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/seg_output
 
@@ -74,10 +81,13 @@ if (nissl_id<0):
     # nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
     nissl_ids = [1, 3, 133, 135, 137, 139, 143]
     nissl_ids = [i for i in np.arange(1,228,2)]
-    nissl_ids.remove(5)
-    nissl_ids.remove(77)
-    nissl_ids.remove(167)
-    nissl_ids = [65, 66, 67]
+    # nissl_ids.remove(5)
+    # nissl_ids.remove(77)
+    # nissl_ids.remove(167) # not needed here
+    nissl_ids = [159, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181]
+    nissl_ids = [i for i in np.arange(159, 228, 2)]
+    nissl_ids = [i for i in np.arange(119, 228, 2)]
+    nissl_ids = [i for i in np.arange(1, 118, 2)]
 else:
     nissl_ids = [nissl_id]
 

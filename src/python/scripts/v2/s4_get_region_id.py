@@ -94,11 +94,13 @@ if (nissl_id<0):
     # nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
     nissl_ids = [1, 3, 133, 135, 137, 139, 143]
     nissl_ids = [i for i in np.arange(1,228,2)]
-    nissl_ids.remove(5)
-    nissl_ids.remove(77)
     nissl_ids = [159, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181]
     nissl_ids = [i for i in np.arange(199, 228, 2)]
     nissl_ids = [i for i in np.arange(143, 159, 2)]
+    nissl_ids = [i for i in np.arange(119, 159, 2)]
+    nissl_ids = [i for i in np.arange(1, 118, 2)]
+    nissl_ids.remove(5)
+    nissl_ids.remove(77)
     # nissl_ids.remove(167)
 else:
     nissl_ids = [nissl_id]

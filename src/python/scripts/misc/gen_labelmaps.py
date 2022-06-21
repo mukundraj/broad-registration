@@ -40,7 +40,10 @@ op_wireframe = data_root+sys.argv[3]
 
 id_to_color_map = allen.get_allen_regionid_to_color_map()
 
+dprint(len(list(id_to_color_map.keys())))
+assert(1328==len(list(id_to_color_map.keys())))
 # dprint(id_to_color_map)
+
 
 # create grid coords
 axis2 = 4096
@@ -72,9 +75,9 @@ qnii_json_file = "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_q
 
 nissl_ids = [i for i in np.arange(1,208,2)]
 # nissl_ids = [i for i in np.arange(141,146,2)]
-nissl_ids.remove(5)
-nissl_ids.remove(77)
-nissl_ids.remove(167)
+# nissl_ids.remove(5)
+# nissl_ids.remove(77)
+# nissl_ids.remove(167)
 
 # nissl_ids = [143]
 
@@ -84,7 +87,7 @@ for nissl_id in nissl_ids:
 
     pts_allen = tfms.chuck_sp_to_allen3d(pts_grid, nissl_id, tfm_folder, qnii_json_file, tmp_storage)
 
-    print("before sample allen annotation")
+    dprint("before sample allen annotation with nis_id_str ", nis_id_str)
     nrrd_path = "/Users/mraj/Desktop/work/projects/active/broad-registration/annotation/ccf_2017/annotation_25.nrrd" # fixme - hardcoding
     allen_annos = allen.sample_allen_annotation(pts_allen, nrrd_path)
     print("after sample allen annotation")

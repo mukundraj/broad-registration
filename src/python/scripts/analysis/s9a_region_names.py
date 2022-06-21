@@ -43,7 +43,7 @@ region_names_dict = {}
 
 # get number of regions
 
-for pid in range(1,42,2):
+for pid in range(1,208,2):
 
     apid = pid
     if (pid==5 or pid==77 or pid==167):
