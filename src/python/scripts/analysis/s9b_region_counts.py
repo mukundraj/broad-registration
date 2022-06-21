@@ -9,7 +9,7 @@ python s9_region_counts.py \
     inp: input to integrated_mats folder with processed gene counts in annodata h5ad format
     inp: file (json) with region names in alphabetical order with associated index
     inp: path to nissl images folder
-    inp: path to atlas images folder
+    inp: path to atlas wireframe images folder
     out: output dir to write gene_csvs
 
 Usage example:
@@ -20,12 +20,14 @@ python src/python/scripts/analysis/s9b_region_counts.py \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/ccf_regions.json \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/chuck_sp_grid_labels \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/allen_labels_imgs/wireframe \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_csvs \
 
 Created by Mukund on 2022-05-19
 
 References - https://stackoverflow.com/questions/9001509/how-can-i-sort-a-dictionary-by-key
+
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_csvs gs://ml_portal2/test_data2/
 
 """
 from pathlib import Path
@@ -67,8 +69,9 @@ nRegions = len(region_names_dict.keys())
 dprint("nGenes : ", nRegions)
 
 # get number of regions
-for pid in range(1,42,2):
+for pid in range(1, 208, 2):
 
+    dprint(f'starting pid {pid}..................')
     apid = pid
     if (pid==5 or pid==77 or pid==167):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
@@ -95,8 +98,9 @@ for pid in range(1,42,2):
     # copy nissl and atlas images to puck directory
     from_nis_file = f'{ip_folder_nissl}/nis_{nis_id_str}.png'
     to_nis_file = f'{puck_folder}/nis_{nis_id_str}.png'
-    from_atlas_file = f'{ip_folder_atlas}/chuck_sp_labelmap_{nis_id_str}.png'
-    to_atlas_file = f'{puck_folder}/chuck_sp_labelmap_{nis_id_str}.png'
+    # from_atlas_file = f'{ip_folder_atlas}/chuck_sp_labelmap_{nis_id_str}.png'
+    from_atlas_file = f'{ip_folder_atlas}/chuck_sp_wireframe_{nis_id_str}.png'
+    to_atlas_file = f'{puck_folder}/chuck_sp_wireframe_{nis_id_str}.png'
     dprint(from_atlas_file)
     dprint(to_atlas_file)
     subprocess.run(["cp", from_nis_file, to_nis_file])
