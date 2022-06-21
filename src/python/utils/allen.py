@@ -1,4 +1,8 @@
 import nrrd
+import random
+import matplotlib.pyplot as plt
+from PIL import ImageColor
+
 
 """
 Helper functions related to allen sdk
@@ -22,14 +26,31 @@ def get_allen_regionid_to_color_map():
 
     id_to_name_map = tree.get_name_map()
 
+    # generating colors
+    random.seed(10)
+    number_of_colors = len(list(id_to_name_map))
+    rands = random.choices('0123456789ABCDEF', k=6*number_of_colors)
+    # colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+    #          for i in range(number_of_colors)]
+    colors = ["#"+''.join([rands[i*6+j] for j in range(6)])
+             for i in range(number_of_colors)]
+    # colors = list(set(colors))
+    assert(len(colors)==len(list(set(colors))))
+
+    colors = list([list(ImageColor.getcolor(col, "RGB")) for col in colors])
+
+
     name_to_id_map = {v: k for k, v in id_to_name_map.items()}
     structures = tree.get_structures_by_name(list(name_to_id_map.keys()))
 
     id_to_rgb_map = {s['id']:s['rgb_triplet'] for s in structures }
 
-    id_to_rgb_map = {id:[round(col[0]/255.0,2), round(col[1]/255.0, 2), round(col[2]/255.0,2), 1.0] for id,col in id_to_rgb_map.items()}
+    # assigning custom colors
+    id_to_rgb_map = {id:[round(colors[idx][0]/255.0,2), round(colors[idx][1]/255.0, 2), round(colors[idx][2]/255.0,2), 1.0] for idx, (id,col) in enumerate(id_to_rgb_map.items())}
+    # id_to_rgb_map = {id:[round(col[0]/255.0,2), round(col[1]/255.0, 2), round(col[2]/255.0,2), 1.0] for idx, (id,col) in enumerate(id_to_rgb_map.items())}
 
     id_to_rgb_map [0] = [0.9, 0.9, 0.9, 1.0]
+
 
     return id_to_rgb_map
 
