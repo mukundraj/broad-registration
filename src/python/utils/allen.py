@@ -9,6 +9,31 @@ Created by Mukund on 2022-04-27
 from produtils import dprint
 from allensdk.core.reference_space_cache import ReferenceSpaceCache
 
+def get_allen_regionid_to_color_map():
+    """
+    Returns a dict mapping Allen region id to a color retrieved by using Allen SDK
+
+    """
+    reference_space_key = 'annotation/ccf_2017'
+    resolution = 25
+    rspc = ReferenceSpaceCache(resolution, reference_space_key, manifest='manifest.json')
+    # ID 1 is the adult mouse structure graph
+    tree = rspc.get_structure_tree(structure_graph_id=1) 
+
+    id_to_name_map = tree.get_name_map()
+
+    name_to_id_map = {v: k for k, v in id_to_name_map.items()}
+    structures = tree.get_structures_by_name(list(name_to_id_map.keys()))
+
+    id_to_rgb_map = {s['id']:s['rgb_triplet'] for s in structures }
+
+    id_to_rgb_map = {id:[round(col[0]/255.0,2), round(col[1]/255.0, 2), round(col[2]/255.0,2), 1.0] for id,col in id_to_rgb_map.items()}
+
+    id_to_rgb_map [0] = [0.9, 0.9, 0.9, 1.0]
+
+    return id_to_rgb_map
+
+
 def get_cortex_layer_and_hippo_ids_lists():
     """
     Gets a list of lists with each list having region ids of regions in Allen 
