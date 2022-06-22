@@ -9,7 +9,7 @@ python s8_process_integ_mat.py
     inp: path to bead_ccf_coords_allbds with bead coords in chuck space in csv format
     inp: input to integrated_mats folder with processed gene counts in annodata h5ad format
     inp: path to nissl images folder
-    inp: path to atlas images folder
+    inp: path to atlas wireframe images folder
     out: output dir to write gene jsons to
 
 Usage example:
@@ -19,13 +19,15 @@ python src/python/scripts/v2/s8_process_integ_mat.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/chuck_sp_grid_labels \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/allen_labels_imgs/wireframe \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons
 
 Created by Mukund on 2022-05-04
 
 References:
 - on sparse and zarr https://github.com/zarr-developers/zarr-python/issues/424
+
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons gs://ml_portal2/test_data2/
 
 """
 
@@ -54,9 +56,13 @@ genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
               'Dcn', 'Flt1',
               'Rarres2', 'Foxj1']
 
-# for pid in range(1,42,2):
-for pid in range(71,85,2):
+genes_list.extend(['Xpo7', 'Cul1', 'Herc1', 'Rb1cc1', 'Setd1a', 
+                   'Trio', 'Cacna1g', 'Sp4', 'Gria3', 'Grin2a'])
 
+# for pid in range(1,42,2):
+for pid in range(1,208,2):
+
+    dprint(f'starting pid {pid}..................')
     apid = pid
     if (pid==5 or pid==77 or pid==167):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
@@ -109,8 +115,8 @@ for pid in range(71,85,2):
     # copy nissl and atlas images to puck directory
     from_nis_file = f'{ip_folder_nissl}/nis_{nis_id_str}.png'
     to_nis_file = f'{puck_folder}/nis_{nis_id_str}.png'
-    from_atlas_file = f'{ip_folder_atlas}/chuck_sp_labelmap_{nis_id_str}.png'
-    to_atlas_file = f'{puck_folder}/chuck_sp_labelmap_{nis_id_str}.png'
+    from_atlas_file = f'{ip_folder_atlas}/chuck_sp_wireframe_{nis_id_str}.png'
+    to_atlas_file = f'{puck_folder}/chuck_sp_wireframe_{nis_id_str}.png'
     dprint(from_atlas_file)
     dprint(to_atlas_file)
     subprocess.run(["cp", from_nis_file, to_nis_file])
