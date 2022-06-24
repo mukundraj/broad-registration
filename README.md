@@ -1,6 +1,6 @@
 # broad-registration
-Scripts for slideseq-niccl registration
 
+Scripts for slideseq-niccl registration
 
 ## Dependencies
 
@@ -10,5 +10,10 @@ Scripts for slideseq-niccl registration
 - SeuratObject
 - Seurat
 
+## Commands
 
+- For recording environment
+  `conda env export > environment.yml`
 
+- For recreating environment
+  `conda env create -f environment.yml` and `conda env create --force -f environment.yml`
