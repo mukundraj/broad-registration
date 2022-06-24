@@ -29,6 +29,8 @@ References:
 
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons gs://ml_portal2/test_data2/
 
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons/puck89 gs://ml_portal2/test_data2/gene_jsons/
+
 """
 
 import sys
@@ -55,9 +57,12 @@ genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
               'Myoc', 'Agt', 'Gfap', 'Slc1a3', 'Aqp4',
               'Dcn', 'Flt1',
               'Rarres2', 'Foxj1']
+genes_list.extend(['Xpo7', 'Cul1', 'Herc1', 'Rb1cc1', 'Setd1a','Trio', 
+                   'Cacna1g', 'Sp4', 'Gria3', 'Grin2a',
+                   'Slc17a7', 'Dsp','Gad2'])
 
-genes_list.extend(['Xpo7', 'Cul1', 'Herc1', 'Rb1cc1', 'Setd1a', 
-                   'Trio', 'Cacna1g', 'Sp4', 'Gria3', 'Grin2a'])
+# genes_list = ['slc17a7', 'Dsp', 'Gad2']
+# genes_list = ['Pcp4']
 
 # for pid in range(1,42,2):
 for pid in range(1,208,2):
@@ -67,22 +72,22 @@ for pid in range(1,208,2):
     if (pid==5 or pid==77 or pid==167):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
-    ip_coords_file  = f'{in_folder}/ad_coords_{str(apid)}.h5ad'
+    # ip_coords_file  = f'{in_folder}/ad_coords_{str(apid)}.h5ad'
     ip_counts_file  = f'{in_folder}/ad_counts_{str(apid)}.h5ad'
 
     counts = ann.read_h5ad(ip_counts_file)
-    coords = ann.read_h5ad(ip_coords_file)
+    # coords = ann.read_h5ad(ip_coords_file)
 
     counts_X = csr_matrix(counts.X).transpose()
-    coords_X = csr_matrix(coords.X)
-    coords_dense_np = np.array(coords_X.todense())
-    xs = coords_dense_np[:, 0].astype(int).tolist()
-    ys = coords_dense_np[:, 1].astype(int).tolist()
-    zs = coords_dense_np[:, 2].astype(int).tolist()
-    data = {'x': xs,
-            'y': ys,
-            'z': zs}
-    json_string = json.dumps(data)
+    # coords_X = csr_matrix(coords.X)
+    # coords_dense_np = np.array(coords_X.todense())
+    # xs = coords_dense_np[:, 0].astype(int).tolist()
+    # ys = coords_dense_np[:, 1].astype(int).tolist()
+    # zs = coords_dense_np[:, 2].astype(int).tolist()
+    # data = {'x': xs,
+    #         'y': ys,
+    #         'z': zs}
+    # json_string = json.dumps(data)
 
     # reading csv for label data
 
@@ -117,14 +122,14 @@ for pid in range(1,208,2):
     to_nis_file = f'{puck_folder}/nis_{nis_id_str}.png'
     from_atlas_file = f'{ip_folder_atlas}/chuck_sp_wireframe_{nis_id_str}.png'
     to_atlas_file = f'{puck_folder}/chuck_sp_wireframe_{nis_id_str}.png'
-    dprint(from_atlas_file)
-    dprint(to_atlas_file)
+    # dprint(from_atlas_file)
+    # dprint(to_atlas_file)
     subprocess.run(["cp", from_nis_file, to_nis_file])
     subprocess.run(["cp", from_atlas_file, to_atlas_file])
 
     # writing coords tsv
     coords_csv_name = f'{puck_folder}/coords.csv'
-    dprint(np.shape(coords_dense_np))
+    # dprint(np.shape(coords_dense_np))
     dprint(coords_csv_name, pid, apid)
     # np.savetxt(coords_csv_name, np.array([xs,ys,zs]).T, fmt='%i', header="x,y,z", comments='', delimiter=",")
     in_tissue_inds = []
@@ -138,10 +143,10 @@ for pid in range(1,208,2):
                 writer.writerow([chuck_sp_img_coords[i][0], chuck_sp_img_coords[i][1], region_names[i]])
                 in_tissue_inds.append(i)
 
-    json_file = f'{puck_folder}/coords.json'
+    # json_file = f'{puck_folder}/coords.json'
     # Directly from dictionary
-    with open(json_file, 'w') as outfile:
-        json.dump(data, outfile, separators=(',', ':'))
+    # with open(json_file, 'w') as outfile:
+    #     json.dump(data, outfile, separators=(',', ':'))
 
     genes = list(counts.obs_names)
 

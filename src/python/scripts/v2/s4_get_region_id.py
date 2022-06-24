@@ -14,21 +14,10 @@ python s4_get_region_id.py \
     inp: path to file mapping old and new nissl names (needed to determine labelmap nrrd filenames)
     inp: path to corners file storing extent of bead position in ggpot figures
     inp inp: dimensions of rescaled slide seq image
+    inp: path to folder with old (filtered by nUMI) bead coordinates files \
     out: path to output folder to store csv files mapping beads to segment ids
 
 Usage example:
-
-python src/python/scripts/v2/s4_get_region_id.py \
-    -1 \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/transforms \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/segs_66_68.zee \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/seg_output \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/bead_coords \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
-    1728 1728 \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_segid
 
 python src/python/scripts/v2/s4_get_region_id.py \
     -1 \
@@ -40,6 +29,7 @@ python src/python/scripts/v2/s4_get_region_id.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
     1728 1728 \
+    /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords_2_may_2022 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_segid
 
 Created by Mukund on 2022-03-11
@@ -82,7 +72,8 @@ mapperfile_csv = sys.argv[7]
 corners_file = sys.argv[8]
 img_width_ss_tfmed = int(sys.argv[9])
 img_height_ss_tfmed = int(sys.argv[10])
-output_csv_folder = sys.argv[11]
+old_bead_coords_folder = sys.argv[11]
+output_csv_folder = sys.argv[12]
 
 # ss_rescaled_folder = sys.argv[6]
 # nissl_folder = sys.argv[7]
@@ -99,9 +90,10 @@ if (nissl_id<0):
     nissl_ids = [i for i in np.arange(143, 159, 2)]
     nissl_ids = [i for i in np.arange(119, 159, 2)]
     nissl_ids = [i for i in np.arange(1, 118, 2)]
+    nissl_ids = [i for i in np.arange(1, 228, 2)]
     nissl_ids.remove(5)
     nissl_ids.remove(77)
-    # nissl_ids.remove(167)
+    nissl_ids.remove(167)
 else:
     nissl_ids = [nissl_id]
 
@@ -120,6 +112,23 @@ corners = io.get_corners_info(corners_file)
 
 for nissl_id in nissl_ids:
 
+    # read old bead positions
+    old_bead_coords_file = old_bead_coords_folder+"/coords_"+str(nissl_id)+".csv"
+    old_input_pts = []
+    with open(old_bead_coords_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            # print(row['first_name'], row['last_name'])
+            row = list(map(float, row))
+            point = [row[0], row[1]]
+            old_input_pts.append(point)
+    old_pts = np.array(old_input_pts)
+    print(np.amax(old_pts, axis=0), np.amin(old_pts, axis=0))
+    max_x, max_y = np.amax(old_pts, axis=0)
+    min_x, min_y = np.amin(old_pts, axis=0)
+    extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
+
+    # read bead positions
     # bead_coords_folder = "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/bead_coords"
     bead_coords_file = bead_coords_folder+"/coords_"+str(nissl_id)+".csv"
     input_pts = []
@@ -131,12 +140,12 @@ for nissl_id in nissl_ids:
             point = [row[0], row[1]]
             input_pts.append(point)
 
-    pts = np.array(input_pts)
-    print(np.amax(pts, axis=0), np.amin(pts, axis=0))
-    max_x, max_y = np.amax(pts, axis=0)
-    min_x, min_y = np.amin(pts, axis=0)
-    extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
-    print(extents)
+    # pts = np.array(input_pts)
+    # print(np.amax(pts, axis=0), np.amin(pts, axis=0))
+    # max_x, max_y = np.amax(pts, axis=0)
+    # min_x, min_y = np.amin(pts, axis=0)
+    # extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
+    # print(extents)
     input_pts_frac = tfms.coordinate_normalization_in_padded_space(corners[nissl_id]['topleft_x'],
                                                                    corners[nissl_id]['topleft_y'],
                                                                    corners[nissl_id]['botright_x'],

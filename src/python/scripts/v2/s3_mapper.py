@@ -12,6 +12,7 @@ python script.py\
     inp: img_width_ss_tfmed img_height_ss_tfmed \
     inp: path to folder with transform files ({nis_idx}_f.csv {nis_idx}_t.csv)\
     inp inp: img_width_nis_tfmed img_height_nis_tfmed \
+    inp: path to folder with old (filtered by nUMI) bead coordinates files \
     out: path to folder to store outputs \
 
 Usage example:
@@ -19,12 +20,13 @@ Usage example:
 python src/python/scripts/v2/s3_mapper.py \
     -1 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/corners.csv \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_raw_data/bead_coords \
+    /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords \
     1728 1728 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project-ss.zee \
     2048 2048 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/transforms \
     4096 3606 \
+    /Users/mraj/Desktop/work/projects/active/broad-registration/output/ss/bead_coords_2_may_2022 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds
 
 Created by Mukund on 2022-03-21
@@ -54,7 +56,8 @@ img_height_ss_tfmed = int(sys.argv[8])
 tfm_folder = sys.argv[9]
 img_width_nis_tfmed = int(sys.argv[10])
 img_height_nis_tfmed = int(sys.argv[11])
-op_folder = sys.argv[12]
+old_bead_coords_folder = sys.argv[12]
+op_folder = sys.argv[13]
 
 # read globals
 if (nissl_id<0):
@@ -66,7 +69,7 @@ if (nissl_id<0):
     nissl_ids.remove(5)
     nissl_ids.remove(77)
     nissl_ids.remove(167)
-    # nissl_ids = [97, 143]
+    # nissl_ids = [89]
 else:
     nissl_ids = [nissl_id]
 
@@ -75,6 +78,23 @@ corners = io.get_corners_info(corners_file)
 
 for nissl_id in nissl_ids:
     print("Mapping nissl_id:", nissl_id)
+
+    # read old bead positions
+    old_bead_coords_file = old_bead_coords_folder+"/coords_"+str(nissl_id)+".csv"
+    old_input_pts = []
+    with open(old_bead_coords_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            # print(row['first_name'], row['last_name'])
+            row = list(map(float, row))
+            point = [row[0], row[1]]
+            old_input_pts.append(point)
+    old_pts = np.array(old_input_pts)
+    print(np.amax(old_pts, axis=0), np.amin(old_pts, axis=0))
+    max_x, max_y = np.amax(old_pts, axis=0)
+    min_x, min_y = np.amin(old_pts, axis=0)
+    extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
+
 
     # read bead positions
     bead_coords_file = bead_coords_folder+"/coords_"+str(nissl_id)+".csv"
@@ -87,11 +107,11 @@ for nissl_id in nissl_ids:
             point = [row[0], row[1]]
             input_pts.append(point)
 
-    pts = np.array(input_pts)
-    print(np.amax(pts, axis=0), np.amin(pts, axis=0))
-    max_x, max_y = np.amax(pts, axis=0)
-    min_x, min_y = np.amin(pts, axis=0)
-    extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
+    # pts = np.array(input_pts)
+    # print(np.amax(pts, axis=0), np.amin(pts, axis=0))
+    # max_x, max_y = np.amax(pts, axis=0)
+    # min_x, min_y = np.amin(pts, axis=0)
+    # extents = {"max_x":max_x, "max_y":max_y, "min_x":min_x, "min_y":min_y}
 
     # input_pts.append([5409, 4798])
     x = 100
@@ -135,6 +155,7 @@ for nissl_id in nissl_ids:
     #                                                        extents,
     #                                                        input_pts)
 
+    print("pt zero ", input_pts_frac[0])
 
     # get puck rescaled image coords
 
