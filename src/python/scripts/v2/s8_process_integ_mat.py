@@ -19,7 +19,7 @@ python src/python/scripts/v2/s8_process_integ_mat.py \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/allen_labels_imgs/wireframe \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons
 
 Created by Mukund on 2022-05-04

@@ -12,8 +12,8 @@ Usage example:
 
 python src/python/scripts/misc/gen_labelmaps.py \
     /Users/mraj/Desktop/work/data/mouse_atlas \
-    /data_v3_nissl_post_qc/s9_analysis/allen_labels_imgs/labelmaps \
-    /data_v3_nissl_post_qc/s9_analysis/allen_labels_imgs/wireframe \
+    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/labelmaps \
+    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
 
 python src/python/scripts/misc/gen_labelmaps.py \
 
