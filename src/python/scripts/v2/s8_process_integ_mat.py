@@ -5,6 +5,7 @@ downstream for interactive visualization.
 Usage:
 
 python s8_process_integ_mat.py
+    inp: data root
     inp: path to bead_ccf_labels_allbds with bead metadata in csv format
     inp: path to bead_ccf_coords_allbds with bead coords in chuck space in csv format
     inp: input to integrated_mats folder with processed gene counts in annodata h5ad format
@@ -15,12 +16,13 @@ python s8_process_integ_mat.py
 Usage example:
 
 python src/python/scripts/v2/s8_process_integ_mat.py \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    /Users/mraj/Desktop/work/data/temp_data/2022-05-04/integrated_mats \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons
+    ~/Desktop/work/data/mouse_atlas \
+    /data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
+    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
+    /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
+    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
+    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
+    /data_v3_nissl_post_qc/s9_analysis/gene_jsons
 
 Created by Mukund on 2022-05-04
 
@@ -29,7 +31,7 @@ References:
 
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons gs://ml_portal2/test_data2/
 
-gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons/puck89 gs://ml_portal2/test_data2/gene_jsons/
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons/puck1 gs://ml_portal2/test_data2/gene_jsons/
 
 """
 
@@ -45,12 +47,13 @@ import shutil
 import csv
 import subprocess
 
-label_data_folder = sys.argv[1]
-ip_folder_chuck_coords = sys.argv[2]
-in_folder = sys.argv[3]
-ip_folder_nissl = sys.argv[4]
-ip_folder_atlas = sys.argv[5]
-op_folder = sys.argv[6]
+data_root = sys.argv[1]
+label_data_folder = data_root+sys.argv[2]
+ip_folder_chuck_coords = data_root+sys.argv[3]
+in_folder = data_root+sys.argv[4]
+ip_folder_nissl = data_root+sys.argv[5]
+ip_folder_atlas = data_root+sys.argv[6]
+op_folder = data_root+sys.argv[7]
 
 genes_list = ['Pcp4', 'Calb1', 'Gng13', 'Gabra6',
               'Mbp', 'Plp1', 'Mag',
@@ -65,7 +68,7 @@ genes_list.extend(['Xpo7', 'Cul1', 'Herc1', 'Rb1cc1', 'Setd1a','Trio',
 # genes_list = ['Pcp4']
 
 # for pid in range(1,42,2):
-for pid in range(1,208,2):
+for pid in range(1,2,2):
 
     dprint(f'starting pid {pid}..................')
     apid = pid
@@ -150,8 +153,35 @@ for pid in range(1,208,2):
 
     genes = list(counts.obs_names)
 
+    geneOptions_json_file = f'{puck_folder}/geneOptions.json'
+    gene_options_dict = {'geneOptions':genes}
+    with open(geneOptions_json_file, 'w') as outfile:
+        json.dump(gene_options_dict, outfile, separators=(',', ':'))
+
+    dprint('len genes', len(genes))
+
     gene_cnts = {}
     gene_metadata = {}
+
+    for gene_idx, gene in enumerate(genes):
+        if (gene_idx%100==0):
+            dprint('gene_idx', gene_idx, 'pid', pid)
+        specific_gene_cnts = counts_X.getcol(gene_idx)
+        spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
+        spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
+        # dprint(np.max(spec_gene_cnts_dense))
+        gene_metadata[gene]={"maxCount":np.max(spec_gene_cnts_dense)}
+        gene_cnts[gene]=spec_gene_cnts_dense
+        gene_csv_name = f'{puck_folder}/gene_{gene}.csv'
+        np.savetxt(gene_csv_name, gene_cnts[gene], fmt='%i', header="count", comments='',delimiter=',')
+
+        metadata_json_file = f'{puck_folder}/metadata_gene_{gene}.json'
+        with open(metadata_json_file, 'w') as outfile:
+            tmp_dict = {'maxCount':str(gene_metadata[gene]['maxCount'])}
+            json.dump(tmp_dict, outfile, separators=(',', ':'))
+
+    continue
+
     for gene in genes_list:
         gene_idx = genes.index(gene)
         specific_gene_cnts = counts_X.getcol(gene_idx)
@@ -164,11 +194,6 @@ for pid in range(1,208,2):
     for key in gene_cnts:
         gene_csv_name = f'{puck_folder}/gene_{key}.csv'
         np.savetxt(gene_csv_name, gene_cnts[key], fmt='%i', header="count", comments='',delimiter=',')
-        # json_file = f'{puck_folder}/gene_{key}.json'
-        # # Directly from dictionary
-        # with open(json_file, 'w') as outfile:
-        #     tmp_dict = {key:json.dumps(gene_cnts[key].tolist())}
-        #     json.dump(tmp_dict, outfile, separators=(',', ':'))
 
         metadata_json_file = f'{puck_folder}/metadata_gene_{key}.json'
         with open(metadata_json_file, 'w') as outfile:
