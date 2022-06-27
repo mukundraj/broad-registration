@@ -46,6 +46,8 @@ import os
 import shutil
 import csv
 import subprocess
+import time
+from multiprocessing import Pool
 
 data_root = sys.argv[1]
 label_data_folder = data_root+sys.argv[2]
@@ -68,7 +70,7 @@ genes_list.extend(['Xpo7', 'Cul1', 'Herc1', 'Rb1cc1', 'Setd1a','Trio',
 # genes_list = ['Pcp4']
 
 # for pid in range(1,42,2):
-for pid in range(1,2,2):
+def process_pid(pid):
 
     dprint(f'starting pid {pid}..................')
     apid = pid
@@ -96,7 +98,7 @@ for pid in range(1,2,2):
 
     nis_id_str = str(apid).zfill(3)
     labels_csv_file = f'{label_data_folder}/allen_anno_data_{nis_id_str}.csv'
-    dprint(labels_csv_file)
+    # dprint(labels_csv_file)
     region_names = []
     out_tissue = []
     with open(labels_csv_file, newline='\n') as csvfile:
@@ -105,7 +107,7 @@ for pid in range(1,2,2):
             region_names.append(row[4])
             out_tissue.append(row[8])
 
-    dprint(len(region_names), len(out_tissue))
+    # dprint(len(region_names), len(out_tissue))
     puck_folder = f'{op_folder}/puck{pid}'
     if os.path.exists(puck_folder):
         shutil.rmtree(puck_folder)
@@ -133,7 +135,7 @@ for pid in range(1,2,2):
     # writing coords tsv
     coords_csv_name = f'{puck_folder}/coords.csv'
     # dprint(np.shape(coords_dense_np))
-    dprint(coords_csv_name, pid, apid)
+    # dprint(coords_csv_name, pid, apid)
     # np.savetxt(coords_csv_name, np.array([xs,ys,zs]).T, fmt='%i', header="x,y,z", comments='', delimiter=",")
     in_tissue_inds = []
     with open(coords_csv_name, 'w') as outfile:
@@ -158,13 +160,13 @@ for pid in range(1,2,2):
     with open(geneOptions_json_file, 'w') as outfile:
         json.dump(gene_options_dict, outfile, separators=(',', ':'))
 
-    dprint('len genes', len(genes))
+    # dprint('len genes', len(genes))
 
     gene_cnts = {}
     gene_metadata = {}
 
     for gene_idx, gene in enumerate(genes):
-        if (gene_idx%100==0):
+        if (gene_idx%1000==0):
             dprint('gene_idx', gene_idx, 'pid', pid)
         specific_gene_cnts = counts_X.getcol(gene_idx)
         spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
@@ -180,27 +182,39 @@ for pid in range(1,2,2):
             tmp_dict = {'maxCount':str(gene_metadata[gene]['maxCount'])}
             json.dump(tmp_dict, outfile, separators=(',', ':'))
 
-    continue
 
-    for gene in genes_list:
-        gene_idx = genes.index(gene)
-        specific_gene_cnts = counts_X.getcol(gene_idx)
-        spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
-        spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
-        dprint(np.max(spec_gene_cnts_dense))
-        gene_metadata[gene]={"maxCount":np.max(spec_gene_cnts_dense)}
-        gene_cnts[gene]=spec_gene_cnts_dense
+    # for gene in genes_list:
+    #     gene_idx = genes.index(gene)
+    #     specific_gene_cnts = counts_X.getcol(gene_idx)
+    #     spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
+    #     spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
+    #     dprint(np.max(spec_gene_cnts_dense))
+    #     gene_metadata[gene]={"maxCount":np.max(spec_gene_cnts_dense)}
+    #     gene_cnts[gene]=spec_gene_cnts_dense
 
-    for key in gene_cnts:
-        gene_csv_name = f'{puck_folder}/gene_{key}.csv'
-        np.savetxt(gene_csv_name, gene_cnts[key], fmt='%i', header="count", comments='',delimiter=',')
+    # for key in gene_cnts:
+    #     gene_csv_name = f'{puck_folder}/gene_{key}.csv'
+    #     np.savetxt(gene_csv_name, gene_cnts[key], fmt='%i', header="count", comments='',delimiter=',')
 
-        metadata_json_file = f'{puck_folder}/metadata_gene_{key}.json'
-        with open(metadata_json_file, 'w') as outfile:
-            dprint(gene_metadata[key])
-            dprint(key)
-            tmp_dict = {'maxCount':str(gene_metadata[key]['maxCount'])}
-            json.dump(tmp_dict, outfile, separators=(',', ':'))
+    #     metadata_json_file = f'{puck_folder}/metadata_gene_{key}.json'
+    #     with open(metadata_json_file, 'w') as outfile:
+    #         dprint(gene_metadata[key])
+    #         dprint(key)
+    #         tmp_dict = {'maxCount':str(gene_metadata[key]['maxCount'])}
+    #         json.dump(tmp_dict, outfile, separators=(',', ':'))
 
     dprint(f'puck {apid} done')
 
+# start = time.time()
+# for pid in range(1,208,2):
+#     process_pid(pid)
+# end = time.time()
+# dprint(f'Total time {end - start} seconds.')
+
+pids = list(range(1,208,2))
+if __name__ == '__main__':
+    start = time.time()
+    with Pool(5) as p:
+        p.map(process_pid, pids)
+    end = time.time()
+    dprint(f'Total time {end - start} seconds.')
