@@ -28,6 +28,9 @@ python src/python/scripts/analysis/s9c_qc_main.py \
     "1;2;3;4;5;6" \
     /data_v3_nissl_post_qc/s9_analysis/qc_mats/processed
 
+Supplementary:
+- gsutil -m cp -r ~/Desktop/work/data/mlab-annex/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/qc_mats gs://ml_portal2/test_data2/
+
 Created by Mukund on 2022-06-11
 
 """
