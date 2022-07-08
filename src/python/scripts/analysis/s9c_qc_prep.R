@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 #
-# Reads gene and output nRegion x nPuck matrix for genes specified in argument
+# Reads gene and output nRegion x nPuck matrix for genes specified in argument. 
+# This script is used by s9c_qc_main.py
 #
 # Usage example:
 #
