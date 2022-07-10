@@ -48,6 +48,7 @@ import csv
 import subprocess
 import time
 from multiprocessing import Pool
+import gc
 
 data_root = sys.argv[1]
 label_data_folder = data_root+sys.argv[2]
@@ -162,24 +163,25 @@ def process_pid(pid):
 
     # dprint('len genes', len(genes))
 
-    gene_cnts = {}
-    gene_metadata = {}
+    # gene_cnts = {}
+    # gene_metadata = {}
 
     for gene_idx, gene in enumerate(genes):
-        if (gene_idx%1000==0):
-            dprint('gene_idx', gene_idx, 'pid', pid)
+        if (gene_idx%500==0):
+            collected = gc.collect()
+            dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
         specific_gene_cnts = counts_X.getcol(gene_idx)
         spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
         spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
         # dprint(np.max(spec_gene_cnts_dense))
-        gene_metadata[gene]={"maxCount":np.max(spec_gene_cnts_dense)}
-        gene_cnts[gene]=spec_gene_cnts_dense
+        gene_metadata={"maxCount":np.max(spec_gene_cnts_dense)}
+        gene_cnts=spec_gene_cnts_dense
         gene_csv_name = f'{puck_folder}/gene_{gene}.csv'
-        np.savetxt(gene_csv_name, gene_cnts[gene], fmt='%i', header="count", comments='',delimiter=',')
+        np.savetxt(gene_csv_name, gene_cnts, fmt='%i', header="count", comments='',delimiter=',')
 
         metadata_json_file = f'{puck_folder}/metadata_gene_{gene}.json'
         with open(metadata_json_file, 'w') as outfile:
-            tmp_dict = {'maxCount':str(gene_metadata[gene]['maxCount'])}
+            tmp_dict = {'maxCount':str(gene_metadata['maxCount'])}
             json.dump(tmp_dict, outfile, separators=(',', ':'))
 
 
@@ -211,10 +213,10 @@ def process_pid(pid):
 # end = time.time()
 # dprint(f'Total time {end - start} seconds.')
 
-pids = list(range(1,208,2))
+pids = list(range(61,208,2))
 if __name__ == '__main__':
     start = time.time()
-    with Pool(5) as p:
+    with Pool(20) as p:
         p.map(process_pid, pids)
     end = time.time()
     dprint(f'Total time {end - start} seconds.')
