@@ -30,11 +30,11 @@ python src/python/scripts/analysis/s9d_region_agg.py \
     /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
     /data_v3_nissl_post_qc/s9_analysis/s9d/gene_csvs_s9d
 
-Created by Mukund on 2022-07-07
-
-References:
+Supplementary:
 
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9d/gene_csvs_s9d gs://ml_portal2/test_data2/
+
+Created by Mukund on 2022-07-07
 
 """
 
@@ -104,9 +104,9 @@ def process_pid(pid):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
     # perform aggregation in R
-    subprocess.run(["Rscript", "src/python/scripts/analysis/s9d_prep.R", \
-                    ip_folder_labels, ip_folder_counts, io_folder_interim, \
-                    str(apid)])
+    # subprocess.run(["Rscript", "src/python/scripts/analysis/s9d_prep.R", \
+    #                 ip_folder_labels, ip_folder_counts, io_folder_interim, \
+    #                 str(apid)])
 
     nis_id_str = str(apid).zfill(3)
 
