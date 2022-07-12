@@ -184,10 +184,10 @@ for pid in pids:
     # iterate over genes
     genes = list(aggr_counts.var_names)
     for gene_idx, gene in enumerate(genes):
-        if gene=='Pcp4' or gene=='Gad2':
-            dprint(f'Found {gene} at {gene_idx}')
-        else:
-            continue
+        # if gene=='Pcp4' or gene=='Gad2':
+        #     dprint(f'Found {gene} at {gene_idx}')
+        # else:
+        #     continue
 
         if (gene_idx%500==0):
             collected = gc.collect()
