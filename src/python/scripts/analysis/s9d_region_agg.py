@@ -25,7 +25,7 @@ python src/python/scripts/analysis/s9d_region_agg.py \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    1 3 \
+    1 9 \
     /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
     /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
     /data_v3_nissl_post_qc/s9_analysis/s9d/gene_csvs_s9d
@@ -49,6 +49,9 @@ import shutil
 import json
 import subprocess
 import sys
+import time
+from multiprocessing import Pool
+import gc
 
 data_root = sys.argv[1]
 ip_folder_labels = data_root+sys.argv[2]
@@ -88,19 +91,22 @@ op_folder = data_root+sys.argv[11]
 # dprint(csr.shape)
 
 # print(csr.getrow(1))
-subprocess.run(["Rscript", "src/python/scripts/analysis/s9d_prep.R", \
-                ip_folder_labels, ip_folder_counts, io_folder_interim, \
-                start_pid, end_pid])
 
 
-pids = list(range(int(start_pid), int(end_pid)+1, 2))
 
-for pid in pids:
+# for pid in pids:
+
+def process_pid(pid):
 
     dprint(f'starting pid {pid}..................')
     apid = pid
     if (pid==5 or pid==77 or pid==167):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
+
+    # perform aggregation in R
+    subprocess.run(["Rscript", "src/python/scripts/analysis/s9d_prep.R", \
+                    ip_folder_labels, ip_folder_counts, io_folder_interim, \
+                    str(apid)])
 
     nis_id_str = str(apid).zfill(3)
 
@@ -141,7 +147,7 @@ for pid in pids:
 
     # get labels for current puck's beads
     labels_csv_file = f'{ip_folder_labels}/agg_labels_{nis_id_str}.csv'
-    dprint(labels_csv_file)
+    # dprint(labels_csv_file)
     region_ids = []
     with open(labels_csv_file, newline='\n') as csvfile:
         reader = csv.reader(csvfile)
@@ -240,3 +246,16 @@ for pid in pids:
     with open(geneOptions_json_file, 'w') as outfile:
         json.dump(gene_options_dict, outfile, separators=(',', ':'))
 
+pids = list(range(int(start_pid), int(end_pid)+1, 2))
+if (5 in pids):
+    pids.remove(5)
+if (77 in pids):
+    pids.remove(77)
+if (167 in pids):
+    pids.remove(167)
+if __name__ == '__main__':
+    start = time.time()
+    with Pool(5) as p:
+        p.map(process_pid, pids)
+    end = time.time()
+    dprint(f'Total time {end - start} seconds.')

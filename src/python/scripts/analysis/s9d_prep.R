@@ -21,27 +21,28 @@ print(args)
 ip_folder_labels <- args[1]
 ip_folder_counts <- args[2]
 io_folder_interim <- args[3]
-start_pid <- as.integer(args[4])
-end_pid <- as.integer(args[5])
+# start_pid <- as.integer(args[4])
+# end_pid <- as.integer(args[5])
+pid <- as.integer(args[4])
 
-pucks <- seq(start_pid,end_pid,2)
+# pucks <- seq(start_pid,end_pid,2)
 
-pid_idx <- 0
-for (pid in pucks) {
-  print(pid)
-  pid_idx <- pid_idx + 1
+# pid_idx <- 0
+# for (pid in pucks) {
+  print(paste('R processing pid:', pid))
+  # pid_idx <- pid_idx + 1
   apid = pid
   if (pid==5 || pid==77 || pid==167)
     apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
   
   # get data matrix of puck
   ip_counts_file = paste0(ip_folder_counts, "/ad_counts_", apid, ".h5ad")
-  print(ip_counts_file)
+  # print(ip_counts_file)
   ad <- read_h5ad(ip_counts_file)
   
   # get labels factor
   ip_labels_file = paste0(ip_folder_labels, '/agg_labels_',sprintf("%03d", apid),'.csv')
-  print(ip_labels_file)
+  # print(ip_labels_file)
   labels <- factor(read.csv(file=ip_labels_file, header=FALSE)$V1)
   
   X <- t(ad$X)
@@ -63,4 +64,4 @@ for (pid in pucks) {
   write.table(bead_counts, file=op_file2,sep=',', quote=FALSE, row.names = FALSE)
   
   gc()
-}
+# }
