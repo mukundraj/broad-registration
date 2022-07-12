@@ -25,7 +25,7 @@ python src/python/scripts/analysis/s9d_region_agg.py \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    1 9 \
+    11 207 \
     /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
     /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
     /data_v3_nissl_post_qc/s9_analysis/s9d/gene_csvs_s9d
@@ -183,7 +183,7 @@ def process_pid(pid):
     for idx, obs in enumerate(obs_names_list):
         region_to_idx[int(obs)] = idx
 
-    print(region_to_idx)
+    # print(region_to_idx)
 
     nonzero_genes = []
 
@@ -199,12 +199,12 @@ def process_pid(pid):
             collected = gc.collect()
             dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
 
-        dprint(csr_matrix(aggr_counts.X).shape)
+        # dprint(csr_matrix(aggr_counts.X).shape)
 
         spec_gene_regagg_cnts = csr_matrix(aggr_counts.X).getcol(gene_idx)
         spec_gene_regagg_cnts_dense = np.squeeze(np.array(spec_gene_regagg_cnts.todense())).astype(int)
-        dprint(len(in_tissue_inds))
-        dprint(spec_gene_regagg_cnts_dense.shape)
+        # dprint(len(in_tissue_inds))
+        # dprint(spec_gene_regagg_cnts_dense.shape)
 
         # read in bead counts and normalize
         ip_bead_counts_file = f'{io_folder_interim}/aggr_num_beads_{nis_id_str}.csv'
@@ -212,14 +212,14 @@ def process_pid(pid):
         bead_counts = bead_counts[:,1]
 
         # dprint(spec_gene_regagg_cnts_dense)
-        dprint(np.shape(spec_gene_regagg_cnts_dense))
+        # dprint(np.shape(spec_gene_regagg_cnts_dense))
         spec_gene_regagg_cnts_dense = np.squeeze(spec_gene_regagg_cnts_dense/bead_counts[None,:])
-        dprint(np.shape(np.squeeze(spec_gene_regagg_cnts_dense)))
+        # dprint(np.shape(np.squeeze(spec_gene_regagg_cnts_dense)))
 
         # dprint(bead_counts)
         regional_aggr_gene_cnts = np.zeros(len(in_tissue_region_ids))
 
-        dprint(np.shape(spec_gene_regagg_cnts_dense))
+        # dprint(np.shape(spec_gene_regagg_cnts_dense))
         # iterate over beads in puck and update aggregated counts
         for idx in range(len(regional_aggr_gene_cnts)):
             label = in_tissue_region_ids[idx]
@@ -255,7 +255,7 @@ if (167 in pids):
     pids.remove(167)
 if __name__ == '__main__':
     start = time.time()
-    with Pool(5) as p:
+    with Pool(16) as p:
         p.map(process_pid, pids)
     end = time.time()
     dprint(f'Total time {end - start} seconds.')
