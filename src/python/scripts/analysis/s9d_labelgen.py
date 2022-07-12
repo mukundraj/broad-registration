@@ -14,7 +14,7 @@ python s9d_labelgen.py
 Usage example:
 
 python src/python/scripts/analysis/s9d_labelgen.py \
-    /Users/mraj/Desktop/work/data/mouse_atlas \
+    ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels
 
