@@ -13,6 +13,8 @@ python s9d_region_agg.py \
     inp: path to nissl images
     inp: path to wireframe images
     inp: path to chuck space coords
+    inp inp: start_pid and end_pid
+    inp: path to integtated mats in anndata format
     i/o: path to interim folder for R script to write to 
     out: path to output folder
 
@@ -25,10 +27,10 @@ python src/python/scripts/analysis/s9d_region_agg.py \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    11 207 \
+    11 101 \
     /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
     /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
-    /data_v3_nissl_post_qc/s9_analysis/s9d/gene_csvs_s9d
+    /data_v3_nissl_post_qc/s9_analysis/s9d/gene_csvs_s9d/set1
 
 Supplementary:
 
