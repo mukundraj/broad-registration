@@ -23,6 +23,10 @@ python src/python/scripts/analysis/s9e_sorted_counts.py \
 
 Created by Mukund on 2022-07-12
 
+Supplementary:
+
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e gs://ml_portal2/test_data2/
+
 """
 
 import sys
@@ -112,10 +116,11 @@ for pid in pids:
             else:
                 region_aggred_counts[gene][rkey] += cur_gene_region_cnt
 
-            if (pid not in puck_aggred_counts[gene].keys()):
-                puck_aggred_counts[gene][pid] = cur_gene_region_cnt
+            pkey = (pid, -1) # -1 region added to maintain structure as region list
+            if (pkey not in puck_aggred_counts[gene].keys()):
+                puck_aggred_counts[gene][pkey] = cur_gene_region_cnt
             else:
-                puck_aggred_counts[gene][pid] += cur_gene_region_cnt
+                puck_aggred_counts[gene][pkey] += cur_gene_region_cnt
 
 
 # create a map from region ids to region names
@@ -128,11 +133,11 @@ region_id_to_name = {v: k for k, v in ccf_name_to_id.items()}
 for gene in region_aggred_counts.keys():
 
     # get and sort values in region_aggred_counts
-    reg_aggred_vals = [{"key":key, "cnt": int(region_aggred_counts[gene][key])} for key in region_aggred_counts[gene].keys()]
+    reg_aggred_vals = [{"key":key, "cnt": int(region_aggred_counts[gene][key])} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
     reg_aggred_vals = sorted(reg_aggred_vals, key=lambda x: x['cnt'], reverse=True)
 
     puck_aggred_vals = [{"key":key, "cnt": int(puck_aggred_counts[gene][key])} for key in puck_aggred_counts[gene].keys()]
-    puck_aggred_vals = sorted(puck_aggred_vals, key=lambda x: x['cnt'], reverse=True)
+    puck_aggred_vals = sorted(puck_aggred_vals, key=lambda x: x['key'][0])
 
     gene_region_ids_to_name = [{'rid':k,'name':region_id_to_name[k]} for k in region_id_to_name.keys() if k in gene_region_ids[gene]]
     # dprint(gene_region_ids_to_name)
