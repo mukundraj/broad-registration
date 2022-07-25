@@ -1,5 +1,6 @@
 """
-Script to generate regionwise and puckwise sorted experssion counts data for viewer.
+Script to generate regionwise and puckwise sorted experssion counts data for
+viewer's interactive barplot.
 
 Usage:
 
@@ -17,8 +18,8 @@ python src/python/scripts/analysis/s9e_sorted_counts.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
     /data_v3_nissl_post_qc/s9_analysis/ccf_regions.json \
-    1 3 \
-    "Pcp4, Gad2" \
+    1 207 \
+    "Pcp4" \
     /data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e \
 
 Created by Mukund on 2022-07-12
@@ -27,6 +28,9 @@ Supplementary:
 
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e gs://ml_portal2/test_data2/
 
+References:
+
+https://stackoverflow.com/questions/24820145/creating-a-new-dict-by-updating-an-existing-one
 """
 
 import sys
@@ -75,20 +79,20 @@ for pid in pids:
 
 
     # iterate over each gene
-    if len(genes_list)>0 and genes_list[0] !="":
-        genes = genes_list
-    else:
-        genes = list(aggr_counts.var_names)
+    # if len(genes_list)>0 and genes_list[0] !="":
+    #     genes = genes_list
+    # else:
+    genes = list(aggr_counts.var_names)
 
     for gene_idx, gene in enumerate(genes):
-        # if gene=='Pcp4' or gene=='Gad2':
-        # if (len(genes_list)>0) and gene in genes_list:
-        #     dprint(f'Found {gene} at {gene_idx}')
-        # else:
-        #     continue
-        if (gene_idx%500==0):
-            collected = gc.collect()
-            dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
+
+        if gene=='Pcp4' or gene=='Gad2':
+            dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
+        else:
+            continue
+        # if (gene_idx%500==0):
+        #     collected = gc.collect()
+        #     dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
 
         if gene not in region_aggred_counts.keys():
             region_aggred_counts[gene] = {}
@@ -117,6 +121,7 @@ for pid in pids:
                 region_aggred_counts[gene][rkey] += cur_gene_region_cnt
 
             pkey = (pid, -1) # -1 region added to maintain structure as region list
+            # dprint(pkey, rid, cur_gene_region_cnt)
             if (pkey not in puck_aggred_counts[gene].keys()):
                 puck_aggred_counts[gene][pkey] = cur_gene_region_cnt
             else:
@@ -138,6 +143,7 @@ for gene in region_aggred_counts.keys():
 
     puck_aggred_vals = [{"key":key, "cnt": int(puck_aggred_counts[gene][key])} for key in puck_aggred_counts[gene].keys()]
     puck_aggred_vals = sorted(puck_aggred_vals, key=lambda x: x['key'][0])
+    puck_aggred_vals = [{**item, 'sr':sr} for sr,item in enumerate(puck_aggred_vals)]
 
     gene_region_ids_to_name = [{'rid':k,'name':region_id_to_name[k]} for k in region_id_to_name.keys() if k in gene_region_ids[gene]]
     # dprint(gene_region_ids_to_name)
