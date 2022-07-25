@@ -55,6 +55,69 @@ def get_allen_regionid_to_color_map():
     return id_to_rgb_map
 
 
+def get_allen_ish_viewer_regions():
+    """
+    Gets a list of lists with each list having region ids of regions in Allen 
+    reference atlas that belong to the ISH website's 12 super regions.
+
+    Created by Mukund on 2022-07-25
+
+    """
+    reference_space_key = 'annotation/ccf_2017'
+    resolution = 25
+    rspc = ReferenceSpaceCache(resolution, reference_space_key, manifest='manifest.json')
+    # ID 1 is the adult mouse structure graph
+    tree = rspc.get_structure_tree(structure_graph_id=1) 
+
+    name_map = tree.get_name_map()
+    id_map = {v: k for k, v in name_map.items()}
+    isocortex_id = tree.get_structures_by_name(['Isocortex'])[0]['id']
+    olf_ids = tree.get_structures_by_name(['Olfactory areas'])[0]['id']
+    hpf_ids = tree.get_structures_by_name(['Hippocampal formation'])[0]['id']
+    ctx_ids = tree.get_structures_by_name(['Cortical subplate'])[0]['id']
+    str_ids = tree.get_structures_by_name(['Striatum'])[0]['id']
+    pal_ids = tree.get_structures_by_name(['Pallidum'])[0]['id']
+    th_ids = tree.get_structures_by_name(['Thalamus'])[0]['id']
+    hy_ids = tree.get_structures_by_name(['Hypothalamus'])[0]['id']
+    mb_ids = tree.get_structures_by_name(['Midbrain'])[0]['id']
+    pons_ids = tree.get_structures_by_name(['Pons'])[0]['id']
+    my_ids = tree.get_structures_by_name(['Medulla'])[0]['id']
+    cb_ids = tree.get_structures_by_name(['Cerebellum'])[0]['id']
+
+    isocortex = [value for key, value in id_map.items() if tree.structure_descends_from(value, isocortex_id)]
+    olf = [value for key, value in id_map.items() if tree.structure_descends_from(value, olf_ids)]
+    hpf = [value for key, value in id_map.items() if tree.structure_descends_from(value, hpf_ids)]
+    ctx = [value for key, value in id_map.items() if tree.structure_descends_from(value, ctx_ids)]
+    strr = [value for key, value in id_map.items() if tree.structure_descends_from(value, str_ids)]
+    pal = [value for key, value in id_map.items() if tree.structure_descends_from(value, pal_ids)]
+    th = [value for key, value in id_map.items() if tree.structure_descends_from(value, th_ids)]
+    hy = [value for key, value in id_map.items() if tree.structure_descends_from(value, hy_ids)]
+    mb = [value for key, value in id_map.items() if tree.structure_descends_from(value, mb_ids)]
+    pons = [value for key, value in id_map.items() if tree.structure_descends_from(value, pons_ids)]
+    my = [value for key, value in id_map.items() if tree.structure_descends_from(value, my_ids)]
+    cb = [value for key, value in id_map.items() if tree.structure_descends_from(value, cb_ids)]
+
+    agg_rids = {}
+    agg_rids[0] = isocortex
+    agg_rids[1] = olf
+    agg_rids[2] = hpf
+    agg_rids[3] = ctx
+    agg_rids[4] = strr
+    agg_rids[5] = pal
+    agg_rids[6] = th
+    agg_rids[7] = hy
+    agg_rids[8] = mb
+    agg_rids[9] = pons
+    agg_rids[10] = my
+    agg_rids[11] = cb
+
+    agg_rnames = ['Isocortex', 'OLF', 'HPF', 'CTXSp',
+                  'STR', 'PAL', 'TH','HY',
+                  'MB', 'P', 'MY', 'CB']
+
+    return agg_rids, agg_rnames
+
+
 def get_cortex_layer_and_hippo_ids_lists():
     """
     Gets a list of lists with each list having region ids of regions in Allen 
