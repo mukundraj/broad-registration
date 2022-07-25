@@ -18,14 +18,7 @@ Usage example:
 python src/python/scripts/v2/s1_hz_seg_to_nrrd.py \
     -1 \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/segs_66_68.zee \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/tiff_from_vsi_segs \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/seg_output
-
-python src/python/scripts/v2/s1_hz_seg_to_nrrd.py \
-    -1 \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
-    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/hzfiles/01.zee \
+    /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/hz-project.zee \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/tiff_from_vsi_segs \
     /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s2_seg_ids/seg_output
 
@@ -39,6 +32,7 @@ from pathlib import Path
 import sys
 path_root = Path(__file__).parents[4]
 sys.path.append(str(path_root))
+import csv
 
 import yaml
 from PIL import Image
@@ -54,6 +48,7 @@ import src.python.utils.io as io
 # from src.python.utils import parsers
 import pickle
 import json
+from produtils import dprint
 
 nissl_id = int(sys.argv[1])
 mapperfile_csv = sys.argv[2]
@@ -79,15 +74,18 @@ if (nissl_id<0):
     print("processing all")
     # nissl_ids = [141, 143]
     # nissl_ids = [123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143]
-    nissl_ids = [1, 3, 133, 135, 137, 139, 143]
-    nissl_ids = [i for i in np.arange(1,228,2)]
+    # nissl_ids = [1, 3, 133, 135, 137, 139, 143]
+    # nissl_ids = [i for i in np.arange(1,228,2)]
     # nissl_ids.remove(5)
     # nissl_ids.remove(77)
     # nissl_ids.remove(167) # not needed here
-    nissl_ids = [159, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181]
-    nissl_ids = [i for i in np.arange(159, 228, 2)]
-    nissl_ids = [i for i in np.arange(119, 228, 2)]
-    nissl_ids = [i for i in np.arange(1, 118, 2)]
+    # nissl_ids = [159, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181]
+    # nissl_ids = [i for i in np.arange(159, 228, 2)]
+    # nissl_ids = [i for i in np.arange(119, 228, 2)]
+    nissl_ids = [i for i in np.arange(1, 228, 2)]
+    nissl_ids.remove(5)
+    nissl_ids.remove(77)
+    nissl_ids.remove(167) # not needed here
 else:
     nissl_ids = [nissl_id]
 
@@ -119,9 +117,10 @@ print("")
 lfunc = np.vectorize(mapper_wrapper)
 numpydata = None
 
+labels_list = [] # stores labels identified in each run
 
 ctr = 0
-for file in files:
+for idx,file in enumerate(files):
 
     # create tiff filename
     base = os.path.basename(file)
@@ -165,6 +164,12 @@ for file in files:
     numpydata = labels_current
     print(np.shape(np.where(numpydata==109)))
     print(np.shape(numpydata))
+    cur_labels = list(np.unique(numpydata))
+    cur_labels.remove(0)
+
+    to_write_list = [nissl_ids[idx]]
+    to_write_list.extend(cur_labels)
+    labels_list.append(to_write_list)
     # if (numpydata is not None):
     #     numpydata = np.stack([numpydata,labels_current], axis=2)
     # else:
@@ -177,4 +182,7 @@ for file in files:
     print ("Output labelmap written to: ", nrrd_name)
     nrrd.write(nrrd_name, numpydata)
 
-
+labels_list_file = f'{op_path}/{"labels_list.csv"}'
+with open(labels_list_file, "w") as f:
+    wr = csv.writer(f)
+    wr.writerows(labels_list)
