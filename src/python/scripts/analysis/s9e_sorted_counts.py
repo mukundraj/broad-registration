@@ -206,14 +206,19 @@ region_id_to_name = {v: k for k, v in ccf_name_to_id.items()}
 # write out aggregated count info per gene
 for gene in region_aggred_counts.keys():
 
-    # get and sort values in region_aggred_counts
-    reg_aggred_vals = [{"key":key, "cnt": int(region_aggred_counts[gene][key])} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
-    # reg_aggred_vals = sorted(reg_aggred_vals, key=lambda x: x['cnt'], reverse=True)
-    reg_aggred_vals = [{**item, 'nm':agg_rnames[i]} for i, item in enumerate(reg_aggred_vals)]
 
     puck_aggred_vals = [{"key":key, "cnt": int(puck_aggred_counts[gene][key])} for key in puck_aggred_counts[gene].keys()]
     puck_aggred_vals = sorted(puck_aggred_vals, key=lambda x: x['key'][0])
     puck_aggred_vals = [{**item, 'sr':sr} for sr,item in enumerate(puck_aggred_vals)]
+
+    pid_to_sr = {}
+    for item in puck_aggred_vals:
+        pid_to_sr[item['key'][0]] = item['sr']
+
+    # get and sort values in region_aggred_counts
+    reg_aggred_vals = [{"key":key, "cnt": int(region_aggred_counts[gene][key])} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
+    # reg_aggred_vals = sorted(reg_aggred_vals, key=lambda x: x['cnt'], reverse=True)
+    reg_aggred_vals = [{**item, 'nm':agg_rnames[i], 'sr': pid_to_sr[item['key'][0]]} for i, item in enumerate(reg_aggred_vals)]
 
     # gene_region_ids_to_name = [{'rid':k,'name':region_id_to_name[k]} for k in region_id_to_name.keys() if k in gene_region_ids[gene]]
 
