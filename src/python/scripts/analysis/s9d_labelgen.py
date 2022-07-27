@@ -62,7 +62,14 @@ for pid in range(1, 208, 2):
     with open(labels_csv_file, newline='\n') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            region_ids.append(int(row[9]))
+            if row[8]=='F':
+                region_ids.append(int(row[9]))
+            elif row[8]=='T':
+                region_ids.append(0)
+            else:
+                assert(False)
+
+
 
     dprint(len(region_ids))
     aggr_labels_csv_file = f'{io_folder_labels}/agg_labels_{nis_id_str}.csv'

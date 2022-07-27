@@ -106,10 +106,11 @@ for pid in pids:
     #     genes = genes_list
     # else:
     genes = list(aggr_counts.var_names)
+    regions = list(aggr_counts.obs_names)
 
     for gene_idx, gene in enumerate(genes):
 
-        # if gene=='Pcp4' or gene=='Gad2':
+        # if gene=='Pcp4' or gene=='Tph1':
         #     dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
         # else:
         #     continue
@@ -126,6 +127,11 @@ for pid in pids:
         spec_gene_regagg_cnts = csr_matrix(aggr_counts.X).getcol(gene_idx)
         spec_gene_regagg_cnts_dense = np.squeeze(np.array(spec_gene_regagg_cnts.todense())).astype(int)
         # dprint(np.shape(spec_gene_regagg_cnts_dense))
+        if ('0' in regions):
+            out_idx = regions.index('0')
+            # dprint('out agg: ', spec_gene_regagg_cnts_dense[out_idx])
+            spec_gene_regagg_cnts_dense[out_idx] = 0
+
 
         obs_names_list = list(aggr_counts.obs_names)
         region_to_idx = {}
