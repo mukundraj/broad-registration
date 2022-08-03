@@ -4,10 +4,14 @@ Script to generate hierarchical json data for dendrogram component in viewer.
 Usage:
 
 python s9f_dendro.py \
+    inp: data root
+    out: path to output folder
 
 Usage example:
 
 python src/python/scripts/analysis/s9f_dendro.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9f \
 
 Created by Mukund on 2022-08-02
 
@@ -19,6 +23,11 @@ import nrrd
 from produtils import dprint
 import numpy as np
 from treelib import Node, Tree 
+import json
+import sys
+
+data_root = sys.argv[1]
+op_folder = data_root+sys.argv[2]
 
 reference_space_key = 'annotation/ccf_2017/'
 resolution = 25
@@ -79,8 +88,33 @@ for nodes_list in ancestors_list:
 
 dprint('tree depth:', tree.depth())
 
-# tree.show()
+
+
+tree.show()
+def get_child_info(tree, child_id, name_map):
+
+    children = tree.children(child_id)
+    # dprint(children)
+    data = {"label":name_map[child_id], "value":child_id}
+    if (len(children)>0):
+        data["children"] = []
+        for cur_child_node in children:
+            cur_child_id = cur_child_node.identifier
+            info = get_child_info(tree, cur_child_id, name_map)
+            data["children"].append(info)
+
+    return data
+
+
+data = get_child_info(tree, ancestors_list[0][0], name_map)
+dprint(data)
 # sub_t = tree.subtree(843)
 # dprint(len(list(sub_t.expand_tree())))
+
+op_folder = "/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9f"
+# write out outdata as json
+op_file = f'{op_folder}/regions.json'
+with open(op_file, 'w') as outfile:
+    json.dump(data, outfile, separators=(',', ':'))
 
 dprint('done')
