@@ -170,7 +170,7 @@ def get_child_info(tree, child_id, name_map):
     children = tree.children(child_id)
     # dprint(children)
     if rcounts_maxvals[child_id]["maxval_pidx"] > -1:
-        actions = [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
+        actions = [{"className":"action fa fa-level-up", "title":f'Jump to srno {rcounts_maxvals[child_id]["maxval_pidx"]+1} containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
     else:
         actions = []
     data = {"label":name_map[child_id], "value":child_id, "actions": actions }
