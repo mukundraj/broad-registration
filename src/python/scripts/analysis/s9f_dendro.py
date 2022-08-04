@@ -169,14 +169,18 @@ def get_child_info(tree, child_id, name_map):
 
     children = tree.children(child_id)
     # dprint(children)
-    data = {"label":name_map[child_id], "value":child_id, "actions": [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}] }
+    if rcounts_maxvals[child_id]["maxval_pidx"] > -1:
+        actions = [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
+    else:
+        actions = []
+    data = {"label":name_map[child_id], "value":child_id, "actions": actions }
     if (len(children)>0):
         data["children"] = []
         for cur_child_node in children:
             cur_child_id = cur_child_node.identifier
             info = get_child_info(tree, cur_child_id, name_map)
             data["children"].append(info)
-            data["actions"] = [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
+            data["actions"] = actions
 
     return data
 
