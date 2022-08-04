@@ -146,13 +146,14 @@ for pids_idx, pid in enumerate(pids):
 # now, for each region, identify pidx with max bead counts
 rcounts_maxvals = {}
 for rid in name_map.keys():
-    rcounts_maxvals[rid]={"maxval":0, "maxval_pidx":-1}
+    rcounts_maxvals[rid]={"maxval":0, "maxval_pidx":-1, "maxval_pid":-1}
     for pids_idx, pid in enumerate(pids):
         assert(pid!=5 and pid!=77 and pid!=167)
         nis_id_str = str(pid).zfill(3)
         if rcounts[pid][rid]["sum"] > rcounts_maxvals[rid]["maxval"]:
             rcounts_maxvals[rid]["maxval"] = rcounts[pid][rid]["sum"]
             rcounts_maxvals[rid]["maxval_pidx"] = pids_idx
+            rcounts_maxvals[rid]["maxval_pid"] = pid
 
 
 
@@ -168,14 +169,14 @@ def get_child_info(tree, child_id, name_map):
 
     children = tree.children(child_id)
     # dprint(children)
-    data = {"label":name_map[child_id], "value":child_id, "actions": [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "max_pidx":rcounts_maxvals[child_id]["maxval_pidx"]}] }
+    data = {"label":name_map[child_id], "value":child_id, "actions": [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}] }
     if (len(children)>0):
         data["children"] = []
         for cur_child_node in children:
             cur_child_id = cur_child_node.identifier
             info = get_child_info(tree, cur_child_id, name_map)
             data["children"].append(info)
-            data["actions"] = [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "max_pidx":rcounts_maxvals[child_id]["maxval_pidx"]}]
+            data["actions"] = [{"className":"action fa fa-level-up", "title":f'Jump to a puck containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
 
     return data
 
