@@ -78,11 +78,11 @@ for pids_idx, pid in enumerate(pids):
 
     for gene_idx, gene in enumerate(genes):
 
-        if gene=='Pcp4' or gene=='Tph1xxx':
-            dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
-            processed_genes.add(gene)
-        else:
-            continue
+        # if gene=='Pcp4' or gene=='Tph1':
+        #     dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
+        #     processed_genes.add(gene)
+        # else:
+        #     continue
         if (gene_idx%500==0):
             collected = gc.collect()
             dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
@@ -115,7 +115,8 @@ for gene_idx, gene in enumerate(list(processed_genes)):
     ancestors_data = {}
     # for each region id
     for ind, rid in enumerate(all_region_ids):
-        dprint("gene_idx", gene_idx, ",", ind, "outof", len(all_region_ids))
+        if (ind%1000==0):
+            dprint("hydrating parents - gene_idx", gene_idx, ",region: ", ind, "outof", len(all_region_ids))
         ancestors_data[rid] = {"puck_dist":[int(0)] * len(pids)}
         # if not leaf then loop through all possible descendents
         if not data[gene].get(rid):
