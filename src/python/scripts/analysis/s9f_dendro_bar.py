@@ -29,12 +29,24 @@ import anndata as ann
 import gc
 from scipy.sparse import csr_matrix, hstack
 import numpy as np
+from allensdk.core.reference_space_cache import ReferenceSpaceCache
 
 data_root = sys.argv[1]
 ip_aggr_data_folder = data_root+sys.argv[2]
 start_pid = sys.argv[3]
 end_pid = sys.argv[4]
 op_folder = data_root+sys.argv[5]
+
+
+reference_space_key = 'annotation/ccf_2017/'
+resolution = 25
+# resolution = 10
+rspc = ReferenceSpaceCache(resolution, reference_space_key, manifest='manifest.json')
+# rspc = ReferenceSpaceCache(resolution, reference_space_key)
+# ID 1 is the adult mouse structure graph
+allentree = rspc.get_structure_tree(structure_graph_id=1)
+name_map = allentree.get_name_map()
+all_region_ids = name_map.keys()
 
 data = {}
 
@@ -47,6 +59,7 @@ if (77 in pids):
 if (167 in pids):
     pids.remove(167)
 
+processed_genes = set()
 for pids_idx, pid in enumerate(pids):
     assert(pid!=5 and pid!=77 and pid!=167)
     nis_id_str = str(pid).zfill(3)
@@ -65,8 +78,9 @@ for pids_idx, pid in enumerate(pids):
 
     for gene_idx, gene in enumerate(genes):
 
-        if gene=='Pcp4' or gene=='Tph1':
+        if gene=='Pcp4' or gene=='Tph1xxx':
             dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
+            processed_genes.add(gene)
         else:
             continue
         if (gene_idx%500==0):
@@ -94,6 +108,31 @@ for pids_idx, pid in enumerate(pids):
             cur_gene_region_cnt = spec_gene_regagg_cnts_dense[region_to_idx[int(rid)]]
             data[gene][rid]["puck_dist"][pids_idx]=int(cur_gene_region_cnt)
 
+## hydrate parent regions with no direct assignment of beads
+
+for gene_idx, gene in enumerate(list(processed_genes)):
+    data[gene].pop(str(0), None) # removing rid for beads outside tissue
+    ancestors_data = {}
+    # for each region id
+    for ind, rid in enumerate(all_region_ids):
+        dprint("gene_idx", gene_idx, ",", ind, "outof", len(all_region_ids))
+        ancestors_data[rid] = {"puck_dist":[int(0)] * len(pids)}
+        # if not leaf then loop through all possible descendents
+        if not data[gene].get(rid):
+
+            for sub_rid in data[gene].keys():
+                # dprint(sub_rid,rid)
+                # check if indeed descendent
+                if allentree.structure_descends_from(int(sub_rid), int(rid)):
+                    ances_data = np.array(ancestors_data[rid]["puck_dist"])
+                    sub_data = np.array(data[gene][sub_rid]["puck_dist"])
+                    # dprint(ances_data)
+                    # dprint(sub_data)
+                    ancestors_data[rid]["puck_dist"] = [int(x) for x in list(ances_data+sub_data)]
+
+    # merge ancestor data dict with descendent data dict
+    data[gene] = {**data[gene], **ancestors_data}
+
 
 # write out genewise json files after updating max_count_idx field
 for gene in data.keys():
@@ -101,10 +140,9 @@ for gene in data.keys():
     #     puck_counts = np.array(data[gene][rid]['puck_dist'])
     #     max_idx = np.argmax(puck_counts)
     #     data[gene][rid]["max_count_idx"] = int(max_idx)
-    data[gene].pop(str(0), None) # removing rid for beads outside tissue
     op_file = f'{op_folder}/{gene}.json'
     with open(op_file, 'w') as outfile:
         json.dump(data[gene], outfile, separators=(',', ':'))
 
 
-dprint(data)
+# dprint(data)
