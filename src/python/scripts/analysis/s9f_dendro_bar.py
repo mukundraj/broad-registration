@@ -77,10 +77,10 @@ for pids_idx, pid in enumerate(pids):
     regions = list(aggr_counts.obs_names)
 
     for gene_idx, gene in enumerate(genes):
+        processed_genes.add(gene)
 
         # if gene=='Pcp4' or gene=='Tph1':
         #     dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
-        #     processed_genes.add(gene)
         # else:
         #     continue
         if (gene_idx%500==0):
