@@ -165,7 +165,10 @@ for rid in name_map.keys():
 ## start: creation of viewer dendrogram data
 
 tree.show()
-def get_child_info(tree, child_id, name_map):
+
+tree_nodes = [] # for tree-util js library - nodes in an array
+
+def get_child_info(tree, child_id, name_map, parent_id):
 
     children = tree.children(child_id)
     # dprint(children)
@@ -173,20 +176,23 @@ def get_child_info(tree, child_id, name_map):
         actions = [{"className":"action fa fa-level-up", "title":f'Jump to srno {rcounts_maxvals[child_id]["maxval_pidx"]+1} containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
     else:
         actions = []
-    data = {"label":name_map[child_id], "value":child_id, "actions": actions }
+    data = {"label":name_map[child_id], "value":child_id, "actions": actions}
+    tree_nodes.append({"id":name_map[child_id], "parentid": parent_id})
     if (len(children)>0):
+        parent_id = name_map[child_id]
         data["children"] = []
         for cur_child_node in children:
             cur_child_id = cur_child_node.identifier
-            info = get_child_info(tree, cur_child_id, name_map)
+            info = get_child_info(tree, cur_child_id, name_map, parent_id)
             data["children"].append(info)
             data["actions"] = actions
 
     return data
 
 
-data = get_child_info(tree, ancestors_list[0][0], name_map)
-dprint(data)
+data = get_child_info(tree, ancestors_list[0][0], name_map, "")
+# dprint(data)
+dprint(tree_nodes)
 
 ## end: creation of viewer dendrogram data
 
@@ -197,6 +203,11 @@ dprint(data)
 op_file = f'{op_folder}/regions.json'
 with open(op_file, 'w') as outfile:
     json.dump(data, outfile, separators=(',', ':'))
+
+
+op_file2 = f'{op_folder}/regions_array.json'
+with open(op_file2, 'w') as outfile:
+    json.dump(tree_nodes, outfile, separators=(',', ':'))
 
 # end: writing out json
 
