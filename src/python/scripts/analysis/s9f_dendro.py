@@ -176,7 +176,7 @@ def get_child_info(tree, child_id, name_map, parent_id):
         actions = [{"className":"action fa fa-level-up", "title":f'Jump to srno {rcounts_maxvals[child_id]["maxval_pidx"]+1} containing: {name_map[child_id]}', "maxval_pidx":rcounts_maxvals[child_id]["maxval_pidx"], "maxval_pid": rcounts_maxvals[child_id]["maxval_pid"]}]
     else:
         actions = []
-    data = {"label":name_map[child_id], "value":child_id, "actions": actions}
+    data = {"label":name_map[child_id], "value":child_id, "actions": actions, "title":allentree.get_structures_by_name([name_map[child_id]])[0]['acronym']}
     tree_nodes.append({"id":name_map[child_id], "parentid": parent_id})
     if (len(children)>0):
         parent_id = name_map[child_id]
