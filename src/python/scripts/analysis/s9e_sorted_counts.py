@@ -107,6 +107,9 @@ for pid in pids:
     # else:
     genes = list(aggr_counts.var_names)
     regions = list(aggr_counts.obs_names)
+    csr_gene_reagg_cnts = csr_matrix(aggr_counts.X)
+    all_gene_count = csr_gene_reagg_cnts.sum()
+    normalizer_val = csr_gene_reagg_cnts.sum()/10000 # to get counts per 10K
 
     for gene_idx, gene in enumerate(genes):
 
@@ -124,7 +127,7 @@ for pid in pids:
             puck_aggred_counts[gene] = {}
 
 
-        spec_gene_regagg_cnts = csr_matrix(aggr_counts.X).getcol(gene_idx)
+        spec_gene_regagg_cnts = csr_gene_reagg_cnts.getcol(gene_idx)
         spec_gene_regagg_cnts_dense = np.squeeze(np.array(spec_gene_regagg_cnts.todense())).astype(int)
         # dprint(np.shape(spec_gene_regagg_cnts_dense))
         if ('0' in regions):
@@ -155,18 +158,18 @@ for pid in pids:
             pkey = (pid, -1) # -1 region added to maintain structure as region list
             # dprint(pkey, rid, cur_gene_region_cnt)
             if (pkey not in puck_aggred_counts[gene].keys()):
-                puck_aggred_counts[gene][pkey] = cur_gene_region_cnt
+                puck_aggred_counts[gene][pkey] = cur_gene_region_cnt / normalizer_val
             else:
-                puck_aggred_counts[gene][pkey] += cur_gene_region_cnt
+                puck_aggred_counts[gene][pkey] += cur_gene_region_cnt / normalizer_val
 
             # iterate over each agg_region - if rid in aggregion, increment aggregion cnt
             for agridx, aggrids in agg_rids.items():
                 if int(rid) in aggrids:
                     rkey = (pid, agridx)
                     if (rkey not in region_aggred_counts[gene].keys()):
-                        region_aggred_counts[gene][rkey] = cur_gene_region_cnt
+                        region_aggred_counts[gene][rkey] = cur_gene_region_cnt / normalizer_val
                     else:
-                        region_aggred_counts[gene][rkey] += cur_gene_region_cnt
+                        region_aggred_counts[gene][rkey] += cur_gene_region_cnt / normalizer_val
 
 
 
@@ -213,7 +216,7 @@ region_id_to_name = {v: k for k, v in ccf_name_to_id.items()}
 for gene in region_aggred_counts.keys():
 
 
-    puck_aggred_vals = [{"key":key, "cnt": int(puck_aggred_counts[gene][key])} for key in puck_aggred_counts[gene].keys()]
+    puck_aggred_vals = [{"key":key, "cnt": round(float(puck_aggred_counts[gene][key]), 2)} for key in puck_aggred_counts[gene].keys()]
     puck_aggred_vals = sorted(puck_aggred_vals, key=lambda x: x['key'][0])
     puck_aggred_vals = [{**item, 'sr':sr} for sr,item in enumerate(puck_aggred_vals)]
 
@@ -222,7 +225,7 @@ for gene in region_aggred_counts.keys():
         pid_to_sr[item['key'][0]] = item['sr']
 
     # get and sort values in region_aggred_counts
-    reg_aggred_vals = [{"key":key, "cnt": int(region_aggred_counts[gene][key])} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
+    reg_aggred_vals = [{"key":key, "cnt": round(float(region_aggred_counts[gene][key]), 2)} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
     # reg_aggred_vals = sorted(reg_aggred_vals, key=lambda x: x['cnt'], reverse=True)
     reg_aggred_vals = [{**item, 'nm':agg_rnames[i], 'sr': pid_to_sr[item['key'][0]]} for i, item in enumerate(reg_aggred_vals)]
 
