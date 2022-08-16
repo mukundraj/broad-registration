@@ -18,6 +18,10 @@ python src/python/scripts/analysis/s9f_dendro_bar.py \
     1 207 \
     /data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f \
 
+Supplementary:
+
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f gs://ml_portal2/test_data2/s9f/
+
 Created by Mukund on 2022-08-03
 
 """
@@ -77,12 +81,13 @@ for pids_idx, pid in enumerate(pids):
     regions = list(aggr_counts.obs_names)
 
     for gene_idx, gene in enumerate(genes):
-        processed_genes.add(gene)
 
         # if gene=='Pcp4' or gene=='Tph1':
         #     dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
         # else:
         #     continue
+        processed_genes.add(gene)
+
         if (gene_idx%500==0):
             collected = gc.collect()
             dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
