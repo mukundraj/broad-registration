@@ -83,6 +83,8 @@ def initial_populate_data():
         aggr_counts_file = f'{ip_aggr_data_folder}/aggr_counts_{nis_id_str}.h5ad'
         aggr_counts = ann.read_h5ad(aggr_counts_file)
 
+        csr_gene_reagg_cnts = csr_matrix(aggr_counts.X)
+        # all_gene_count = csr_gene_reagg_cnts.sum()
 
         # iterate over each gene
         # if len(genes_list)>0 and genes_list[0] !="":
@@ -106,7 +108,7 @@ def initial_populate_data():
             if gene not in data.keys():
                 data[gene] = {}
 
-            spec_gene_regagg_cnts = csr_matrix(aggr_counts.X).getcol(gene_idx)
+            spec_gene_regagg_cnts = csr_gene_reagg_cnts.getcol(gene_idx)
             spec_gene_regagg_cnts_dense = np.squeeze(np.array(spec_gene_regagg_cnts.todense())).astype(int)
             if ('0' in regions):
                 out_idx = regions.index('0')
@@ -117,12 +119,14 @@ def initial_populate_data():
             for idx, obs in enumerate(obs_names_list):
                 region_to_idx[int(obs)] = idx
 
-            for rid in obs_names_list:
+            for rid_idx, rid in enumerate(obs_names_list):
                 if rid not in data[gene].keys():
                     data[gene][rid] = {"puck_dist":[int(0)] * len(pids)}
 
+                spec_region_regagg_cnts = csr_gene_reagg_cnts.getrow(rid_idx)
+                normalizer_val = spec_region_regagg_cnts.sum()/10000 # to get counts per 10K
                 cur_gene_region_cnt = spec_gene_regagg_cnts_dense[region_to_idx[int(rid)]]
-                data[gene][rid]["puck_dist"][pids_idx]=int(cur_gene_region_cnt)
+                data[gene][rid]["puck_dist"][pids_idx]=round(float(int(cur_gene_region_cnt))/normalizer_val, 3)
 
     # exit(0)
     ## hydrate parent regions with no direct assignment of beads
@@ -162,7 +166,7 @@ def process_gene(item, all_region_ids, data, len_pids):
                     sub_data = np.array(data[gene][sub_rid]["puck_dist"])
                     # dprint(ances_data)
                     # dprint(sub_data)
-                    ancestors_data[rid]["puck_dist"] = [int(x) for x in list(ances_data+sub_data)]
+                    ancestors_data[rid]["puck_dist"] = [round(float(x),3) for x in list(ances_data+sub_data)]
 
     # merge ancestor data dict with descendent data dict
     data[gene] = {**data[gene], **ancestors_data}
@@ -177,7 +181,7 @@ def process_gene(item, all_region_ids, data, len_pids):
 data = {}
 if __name__=='__main__':
     all_region_ids, gene_items, data, len_pids = initial_populate_data()
-    with Pool(2) as p:
+    with Pool(16) as p:
         p.map(functools.partial(process_gene, all_region_ids=all_region_ids, data=data, len_pids=len_pids), gene_items)
 
 
