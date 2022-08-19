@@ -42,6 +42,7 @@ from allensdk.core.reference_space_cache import ReferenceSpaceCache
 from multiprocessing import Pool
 from multiprocessing import Manager
 import functools
+import pickle
 
 
 def initial_populate_data():
@@ -181,7 +182,35 @@ def process_gene(item, all_region_ids, data, len_pids):
 data = {}
 if __name__=='__main__':
     all_region_ids, gene_items, data, len_pids = initial_populate_data()
-    with Pool(16) as p:
-        p.map(functools.partial(process_gene, all_region_ids=all_region_ids, data=data, len_pids=len_pids), gene_items)
+    data_root = sys.argv[1]
+    op_folder = data_root+sys.argv[5]
+    with open(op_folder+'/all_region_ids.obj', 'wb') as f:
+        pickle.dump(all_region_ids, f);
+        dprint("wrote all_region_ids")
+    with open(op_folder+'/gene_items.obj', 'wb') as f:
+        pickle.dump(gene_items, f);
+        dprint("wrote gene_items")
+    with open(op_folder+'/data.obj', 'wb') as f:
+        pickle.dump(data, f);
+        dprint("wrote data")
+    with open(op_folder+'/len_pids.obj', 'wb') as f:
+        pickle.dump(len_pids, f);
+        dprint("wrote len_pids")
+
+    # with open(op_folder+'/all_region_ids.obj', 'rb') as f:
+    #     all_region_ids = pickle.load(f);
+    #     dprint("read all_region_ids")
+    # with open(op_folder+'/gene_items.obj', 'rb') as f:
+    #     gene_items = pickle.load(f);
+    #     dprint("read gene_items")
+    # with open(op_folder+'/data.obj', 'rb') as f:
+    #     data = pickle.load(f);
+    #     dprint("read data")
+    # with open(op_folder+'/len_pids.obj', 'rb') as f:
+    #     len_pids = pickle.load(f);
+    #     dprint("read len_pids")
+
+    # with Pool(16) as p:
+    #     p.map(functools.partial(process_gene, all_region_ids=all_region_ids, data=data, len_pids=len_pids), gene_items)
 
 
