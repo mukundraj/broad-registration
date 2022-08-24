@@ -108,7 +108,7 @@ for pid in pids:
     genes = list(aggr_counts.var_names)
     regions = list(aggr_counts.obs_names)
     csr_gene_reagg_cnts = csr_matrix(aggr_counts.X)
-    all_gene_count = csr_gene_reagg_cnts.sum()
+    # all_gene_count = csr_gene_reagg_cnts.sum()
     normalizer_val = csr_gene_reagg_cnts.sum()/10000 # to get counts per 10K
 
     for gene_idx, gene in enumerate(genes):
