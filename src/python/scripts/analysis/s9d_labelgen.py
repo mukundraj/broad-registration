@@ -11,6 +11,7 @@ Usage:
 python s9d_labelgen.py
     inp: data root
     inp: path to folder with allen label ids
+    inp: path to integrated bead coords + gene expression file
     i/o: path to interim folder for R script to write to 
     out: path to folder to write out region labels
 
