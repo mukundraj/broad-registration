@@ -36,15 +36,19 @@ ip_folder_labels = data_root+sys.argv[2]
 ip_folder_counts = data_root+sys.argv[3]
 out_folder = data_root+sys.argv[4]
 
+pids = list(range(1, 208, 2))
+if (5 in pids):
+    pids.remove(5)
+if (77 in pids):
+    pids.remove(77)
+if (167 in pids):
+    pids.remove(167)
 
-# for pid in range(1, 208, 2):
-for pid in range(1, 4, 2):
-
-    apid = pid
-    if (pid==5 or pid==77 or pid==167):
-        apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
+for pid in pids:
+# for pid in range(1, 4, 2):
+    assert(pid!=5 and pid!=77 and pid!=167)
 
     # perform aggregation in R
     subprocess.run(["Rscript", "src/python/scripts/analysis_sc/s2a_prep.R", \
                     ip_folder_labels, ip_folder_counts, out_folder, \
-                    str(apid)])
+                    str(pid)])
