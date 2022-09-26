@@ -17,6 +17,8 @@ Supplementary:
 
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://ml_portal/test_data
 
+gsutil cp ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_names.json gs://ml_portal/test_data
+
 Created by Mukund on 2022-09-12
 """
 
@@ -35,6 +37,8 @@ import anndata as ann
 from scipy.sparse import csr_matrix, hstack
 from treelib import Node, Tree
 import zarr
+import numcodecs
+import json
 
 
 data_root = sys.argv[1]
@@ -135,7 +139,7 @@ store = zarr.DirectoryStore(zarr_filename) # https://zarr.readthedocs.io/en/stab
 root = zarr.group(store=store, overwrite=True)
 
 
-pids = list(range(1, 208, 2))
+pids = list(range(1, 4, 2))
 if (5 in pids):
     pids.remove(5)
 if (77 in pids):
@@ -151,10 +155,13 @@ for pid in pids:
     ip_data_file = f'{data_root}/single_cell/s2/nz_aggr_counts/nz_aggr_counts_{nis_id_str}.h5ad'
     # dprint(ip_data_file)
     data = ann.read_h5ad(ip_data_file)
+    gene_names = data.var_names
     dataX = data.X
     dataXcsr = csr_matrix(dataX)
     M, N = dataXcsr.shape
     aggr_counts_file = f'{ip_nz_aggr_data_folder}/nz_aggr_num_beads_{nis_id_str}.csv'
+    all_region_nz_array = np.squeeze(np.array(dataXcsr.sum(axis=0)))
+
     bead_counts = np.genfromtxt(aggr_counts_file, delimiter=',', skip_header=1).astype(np.int32)
     m,n = np.shape(bead_counts)
     assert(m==M)
@@ -192,6 +199,25 @@ for pid in pids:
         if rid in rid_to_idx_local:
             zval = bead_counts[rid_to_idx_local[rid]][1]
             pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval
+    pgroup_genes = root.create_group('genes', overwrite=True)
+    # pgroup_genes = zarr.empty(5, dtype=object, object_codec=numcodecs.JSON())
+    # pgroup_genes_arr = root.zeros('genes', shape=(nGenes), dtype='S6')
+    # pgroup_genes = root.zeros('X', shape=(1,nGenes), dtype='S6')
+    pgroup_genes_arr = pgroup_genes.zeros('X', shape=(nGenes), dtype='object', object_codec=numcodecs.JSON())
+    # pgroup_genes_arr[0, :] = np.asarray(gene_names)
+    pgroup_genes_arr[:] = np.asarray(gene_names)
+
+    if pid==1:
+        gene_names_dict = {"data": list(gene_names)}
+        dprint(gene_names)
+        # Serializing json
+        json_object = json.dumps(gene_names_dict, indent=4)
+
+        gene_names_file = f'{op_path}/gene_names.json'
+        # Writing to sample.json
+        with open(gene_names_file, "w") as outfile:
+            outfile.write(json_object)
+
 
 
 
