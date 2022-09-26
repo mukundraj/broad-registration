@@ -193,15 +193,23 @@ for pid in pids:
         rids_groupX[0, :] = rids
 
 
+
     # write dict info to zarr
     pgroup = root.create_group(f'p{pid}', overwrite=True)
     pgroupX = pgroup.zeros('X', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
     pgroupX[:] = 0
-    for rid in rid_to_idx_map: # only normalize for regions with nonzero count in current puck
+    pgroupXout = pgroup.zeros('Xout', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
+    pgroupXout[:] = 0
+    for rid in rid_to_idx_map: 
         global_region_idx = rid_to_idx_map[rid]
-        if rid in rid_to_idx_local:
-            zval = bead_counts[rid_to_idx_local[rid]][1]
-            pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval
+        zval = tree_nodes_info[global_region_idx]['num_beads']
+        pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval
+
+        # now calculate % nonzero outsize region
+        zvalOut = tree_nodes_info[rid_to_idx_map[997]]['num_beads'] - tree_nodes_info[global_region_idx]['num_beads'] # denomminator -> num of beads outside current region
+        pgroupXout[global_region_idx,:] = all_region_nz_array - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region
+        pgroupXout[global_region_idx,:] /= zvalOut
+
     pgroup_genes = root.create_group('genes', overwrite=True)
     # pgroup_genes = zarr.empty(5, dtype=object, object_codec=numcodecs.JSON())
     # pgroup_genes_arr = root.zeros('genes', shape=(nGenes), dtype='S6')
@@ -243,8 +251,10 @@ for pid in pids:
 
 ztest = zarr.open(zarr_filename, mode='r')
 dprint(ztest.tree())
-dprint(np.array(ztest['p3/X']))
+dprint(np.array(ztest['p3/X'][1326,:]))
 dprint(np.array(ztest['rids/X'])[0,3])
+# dprint(ztest['genes/X'][0, :])
+dprint(ztest['genes/X'][:])
 
 exit(0)
 # dprint("num leaves:", len([x for x in tree.leaves()]))
