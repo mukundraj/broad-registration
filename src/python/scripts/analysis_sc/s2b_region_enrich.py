@@ -80,24 +80,26 @@ annotation, meta = rspc.get_annotation_volume()
 tree_nodes_info = []
 
 # for hydrating tree nodes and populating an array of tree node data
-def get_child_info(tree, child_id, name_map, parent_id, nGenes, rid_to_idx_local, dataXcsr):
+def get_child_info(tree, child_id, name_map, parent_id, nGenes, rid_to_idx_local, dataXcsr, bead_counts):
 
     children = tree.children(child_id)
-    data = {"rid":child_id, "nz_counts":np.zeros(nGenes)}
+    data = {"rid":child_id, "nz_counts":np.zeros(nGenes), "num_beads":0}
 
     if (len(children)>0):
         for cur_child_node in children:
             cur_child_id = cur_child_node.identifier
-            info = get_child_info(tree, cur_child_id, name_map, parent_id, nGenes, rid_to_idx_local, dataXcsr)
+            info = get_child_info(tree, cur_child_id, name_map, parent_id, nGenes, rid_to_idx_local, dataXcsr, bead_counts)
 
             # assimalate data into parent
             data['nz_counts'] += info['nz_counts']
+            data['num_beads'] += info['num_beads']
 
     else: # leaf node - read data for region and update counts
         # data['nz_counts'] += np.zeros(3)
         if child_id in rid_to_idx_local:
             local_row_idx = rid_to_idx_local[child_id]
             data['nz_counts'] += np.squeeze(dataXcsr.getrow(local_row_idx).toarray())
+            data['num_beads'] += bead_counts[local_row_idx][1]
 
     tree_nodes_info.append(data)
     return data
@@ -175,7 +177,8 @@ for pid in pids:
         dsh.add_nodes(tree, nodes_list, name_map)
 
     tree_nodes_info = []
-    data = get_child_info(tree, ancestors_list[0][0], name_map, "", nGenes, rid_to_idx_local, dataXcsr)
+    data = get_child_info(tree, ancestors_list[0][0], name_map, "", nGenes, rid_to_idx_local, dataXcsr, bead_counts)
+    dprint("final tree_nodes_info ", tree_nodes_info[-1])
     rid_to_idx_map = {}
     rids = []
     for idx, x in enumerate(tree_nodes_info):
