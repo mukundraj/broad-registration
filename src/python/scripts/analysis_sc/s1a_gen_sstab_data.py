@@ -12,7 +12,7 @@ python  s1a_data_test.py
 
 Usage example:
 
-python src/python/scripts/analysis_sc/s1a_data_test.py \
+python src/python/scripts/analysis_sc/s1a_gen_sstab_data.py \
     ~/Desktop/work/data/mouse_atlas \
     /single_cell/s0/raw/jlanglie_scp_17_clusters_NZcounts.h5ad \
     /single_cell/s0/raw/jlanglie_scp_newallAnnotAvgs.h5ad \
