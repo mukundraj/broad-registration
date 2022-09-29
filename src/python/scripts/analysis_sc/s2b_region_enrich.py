@@ -15,9 +15,9 @@ python src/python/scripts/analysis_sc/s2b_region_enrich.py \
 
 Supplementary:
 
-gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://ml_portal/test_data
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://ml_portal/test_data/nz_aggr.zarr
 
-gsutil cp ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_names.json gs://ml_portal/test_data
+gsutil rsync ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_names.json gs://ml_portal/test_data/gene_names.json
 
 Created by Mukund on 2022-09-12
 """
@@ -141,7 +141,7 @@ store = zarr.DirectoryStore(zarr_filename) # https://zarr.readthedocs.io/en/stab
 root = zarr.group(store=store, overwrite=True)
 
 
-pids = list(range(1, 4, 2))
+pids = list(range(1, 208, 2))
 if (5 in pids):
     pids.remove(5)
 if (77 in pids):
