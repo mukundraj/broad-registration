@@ -19,6 +19,7 @@ python src/python/scripts/convert_from_vsi.py \
 References:
 - https://docs.openmicroscopy.org/bio-formats/5.7.3/users/comlinetools/conversion.html
 - https://java.com/en/download/
+- parallization: can be easily parallized - https://shuzhanfan.github.io/2017/12/parallel-processing-python-subprocess/
 
 """
 from os import listdir
