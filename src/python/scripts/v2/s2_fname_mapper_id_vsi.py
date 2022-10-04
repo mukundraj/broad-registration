@@ -1,5 +1,5 @@
 """
-Script to generate a mapping from vsi filenames to final IDs in dataset
+Script to generate a mapping between vsi/tiff filenames and final IDs in dataset
 
 Usage:
 
@@ -13,7 +13,7 @@ Usage example:
 python src/python/scripts/v2/s2_fname_mapper_id_vsi.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
-    /data_v3_nissl_post_qc/s2_seg_ids/id_to_vsi_mapper.csv
+    /data_v3_nissl_post_qc/s2_seg_ids/id_to_tiff_mapper.csv
 
 Created by Mukund on 2022-08-30
 
@@ -43,8 +43,9 @@ keys = list(mapper_to_old_filename)
 with open(op_file, 'w', newline='\n') as csvfile:
     writer = csv.writer(csvfile)
     for key in keys:
-        filename = mapper_to_old_filename[key]
-        filename = filename.replace("tif", "vsi").replace("nis_", "")
-        row = [key, filename]
-        writer.writerow(row)
+        if (key%2 != 0):
+            filename = mapper_to_old_filename[key]
+            filename = filename.replace("tif", "tiff").replace("nis_", "")
+            row = [key, filename]
+            writer.writerow(row)
 
