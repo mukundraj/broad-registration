@@ -28,7 +28,7 @@ python src/python/scripts/analysis_sc/s1c_beadxcell_zarr.py \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/cellspatial_data gs://braincelldata_demo/cellspatial_data
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/cellspatial_data gs://bcdportaldata/cellspatial_data
 
 Created by Mukund on 2022-10-24
 
@@ -147,6 +147,31 @@ def process_pid(pid):
     zarrX = root.zeros('X', shape=(nCells, nBeads), chunks=(1, nBeads), dtype='f4')
     zarrX[:] = np.asarray(counts_X.todense())
     dprint(counts_X.todense())
+    maxScoresGroup = root.create_group('maxScores', overwrite=True)
+    maxScoresX = maxScoresGroup.zeros('X', shape=(1, nCells), chunks=(1, nCells), dtype='f4')
+    # metadata_groupX[:] = np.array([0.0]*nCells);
+
+    # write out metadata json files
+    for cell_idx, cell in enumerate(cells):
+        # if (gene_idx%500==0):
+        #     collected = gc.collect()
+        #     dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
+        specific_gene_cnts = counts_X.getrow(cell_idx)
+        spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(float)
+        # spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
+        # dprint(np.max(spec_gene_cnts_dense))
+        # cell_metadata={"maxCount":np.max(spec_gene_cnts_dense)}
+        maxScoresX[0, cell_idx] = np.max(spec_gene_cnts_dense)
+        # dprint(cell_idx, maxCountsX[0, cell_idx])
+        # gene_cnts=spec_gene_cnts_dense
+        # gene_csv_name = f'{puck_folder}/gene_{gene}.csv'
+        # np.savetxt(gene_csv_name, gene_cnts, fmt='%i', header="count", comments='',delimiter=',')
+
+        # metadata_json_file = f'{puck_folder}/metadata_cell_{cell}.json'
+        # with open(metadata_json_file, 'w') as outfile:
+        #     tmp_dict = {'maxCount':str(cell_metadata['maxCount'])}
+        #     json.dump(tmp_dict, outfile, separators=(',', ':'))
+
 
 
 pids = list(range(1,2,2))
