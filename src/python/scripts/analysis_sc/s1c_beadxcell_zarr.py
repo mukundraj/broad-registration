@@ -23,7 +23,7 @@ python src/python/scripts/analysis_sc/s1c_beadxcell_zarr.py \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /single_cell/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
+    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg \
     /single_cell/s1/cellspatial_data \
 
 Supplementary:
