@@ -5,6 +5,9 @@ of num beads expressing gene (array length = number of genes).
 Usage:
 
 python s2b_region_enrich.py
+    i/o: data root
+    inp: nonzero, aggregated counts prepared by ./s2a_nz_counts.py
+    out: path to output folder
 
 Usage example:
 
@@ -15,9 +18,12 @@ python src/python/scripts/analysis_sc/s2b_region_enrich.py \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://ml_portal/test_data/nz_aggr.zarr
+//gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://ml_portal/test_data/nz_aggr.zarr
+//gsutil rsync ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_names.json gs://ml_portal/test_data/gene_names.json
 
-gsutil rsync ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_names.json gs://ml_portal/test_data/gene_names.json
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://bcdportaldata/cellspatial_data/nz_aggr.zarr
+
+gsutil cp ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_info.json gs://bcdportaldata/cellspatial_data/gene_info.json
 
 Created by Mukund on 2022-09-12
 """
@@ -142,12 +148,23 @@ root = zarr.group(store=store, overwrite=True)
 
 
 pids = list(range(1, 208, 2))
+# pids = list(range(1, 12, 2))
 if (5 in pids):
     pids.remove(5)
 if (77 in pids):
     pids.remove(77)
 if (167 in pids):
     pids.remove(167)
+
+globalGroupX = None
+globalGroupXout = None
+gzVal = None
+gzValOut = None
+
+curPuckSums = None
+maxExpr = None
+maxExprPuck = None
+
 
 for pid in pids:
     dprint("pid: ", pid)
@@ -162,7 +179,7 @@ for pid in pids:
     dataXcsr = csr_matrix(dataX)
     M, N = dataXcsr.shape
     aggr_counts_file = f'{ip_nz_aggr_data_folder}/nz_aggr_num_beads_{nis_id_str}.csv'
-    all_region_nz_array = np.squeeze(np.array(dataXcsr.sum(axis=0)))
+    all_region_nz_array = np.squeeze(np.array(dataXcsr[1,:].sum(axis=0))) # excluding region zero (non tissue)
 
     bead_counts = np.genfromtxt(aggr_counts_file, delimiter=',', skip_header=1).astype(np.int32)
     m,n = np.shape(bead_counts)
@@ -192,23 +209,63 @@ for pid in pids:
         rids_groupX = rids_group.zeros('X', shape=(1,nRids), chunks=(1, nRids), dtype='i4')
         rids_groupX[0, :] = rids
 
+        # for storing global (as opposed to puckwise) info
+        globalGroup = root.create_group(f'pall', overwrite=True)
+        globalGroupX = globalGroup.zeros('X', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
+        globalGroupX[:] = 0
+        globalGroupXout = globalGroup.zeros('Xout', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
+        # globalGroupXout = np.tile(all_region_nz_array, (nRids, 1))  # initializing here to prevent multiple inclusion of exterior beads
+        gzVal = np.zeros(nRids)
+        gzValOut = np.zeros(nRids)
+
+        maxExpr = np.zeros(nGenes)
+        maxExprPuck = np.ones(nGenes)
 
 
     # write dict info to zarr
-    pgroup = root.create_group(f'p{pid}', overwrite=True)
-    pgroupX = pgroup.zeros('X', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
-    pgroupX[:] = 0
-    pgroupXout = pgroup.zeros('Xout', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
-    pgroupXout[:] = 0
+    # pgroup = root.create_group(f'p{pid}', overwrite=True)
+    # pgroupX = pgroup.zeros('X', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
+    # pgroupX[:] = 0
+    # pgroupXout = pgroup.zeros('Xout', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
+    # pgroupXout[:] = 0
+
+    pgroupX = np.zeros((nRids, nGenes))
+    pgroupXout = np.zeros((nRids, nGenes))
+
+    all_region_beads = np.sum(np.array([x['num_beads'] for x in tree_nodes_info]), axis=0)
+    # globalGroupXout += np.tile(all_region_nz_array_hydrated, (nRids, 1))  # initializing here to prevent multiple inclusion of exterior beads
+    # dprint(np.shape(all_region_nz_array_hydrated))
+    # exit(0)
+
     for rid in rid_to_idx_map: 
         global_region_idx = rid_to_idx_map[rid]
+
         zval = tree_nodes_info[global_region_idx]['num_beads']
+        gzVal[global_region_idx] += zval
+
         pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval
+        globalGroupX[global_region_idx,:] += tree_nodes_info[global_region_idx]['nz_counts']
 
         # now calculate % nonzero outsize region
         zvalOut = tree_nodes_info[rid_to_idx_map[997]]['num_beads'] - tree_nodes_info[global_region_idx]['num_beads'] # denomminator -> num of beads outside current region
-        pgroupXout[global_region_idx,:] = all_region_nz_array - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region
+        gzValOut[global_region_idx] += zvalOut
+        # if (gzValOut[global_region_idx] > 0):
+        #     dprint(gzValOut[global_region_idx])
+
+        # pgroupXout[global_region_idx,:] = all_region_nz_array - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region
+        pgroupXout[global_region_idx,:] = tree_nodes_info[rid_to_idx_map[997]]['nz_counts'] - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region
+        globalGroupXout[global_region_idx,:] += pgroupXout[global_region_idx,:]
         pgroupXout[global_region_idx,:] /= zvalOut
+
+    curPuckSums = np.sum(np.nan_to_num(pgroupX[:,:]), axis=0) # summmation over regions of regionwise normalized expression counts for all genes in current puck
+    # dprint('pgroupX ', np.nan_to_num(pgroupX[:]))
+    # dprint('curPuckSums', curPuckSums)
+    # dprint(' max curPuckSums', np.max(curPuckSums))
+    curGreaterIdxs = np.where(curPuckSums > maxExpr)
+    # dprint('num genes greatest in curPuck', np.sum(curGreaterIdxs))
+
+    maxExpr[curGreaterIdxs] = curPuckSums[curGreaterIdxs]
+    maxExprPuck[curGreaterIdxs] = pid
 
     pgroup_genes = root.create_group('genes', overwrite=True)
     # pgroup_genes = zarr.empty(5, dtype=object, object_codec=numcodecs.JSON())
@@ -218,16 +275,40 @@ for pid in pids:
     # pgroup_genes_arr[0, :] = np.asarray(gene_names)
     pgroup_genes_arr[:] = np.asarray(gene_names)
 
-    if pid==1:
-        gene_names_dict = {"data": list(gene_names)}
+    if pid==np.max(pids):
+        dprint(np.max(globalGroupX), np.max(globalGroupXout)) #  max of global nz beads in and out of regions
+        dprint(np.min(globalGroupX), np.min(globalGroupXout)) #  min of global nz beads in and out of regions
+        dprint(np.max(gzVal), np.max(gzValOut)) # max of global all beads in and out of all regions
+        dprint('all_region_nz_array max', np.max(all_region_nz_array), tree_nodes_info[rid_to_idx_map[997]]['num_beads'])
+        # normalizing
+        globalGroupX[:] = np.transpose(np.nan_to_num(np.transpose(globalGroupX)/gzVal, posinf=0))[:,:] # posinf=0: if denominator (total beads) is zero, then expression must be zero too
+
+        globalGroupXout[:] = np.transpose(np.nan_to_num(np.transpose(globalGroupXout)/gzValOut, posinf=0))[:,:] # posinf=0: if denominator (total beads) is zero, then expression must be zero too
+
+        dprint(np.max(globalGroupX), np.max(globalGroupXout))
+
+        # storing normalizing denominators
+        gzValX = globalGroup.zeros('gzVal', shape=(nRids), chunks=(nRids), dtype='f4')
+        gzValX[:] = gzVal[:]
+
+        gzValOutX= globalGroup.zeros('gzValOut', shape=(nRids), chunks=(nRids), dtype='f4')
+        gzValOutX[:] = gzValOut[:]
+
+        # dprint(gzVal, gzValOut)
+
+
+
+        # write out meta info
+        gene_names_dict = {"data": list(gene_names), "maxExprPuck": list(maxExprPuck)}
         dprint(gene_names)
         # Serializing json
         json_object = json.dumps(gene_names_dict, indent=4)
 
-        gene_names_file = f'{op_path}/gene_names.json'
+        gene_names_file = f'{op_path}/gene_info.json'
         # Writing to sample.json
         with open(gene_names_file, "w") as outfile:
             outfile.write(json_object)
+
 
 
 
@@ -251,7 +332,7 @@ for pid in pids:
 
 ztest = zarr.open(zarr_filename, mode='r')
 dprint(ztest.tree())
-dprint(np.array(ztest['p3/X'][1326,:]))
+# dprint(np.array(ztest['p1/X'][1326,:]))
 dprint(np.array(ztest['rids/X'])[0,3])
 # dprint(ztest['genes/X'][0, :])
 dprint(ztest['genes/X'][:])

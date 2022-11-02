@@ -28,7 +28,7 @@ python src/python/scripts/analysis_sc/s1c_beadxcell_zarr.py \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/cellspatial_data gs://bcdportaldata/cellspatial_data
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/cellspatial_data gs://bcdportaldata/cellspatial_data/genexp
 
 Created by Mukund on 2022-10-24
 
@@ -174,7 +174,7 @@ def process_pid(pid):
 
 
 
-pids = list(range(1,2,2))
+pids = list(range(1,208,2))
 if __name__ == '__main__':
     start = time.time()
     with Pool(1) as p:
