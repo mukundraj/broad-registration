@@ -24,7 +24,10 @@ Created by Mukund on 2022-07-12
 
 Supplementary:
 
-gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e gs://ml_portal2/test_data2/
+// gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e gs://ml_portal2/test_data2/
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e gs://bcdportaldata/genexp_data/freqbars/gene_jsons_s9e
+
 
 References:
 
@@ -216,7 +219,7 @@ region_id_to_name = {v: k for k, v in ccf_name_to_id.items()}
 for gene in region_aggred_counts.keys():
 
 
-    puck_aggred_vals = [{"key":key, "cnt": round(float(puck_aggred_counts[gene][key]), 2)} for key in puck_aggred_counts[gene].keys()]
+    puck_aggred_vals = [{"key":key, "cnt": round(float(puck_aggred_counts[gene][key]), 4)} for key in puck_aggred_counts[gene].keys()]
     puck_aggred_vals = sorted(puck_aggred_vals, key=lambda x: x['key'][0])
     puck_aggred_vals = [{**item, 'sr':sr} for sr,item in enumerate(puck_aggred_vals)]
 
@@ -225,7 +228,7 @@ for gene in region_aggred_counts.keys():
         pid_to_sr[item['key'][0]] = item['sr']
 
     # get and sort values in region_aggred_counts
-    reg_aggred_vals = [{"key":key, "cnt": round(float(region_aggred_counts[gene][key]), 2)} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
+    reg_aggred_vals = [{"key":key, "cnt": round(float(region_aggred_counts[gene][key]), 4)} for key in region_aggred_counts[gene].keys() if region_aggred_counts[gene][key]>0]
     # reg_aggred_vals = sorted(reg_aggred_vals, key=lambda x: x['cnt'], reverse=True)
     reg_aggred_vals = [{**item, 'nm':agg_rnames[i], 'sr': pid_to_sr[item['key'][0]]} for i, item in enumerate(reg_aggred_vals)]
 
