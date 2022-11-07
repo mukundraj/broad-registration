@@ -1,6 +1,6 @@
 
 """
-Generates zarr files (nonzero counts and avg expr) for SingleCell viewer tab from version of data (csv files) generated on 2022-09-23
+Generates zarr files (nonzero counts and avg expr) for SingleCell viewer tab from version of data (csv files) generated on 2022-09-23. Also including celltype metadata on 2022-11-07.
 
 Usage:
 
@@ -9,6 +9,7 @@ python  s1a_data_test.py
     inp: path to nonzero counts file
     inp: path to avg vals file
     inp: path to cluster metadata file (for numcells for each cluster)
+    inp: path to celltype metadata file
     out: output path
 
 Usage example:
@@ -18,11 +19,13 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_nz_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_avg_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
-    /single_cell/s0 \
+    /single_cell/s0/raw_v2/snRNA-seq_metadata.csv \
+    /single_cell/s1 \
 
 Supplementary:
 
-gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s0/zarr/scZarr.zarr gs://ml_portal/test_data
+// gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s0/zarr/scZarr.zarr gs://ml_portal/test_data
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/singlecell_data/scZarr.zarr
 
 Created by Mukund on 2022-09-27
 
@@ -42,7 +45,23 @@ data_root = sys.argv[1]
 nz_csv_file = data_root+sys.argv[2]
 avg_csv_file = data_root+sys.argv[3]
 clustersize_csv_file = data_root+sys.argv[4]
-op_path = sys.argv[5]
+metadata_file = data_root+sys.argv[5]
+op_path = sys.argv[6]
+
+
+# read metadata file
+metadata = {}
+with open(metadata_file, 'r') as f:
+    reader = csv.reader(f, delimiter=',')
+    next(reader) # skip header
+    for row in reader:
+        # dprint(row[0], row[2], row[7], row[8])
+        metadata[row[0]] = [row[2], row[7], row[8]] # [celltype, top_level_region, pct of cells in cluster from tlr]
+
+dprint('metadata length:', len(metadata))
+
+
+
 
 nClusters = 5030
 nGenes = 21899
@@ -50,7 +69,7 @@ nGenes = 21899
 # nGenesTmp = 5
 
 # create new zarr file
-zarr_file = f'{data_root}/{op_path}/zarr/scZarr.zarr'
+zarr_file = f'{data_root}/{op_path}/scZarr.zarr'
 store = zarr.DirectoryStore(zarr_file) # https://zarr.readthedocs.io/en/stable/tutorial.html#storage-alternatives
 root = zarr.group(store=store, overwrite=True)
 nz_group = root.create_group(f'nz', overwrite=True)
@@ -63,6 +82,8 @@ avg_groupX = avg_group.zeros('X', shape=(nClusters, nGenes), chunks=(nClusters, 
 
 obs_group = root.create_group(f'obs', overwrite=True)
 var_group = root.create_group(f'var', overwrite=True)
+
+metadataGroup = root.create_group(f'metadata', overwrite=True)
 
 clusterSizes = []
 clusterNames = []
@@ -85,8 +106,37 @@ with open(clustersize_csv_file, 'r') as f:
     clustersArray[:] = clusterNames
 
 
+# next, create metadata arrays
+cell_classes = [None]*nClusters
+top_regions = [None]*nClusters
+max_pcts = [None]*nClusters
+# dprint(top_regions)
+
+for idx, cname in enumerate(clusterNames):
+    cname =  cname.split('=')[1]
+    if cname in metadata:
+        cell_classes[idx] = metadata[cname][0]
+        top_regions[idx] = metadata[cname][1]
+        max_pcts[idx] = metadata[cname][2][:-1] # remove % sign
+    else:
+        cell_classes[idx] = 'NA'
+        top_regions[idx] = 'NA'
+        max_pcts[idx] =  '0.0'
+
+cellClassesArray = metadataGroup.zeros('cellclasses', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+cellClassesArray[:] = cell_classes
+topRegionsArray = metadataGroup.zeros('topregions', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+topRegionsArray[:] = top_regions
+maxPctsArray = metadataGroup.zeros('maxpcts', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+maxPctsArray[:] = max_pcts
+
+uniqCellClasses = list(set(cell_classes))
+uniqCellClassesArray = metadataGroup.zeros('uniqcellclasses', shape=(len(uniqCellClasses)), dtype='object', object_codec=numcodecs.VLenUTF8())
+uniqCellClassesArray[:] = uniqCellClasses
+
+
 nz_mat = np.zeros(shape=(nClusters, nGenes))
-# second, generate nz file
+# next, populate nz data in zarr file
 with open(nz_csv_file, 'r') as f:
     # pass the file object to reader() to get the reader object
     csv_reader = csv.reader(f)
@@ -113,7 +163,7 @@ nz_groupX[:] = nz_mat
 
 avg_mat = np.zeros(shape=(nClusters, nGenes))
 
-# third, generate avgs file
+# third, populate avgs data in zarr file
 with open(avg_csv_file, 'r') as f:
     # pass the file object to reader() to get the reader object
     csv_reader = csv.reader(f)
@@ -131,8 +181,4 @@ avg_groupX[:] = avg_mat
 
 z = zarr.open(zarr_file)
 dprint(z.tree())
-# z.avg.X[:5, :2]
-# z.nz.X[:5, :2]
-
-
-exit(0)
+# z.avg.X[:5, :2] z.nz.X[:5, :2] exit(0)
