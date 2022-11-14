@@ -30,7 +30,7 @@ import sys
 path_root = Path(__file__).parents[4]
 sys.path.append(str(path_root))
 
-import src.python.utils.misc as misc
+from src.python.utils.misc import get_ofixed_nis_idx
 import subprocess
 
 from produtils import dprint
@@ -47,10 +47,12 @@ op_wireframe = sys.argv[1] + sys.argv[5]
 ids = list(range(1, 208, 2))
 
 for id in ids:
-    cnis_idx = str(misc.get_ofixed_nis_idx(id)).zfill(3)
+    cnis_idx = str(get_ofixed_nis_idx(id)).zfill(3)
     dprint(id, cnis_idx)
-    nis_cmd = ['cp', ip_nis + '/nis_' + str(id).zfill(3) + '.png', op_nis + '/nis_' + cnis_idx + '.png']
-    wireframe_cmd = ['cp', ip_wireframe + '/chuck_sp_wireframe_' + str(id).zfill(3) + '.png', op_wireframe + '/chuck_sp_wireframe_' + cnis_idx + '.png']
+    # nis_cmd = ['cp', ip_nis + '/nis_' + str(id).zfill(3) + '.png', op_nis + '/nis_' + cnis_idx + '.png']
+    # wireframe_cmd = ['cp', ip_wireframe + '/chuck_sp_wireframe_' + str(id).zfill(3) + '.png', op_wireframe + '/chuck_sp_wireframe_' + cnis_idx + '.png']
+    nis_cmd = ['cp', ip_nis + '/nis_' + cnis_idx + '.png', op_nis + '/nis_' + str(id).zfill(3) + '.png']
+    wireframe_cmd = ['cp', ip_wireframe + '/chuck_sp_wireframe_' + cnis_idx + '.png', op_wireframe + '/chuck_sp_wireframe_' + str(id).zfill(3) + '.png']
 
     subprocess.run(nis_cmd)
     subprocess.run(wireframe_cmd)

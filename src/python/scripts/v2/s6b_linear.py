@@ -38,6 +38,7 @@ sys.path.append(str(path_root))
 import csv
 import numpy as np
 import json
+from src.python.utils.misc import get_ofixed_nis_idx
 
 nissl_id = int(sys.argv[1])
 ip_coords_folder = sys.argv[2]
@@ -119,7 +120,8 @@ for nissl_id in nissl_ids:
     print("\n")
     print(np.amax(pts, axis=0), np.amin(pts, axis=0))
 
-    pts = pts@qnii_data[nissl_id]
+    cnissl_id = get_ofixed_nis_idx(nissl_id)
+    pts = pts@qnii_data[cnissl_id]
     print("\nPts in physical space:\n")
     print(pts)
     pts_physical = pts

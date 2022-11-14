@@ -43,6 +43,7 @@ import src.python.utils.io as io
 import src.python.utils.transforms as tfms
 import math
 import subprocess
+from src.python.utils.misc import get_ofixed_nis_idx
 
 
 nissl_id = int(sys.argv[1])
@@ -207,6 +208,8 @@ for nissl_id in nissl_ids:
 
     # warped_coords
     nis_idx = str(nissl_id).zfill(3)
+    # cnissl_id = get_ofixed_nis_idx(nissl_id)
+
     intrim_pts_file = tfm_folder+"/"+nis_idx+"_intrim_pts.txt"
     with open(intrim_pts_file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)

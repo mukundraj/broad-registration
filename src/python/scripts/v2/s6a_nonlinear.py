@@ -38,6 +38,7 @@ import csv
 import numpy as np
 import json
 import subprocess
+from src.python.utils.misc import get_ofixed_nis_idx
 
 nissl_id = int(sys.argv[1])
 chuck_space_coords_folder = sys.argv[2]
@@ -83,8 +84,9 @@ for nissl_id in nissl_ids:
         for row in in_pts:
             writer.writerow(row)
 
-    from_fiducials_file = tfm_folder+"/"+str(nissl_id)+"_f.csv"
-    to_fiducials_file = tfm_folder+"/"+str(nissl_id)+"_t.csv"
+    cnissl_id = get_ofixed_nis_idx(nissl_id)
+    from_fiducials_file = tfm_folder+"/"+str(cnissl_id)+"_f.csv"
+    to_fiducials_file = tfm_folder+"/"+str(cnissl_id)+"_t.csv"
     # nrrd_path = labelmap_folder+"/lmap_"+nis_idx+".nrrd"
     temp_output_csv_file = op_nlaligned_coords_folder+"/qnii_coords_"+nis_idx+".csv"
     # call cpp script to transform output of previous step with fiduals/TPS, sample from nrrd and write output
