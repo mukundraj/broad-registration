@@ -13,7 +13,7 @@ python fix_offset.py
 
 Usage example:
 
-python src/python/scripts/misc/fix_offset.py \
+python src/python/scripts/v2/s0d_fix_offset.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg \
