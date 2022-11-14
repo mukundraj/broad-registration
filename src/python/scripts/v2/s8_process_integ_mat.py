@@ -20,9 +20,9 @@ python src/python/scripts/v2/s8_process_integ_mat.py \
     /data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
-    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe \
-    /data_v3_nissl_post_qc/s9_analysis/gene_jsons
+    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png_ofix \
+    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg_ofix \
+    /data_v3_nissl_post_qc/s9_analysis/gene_exprs
 
 Created by Mukund on 2022-05-04
 
@@ -32,6 +32,8 @@ References:
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons gs://ml_portal2/test_data2/
 
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons/puck1 gs://ml_portal2/test_data2/gene_jsons/
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_exprs gs://bcdportaldata/genexp_data/gene_exprs
 
 """
 
@@ -167,22 +169,23 @@ def process_pid(pid):
     # gene_metadata = {}
 
     for gene_idx, gene in enumerate(genes):
-        if (gene_idx%500==0):
-            collected = gc.collect()
-            dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
-        specific_gene_cnts = counts_X.getcol(gene_idx)
-        spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
-        spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
-        # dprint(np.max(spec_gene_cnts_dense))
-        gene_metadata={"maxCount":np.max(spec_gene_cnts_dense)}
-        gene_cnts=spec_gene_cnts_dense
-        gene_csv_name = f'{puck_folder}/gene_{gene}.csv'
-        np.savetxt(gene_csv_name, gene_cnts, fmt='%i', header="count", comments='',delimiter=',')
+        if gene=='Pcp4':
+            if (gene_idx%500==0):
+                collected = gc.collect()
+                dprint('gene_idx', gene_idx, 'pid', pid, 'collected', collected)
+            specific_gene_cnts = counts_X.getcol(gene_idx)
+            spec_gene_cnts_dense = np.squeeze(np.array(specific_gene_cnts.todense())).astype(int)
+            spec_gene_cnts_dense = spec_gene_cnts_dense[in_tissue_inds]
+            # dprint(np.max(spec_gene_cnts_dense))
+            gene_metadata={"maxCount":np.max(spec_gene_cnts_dense)}
+            gene_cnts=spec_gene_cnts_dense
+            gene_csv_name = f'{puck_folder}/gene_{gene}.csv'
+            np.savetxt(gene_csv_name, gene_cnts, fmt='%i', header="count", comments='',delimiter=',')
 
-        metadata_json_file = f'{puck_folder}/metadata_gene_{gene}.json'
-        with open(metadata_json_file, 'w') as outfile:
-            tmp_dict = {'maxCount':str(gene_metadata['maxCount'])}
-            json.dump(tmp_dict, outfile, separators=(',', ':'))
+            metadata_json_file = f'{puck_folder}/metadata_gene_{gene}.json'
+            with open(metadata_json_file, 'w') as outfile:
+                tmp_dict = {'maxCount':str(gene_metadata['maxCount'])}
+                json.dump(tmp_dict, outfile, separators=(',', ':'))
 
 
     # for gene in genes_list:
@@ -213,7 +216,7 @@ def process_pid(pid):
 # end = time.time()
 # dprint(f'Total time {end - start} seconds.')
 
-pids = list(range(61,208,2))
+pids = list(range(1,208,2))
 if __name__ == '__main__':
     start = time.time()
     with Pool(20) as p:
