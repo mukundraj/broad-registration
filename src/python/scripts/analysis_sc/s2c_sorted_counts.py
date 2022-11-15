@@ -89,7 +89,8 @@ for pid in pids:
     regions = list(aggr_counts.obs_names)
     csr_cell_reagg_cnts = csr_matrix(aggr_counts.X)
     # all_cell_count = csr_cell_reagg_cnts.sum()
-    normalizer_val = csr_cell_reagg_cnts.sum()/10000 # to get counts per 10K
+    # normalizer_val = csr_cell_reagg_cnts.sum()/100000 # to get counts per 10K
+    normalizer_val = 1
 
     for cell_idx, cell in enumerate(cells):
 
@@ -108,7 +109,10 @@ for pid in pids:
 
 
         spec_cell_regagg_cnts = csr_cell_reagg_cnts.getcol(cell_idx)
-        spec_cell_regagg_cnts_dense = np.squeeze(np.array(spec_cell_regagg_cnts.todense())).astype(int)
+        # spec_cell_regagg_cnts_dense = np.squeeze(np.array(spec_cell_regagg_cnts.todense())).astype(int)
+        spec_cell_regagg_cnts_dense = np.squeeze(np.array(spec_cell_regagg_cnts.todense())).astype(float)
+        # if (cell.split("=")[1]=='Inh_Pax6_Nkx2-2_1'):
+        #     dprint('cell_idx', cell_idx, 'pid', pid, 'spec_cell_regagg_cnts_dense', spec_cell_regagg_cnts_dense, 'shape', spec_cell_regagg_cnts_dense.shape)
         # dprint(np.shape(spec_cell_regagg_cnts_dense))
         if ('0' in regions):
             out_idx = regions.index('0')

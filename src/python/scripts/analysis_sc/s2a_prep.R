@@ -50,6 +50,9 @@ X@x[ind] <- 1
 # aggregating regionwise
 b <- aggregate.Matrix(X,labels, FUN=sum()) # regions x chosen_gene(s)
 
+# X[X[,3]>0,3] # nonzero vals for 3rd celltype Inh_Pax6_Nkx2-2_1
+# b[b[,3]>0,3] # non zero val for 3rd cell type after aggregation
+
 ad <- AnnData(
   X = b
   #obs = data.frame(group = c("a", "b"), row.names = c("s1", "s2")),

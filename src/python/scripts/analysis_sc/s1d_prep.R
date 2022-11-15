@@ -54,6 +54,9 @@ selectedBeadlabels <- labels[selected_ids]
 # transpose X
 
 X <- t(ad$X)
+# print(c('nonzero vals',sum(X)))
+X@x[X@x<0.3]<-0 # set all values less than threshold 0.3 to 0
+# print(c('nonzero vals after thresholding', sum(X)))
 # X <- ad$X
 
 # print(length(selectedBeadlabels))

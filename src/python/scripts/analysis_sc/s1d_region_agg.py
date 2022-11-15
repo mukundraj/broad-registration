@@ -15,7 +15,7 @@ Usage example:
 python src/python/scripts/analysis_sc/s1d_region_agg.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels \
-    /single_cell/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix \
+    /single_cell/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
     1 207 \
     /single_cell/s1/s1d_region_agg \
 
