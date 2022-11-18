@@ -10,6 +10,7 @@ python  s1a_data_test.py
     inp: path to avg vals file
     inp: path to cluster metadata file (for numcells for each cluster)
     inp: path to celltype metadata file
+    inp: path to CellSpatial tab's score histogram data
     out: output path
 
 Usage example:
@@ -20,11 +21,13 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_avg_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
     /single_cell/s0/raw_v2/snRNA-seq_metadata.csv \
+    /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s1 \
 
 Supplementary:
 
 // gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s0/zarr/scZarr.zarr gs://ml_portal/test_data
+
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/singlecell_data/scZarr.zarr
 
 Created by Mukund on 2022-09-27
@@ -40,13 +43,15 @@ import pickle
 import csv
 import numcodecs
 import re
+import os
 
 data_root = sys.argv[1]
 nz_csv_file = data_root+sys.argv[2]
 avg_csv_file = data_root+sys.argv[3]
 clustersize_csv_file = data_root+sys.argv[4]
 metadata_file = data_root+sys.argv[5]
-op_path = sys.argv[6]
+hist_data_path = data_root+sys.argv[6]
+op_path = sys.argv[7]
 
 
 # read metadata file
@@ -110,18 +115,23 @@ with open(clustersize_csv_file, 'r') as f:
 cell_classes = [None]*nClusters
 top_regions = [None]*nClusters
 max_pcts = [None]*nClusters
+map_status = [None]*nClusters # whether the cluster is mapped to a spatial celltype
 # dprint(top_regions)
 
 for idx, cname in enumerate(clusterNames):
     cname =  cname.split('=')[1]
+    mapFilename = f'{hist_data_path}/{cname}.json'
+    cnameMapExists = 'Y' if os.path.isfile(mapFilename)==True else 'N'
     if cname in metadata:
         cell_classes[idx] = metadata[cname][0]
         top_regions[idx] = metadata[cname][1]
         max_pcts[idx] = metadata[cname][2][:-1] # remove % sign
+        map_status[idx] = cnameMapExists
     else:
         cell_classes[idx] = 'NA'
         top_regions[idx] = 'NA'
         max_pcts[idx] =  '0.0'
+        map_status[idx] = cnameMapExists
 
 cellClassesArray = metadataGroup.zeros('cellclasses', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 cellClassesArray[:] = cell_classes
@@ -129,6 +139,8 @@ topRegionsArray = metadataGroup.zeros('topregions', shape=(nClusters), dtype='ob
 topRegionsArray[:] = top_regions
 maxPctsArray = metadataGroup.zeros('maxpcts', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 maxPctsArray[:] = max_pcts
+mapStatusArray = metadataGroup.zeros('mapStatus', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+mapStatusArray[:] = map_status
 
 uniqCellClasses = list(set(cell_classes))
 uniqCellClassesArray = metadataGroup.zeros('uniqcellclasses', shape=(len(uniqCellClasses)), dtype='object', object_codec=numcodecs.VLenUTF8())
@@ -178,7 +190,7 @@ with open(avg_csv_file, 'r') as f:
 
 avg_groupX[:] = avg_mat
 
-
+dprint('zarr file', zarr_file)
 z = zarr.open(zarr_file)
 dprint(z.tree())
 # z.avg.X[:5, :2] z.nz.X[:5, :2] exit(0)

@@ -18,11 +18,11 @@ python src/python/scripts/analysis_sc/s2c_sorted_counts.py \
     /single_cell/s1/s1d_region_agg \
     /data_v3_nissl_post_qc/s9_analysis/ccf_regions.json \
     1 207 \
-    /single_cell/s2/s2c/cell_jsons_s2c \
+    /cell_spatial/s2/s2c/cell_jsons_s2c \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/s2c/cell_jsons_s2c gs://bcdportaldata/cellspatial_data/freqbars/cell_jsons_s2c
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2c/cell_jsons_s2c gs://bcdportaldata/cellspatial_data/freqbars/cell_jsons_s2c
 
 Created by Mukund on 2022-10-27
 
