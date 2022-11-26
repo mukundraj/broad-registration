@@ -12,12 +12,12 @@ python s1d_region_agg.py \
 
 Usage example:
 
-python src/python/scripts/analysis_sc/s1d_region_agg.py \
+python src/python/scripts/analysis_cs/s1d_region_agg.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels \
-    /single_cell/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
+    /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
     1 207 \
-    /single_cell/s1/s1d_region_agg \
+    /cell_spatial/s1/s1d_region_agg \
 
 Created by Mukund on 2022-10-28
 
@@ -45,7 +45,7 @@ def process_pid(pid):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
     # perform aggregation in R
-    subprocess.run(["Rscript", "src/python/scripts/analysis_sc/s1d_prep.R", \
+    subprocess.run(["Rscript", "src/python/scripts/analysis_cs/s1d_prep.R", \
                     ip_folder_labels, ip_folder_scores, op_folder, \
                     str(apid)])
 
