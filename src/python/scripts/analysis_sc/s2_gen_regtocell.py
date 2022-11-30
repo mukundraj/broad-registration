@@ -1,4 +1,5 @@
-"""Create a dict mapping region id to array of celltype ids.
+"""Create a dict mapping region id to array of celltype ids. This is needed for
+dendrogram componet in SingleCell tab.
 
 Usage:
 
