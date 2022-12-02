@@ -13,11 +13,11 @@ python s2a_nz_counts.py
 
 Usage example:
 
-python src/python/scripts/analysis_sc/s2a_nz_counts.py \
+python src/python/scripts/analysis/s9g_nz_counts.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels \
     /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
-    /single_cell/s2/nz_aggr_counts \
+    /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts \
 
 Created by Mukund on 2022-09-13
 """
@@ -49,6 +49,6 @@ for pid in pids:
     assert(pid!=5 and pid!=77 and pid!=167)
 
     # perform aggregation in R
-    subprocess.run(["Rscript", "src/python/scripts/analysis_sc/s2a_prep.R", \
+    subprocess.run(["Rscript", "src/python/scripts/analysis/s9g_prep.R", \
                     ip_folder_labels, ip_folder_counts, out_folder, \
                     str(pid)])
