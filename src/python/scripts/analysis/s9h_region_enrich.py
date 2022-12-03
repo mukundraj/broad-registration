@@ -11,19 +11,16 @@ python s2b_region_enrich.py
 
 Usage example:
 
-python src/python/scripts/analysis_sc/s2b_region_enrich.py \
+python src/python/scripts/analysis/s9h_region_enrich.py \
     ~/Desktop/work/data/mouse_atlas \
-    /single_cell/s2/nz_aggr_counts \
-    /single_cell/s2/nz_aggr_zarr \
+    /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts \
+    /data_v3_nissl_post_qc/s9_analysis/s9h \
 
 Supplementary:
 
-//gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://ml_portal/test_data/nz_aggr.zarr
-//gsutil rsync ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_names.json gs://ml_portal/test_data/gene_names.json
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9h/nz_aggr.zarr gs://bcdportaldata/cellspatial_data/nz_aggr.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/nz_aggr.zarr gs://bcdportaldata/cellspatial_data/nz_aggr.zarr
-
-gsutil cp ~/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_zarr/gene_info.json gs://bcdportaldata/cellspatial_data/gene_info.json
+gsutil cp ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9h/gene_info.json gs://bcdportaldata/cellspatial_data/gene_info.json
 
 Created by Mukund on 2022-09-12
 """
@@ -91,14 +88,27 @@ def get_child_info(tree, child_id, name_map, parent_id, nGenes, rid_to_idx_local
     children = tree.children(child_id)
     data = {"rid":child_id, "nz_counts":np.zeros(nGenes), "num_beads":0}
 
+    # if (child_id==1025 or child_id==10683):
+    #     if child_id in rid_to_idx_local:
+    #         # dprint('child_id', child_id, 'parent_id', parent_id)
+    #         dprint('child_id', child_id, rid_to_idx_local)
+    #         local_row_idx = rid_to_idx_local[child_id]
+    #         dprint('local_row_idx', local_row_idx)
+    #         dprint("child_id", child_id, 'nbeads',bead_counts[local_row_idx], 'counts', np.sum(np.squeeze(dataXcsr.getrow(local_row_idx).toarray())), 'numchildren', len(children))
     if (len(children)>0):
+        if child_id in rid_to_idx_local:
+            local_row_idx = rid_to_idx_local[child_id]
+            if bead_counts[local_row_idx][1] > 0:
+                data['nz_counts'] += np.squeeze(dataXcsr.getrow(local_row_idx).toarray())
+                data['num_beads'] += bead_counts[local_row_idx][1]
         for cur_child_node in children:
             cur_child_id = cur_child_node.identifier
-            info = get_child_info(tree, cur_child_id, name_map, parent_id, nGenes, rid_to_idx_local, dataXcsr, bead_counts)
+            info = get_child_info(tree, cur_child_id, name_map, child_id, nGenes, rid_to_idx_local, dataXcsr, bead_counts)
 
             # assimalate data into parent
             data['nz_counts'] += info['nz_counts']
             data['num_beads'] += info['num_beads']
+
 
     else: # leaf node - read data for region and update counts
         # data['nz_counts'] += np.zeros(3)
@@ -111,7 +121,7 @@ def get_child_info(tree, child_id, name_map, parent_id, nGenes, rid_to_idx_local
     return data
 
 # for getting nGenes
-ip_data_file1 = "/Users/mraj/Desktop/work/data/mouse_atlas/single_cell/s2/nz_aggr_counts/nz_aggr_counts_003.h5ad"
+ip_data_file1 = ip_nz_aggr_data_folder+"/nz_aggr_counts_003.h5ad"
 data1 = ann.read_h5ad(ip_data_file1)
 data1X = data1.X
 data1Xcsr = csr_matrix(data1X)
@@ -148,7 +158,7 @@ root = zarr.group(store=store, overwrite=True)
 
 
 pids = list(range(1, 208, 2))
-# pids = list(range(1, 12, 2))
+# pids = [1,207]
 if (5 in pids):
     pids.remove(5)
 if (77 in pids):
@@ -171,7 +181,7 @@ for pid in pids:
     assert(pid!=5 and pid!=77 and pid!=167)
     # read regionwise gene exp data and regionwise total expression data
     nis_id_str = str(pid).zfill(3)
-    ip_data_file = f'{data_root}/single_cell/s2/nz_aggr_counts/nz_aggr_counts_{nis_id_str}.h5ad'
+    ip_data_file = f'{ip_nz_aggr_data_folder}/nz_aggr_counts_{nis_id_str}.h5ad'
     # dprint(ip_data_file)
     data = ann.read_h5ad(ip_data_file)
     gene_names = data.var_names
@@ -243,8 +253,9 @@ for pid in pids:
         zval = tree_nodes_info[global_region_idx]['num_beads']
         gzVal[global_region_idx] += zval
 
-        pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval
-        globalGroupX[global_region_idx,:] += tree_nodes_info[global_region_idx]['nz_counts']
+        # pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']
+        globalGroupX[global_region_idx,:] += tree_nodes_info[global_region_idx]['nz_counts'] # will be normalized later
+        pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval # normalized her to determine puck with max expr per 10k beads
 
         # now calculate % nonzero outsize region
         zvalOut = tree_nodes_info[rid_to_idx_map[997]]['num_beads'] - tree_nodes_info[global_region_idx]['num_beads'] # denomminator -> num of beads outside current region
@@ -253,9 +264,13 @@ for pid in pids:
         #     dprint(gzValOut[global_region_idx])
 
         # pgroupXout[global_region_idx,:] = all_region_nz_array - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region
-        pgroupXout[global_region_idx,:] = tree_nodes_info[rid_to_idx_map[997]]['nz_counts'] - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region
+        pgroupXout[global_region_idx,:] = tree_nodes_info[rid_to_idx_map[997]]['nz_counts'] - tree_nodes_info[global_region_idx]['nz_counts'] # numerator -> num of nonzero count beads outside current region, will be normalized later
         globalGroupXout[global_region_idx,:] += pgroupXout[global_region_idx,:]
-        pgroupXout[global_region_idx,:] /= zvalOut
+        pgroupXout[global_region_idx,:] /= zvalOut # normalized here to maintain consistency with pgroupX
+
+    # dprint("DEBUG", pid, globalGroupX[1098, 8198], gzVal[1098], globalGroupXout[1098, 8198], gzValOut[1098])
+    dprint("DEBUG", pid, tree_nodes_info[1098]['nz_counts'][8198] , gzVal[1098], pgroupXout[1098, 8198], gzValOut[1098])
+    sys.stdout.flush()
 
     curPuckSums = np.sum(np.nan_to_num(pgroupX[:,:]), axis=0) # summmation over regions of regionwise normalized expression counts for all genes in current puck
     # dprint('pgroupX ', np.nan_to_num(pgroupX[:]))
