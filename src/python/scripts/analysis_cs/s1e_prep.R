@@ -46,13 +46,15 @@ threshold <- 0.3
 
 ind <- X@x >= threshold
 X@x[ind] <- 1 # set to 1 if greater than threshold to consider bead as containing celltype
-
 X@x[X@x<threshold]<-0 # set all values less than threshold 0.3 to 0
 
-print (dim(X))
-print(length(selectedBeadlabels))
+# print (dim(X))
+# save(X, selectedBeadlabels, file='./X.RData')
+# print(length(selectedBeadlabels))
 # aggregating regionwise
 b <- aggregate.Matrix(X,selectedBeadlabels, FUN=sum()) # regions x mapped_celltypes(s)
+# print(class(b))
+# print(dim(b))
 
 
 ad <- AnnData(
@@ -64,10 +66,13 @@ ad <- AnnData(
 
 op_file <- paste0(io_folder_interim, '/nz_aggr_scores_', sprintf("%03d", apid), ".h5ad")
 write_h5ad(ad, op_file);
-print('wrote')
 
 # bead_scores = table(labels)
-bead_scores = table(selectedBeadlabels)
+bead_scores <- table(selectedBeadlabels)
+bead_scores[bead_scores==0] <- NA
+bead_scores <- bead_scores[complete.cases(bead_scores)]
+# bead_scores <- droplevels(bead_scores)
+# bead_scores2 <- bead_scores[complete.cases(bead_scores),]
 op_file2 <-paste0(io_folder_interim, '/nz_aggr_num_beads_', sprintf("%03d", apid), ".csv")
 write.table(bead_scores, file=op_file2,sep=',', quote=FALSE, row.names = FALSE)
 
