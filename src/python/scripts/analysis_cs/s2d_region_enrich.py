@@ -137,7 +137,8 @@ for pid in pids:
     ip_data_file = f'{ip_gth_aggr_data_folder}/nz_aggr_scores_{nis_id_str}.h5ad'
     # dprint(ip_data_file)
     data = ann.read_h5ad(ip_data_file)
-    gene_names = data.var_names
+    celltype_names = data.var_names
+    celltype_names = [x.split("=")[1] for x in celltype_names]
     dataX = data.X
     dataXcsr = csr_matrix(dataX)
     M, N = dataXcsr.shape
@@ -237,7 +238,7 @@ for pid in pids:
     # pgroup_genes = root.zeros('X', shape=(1,nGenes), dtype='S6')
     pgroup_genes_arr = pgroup_genes.zeros('X', shape=(nGenes), dtype='object', object_codec=numcodecs.JSON())
     # pgroup_genes_arr[0, :] = np.asarray(gene_names)
-    pgroup_genes_arr[:] = np.asarray(gene_names)
+    pgroup_genes_arr[:] = np.asarray(celltype_names)
 
     if pid==np.max(pids):
         dprint(np.max(globalGroupX), np.max(globalGroupXout)) #  max of global nz beads in and out of regions
@@ -259,14 +260,14 @@ for pid in pids:
         gzValOutX[:] = gzValOut[:]
 
         # write out meta info
-        gene_names_dict = {"data": list(gene_names), "maxExprPuck": list(maxExprPuck)}
-        dprint(gene_names)
+        celltype_names_dict = {"data": list(celltype_names), "maxExprPuck": list(maxExprPuck)}
+        dprint(celltype_names)
         # Serializing json
-        json_object = json.dumps(gene_names_dict, indent=4)
+        json_object = json.dumps(celltype_names_dict, indent=4)
 
-        gene_names_file = f'{op_path}/gene_info.json'
+        celltype_names_file = f'{op_path}/names_info.json'
         # Writing to sample.json
-        with open(gene_names_file, "w") as outfile:
+        with open(celltype_names_file, "w") as outfile:
             outfile.write(json_object)
 
 
