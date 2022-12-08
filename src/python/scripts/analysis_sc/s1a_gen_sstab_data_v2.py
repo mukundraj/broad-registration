@@ -10,6 +10,7 @@ python  s1a_data_test.py
     inp: path to avg vals file
     inp: path to cluster metadata file (for numcells for each cluster)
     inp: path to celltype metadata file
+    inp: path to metadata with celltype cluster [added on 2022-12-08]
     inp: path to CellSpatial tab's score histogram data
     out: output path
 
@@ -21,6 +22,7 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_avg_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
     /single_cell/s0/raw_v2/snRNA-seq_metadata.csv \
+    /single_cell/s0/raw_v2/max_top_structure.tsv \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s1 \
 
@@ -29,6 +31,8 @@ Supplementary:
 // gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s0/zarr/scZarr.zarr gs://ml_portal/test_data
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/singlecell_data/scZarr.zarr
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr/metadata gs://bcdportaldata/singlecell_data/scZarr.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -50,8 +54,9 @@ nz_csv_file = data_root+sys.argv[2]
 avg_csv_file = data_root+sys.argv[3]
 clustersize_csv_file = data_root+sys.argv[4]
 metadata_file = data_root+sys.argv[5]
-hist_data_path = data_root+sys.argv[6]
-op_path = sys.argv[7]
+struct_metadata_file = data_root+sys.argv[6]
+hist_data_path = data_root+sys.argv[7]
+op_path = sys.argv[8]
 
 
 # read metadata file
@@ -65,8 +70,16 @@ with open(metadata_file, 'r') as f:
 
 dprint('metadata length:', len(metadata))
 
+# read top structure metadata file and populate to dict mapping cellname to structure
+ctype_to_struct = {}
+with open(struct_metadata_file, 'r') as f:
+    reader = csv.reader(f, delimiter='\t')
+    next(reader) # skip header
+    for row in reader:
+        # dprint(row)
+        ctype_to_struct[row[1]] = row[0]
 
-
+dprint('struct metadata length:', len(ctype_to_struct))
 
 nClusters = 5030
 nGenes = 21899
@@ -113,10 +126,9 @@ with open(clustersize_csv_file, 'r') as f:
 
 # next, create metadata arrays
 cell_classes = [None]*nClusters
-top_regions = [None]*nClusters
+top_structs = [None]*nClusters
 max_pcts = [None]*nClusters
 map_status = [None]*nClusters # whether the cluster is mapped to a spatial celltype
-# dprint(top_regions)
 
 for idx, cname in enumerate(clusterNames):
     cname =  cname.split('=')[1]
@@ -124,19 +136,24 @@ for idx, cname in enumerate(clusterNames):
     cnameMapExists = 'Y' if os.path.isfile(mapFilename)==True else 'N'
     if cname in metadata:
         cell_classes[idx] = metadata[cname][0]
-        top_regions[idx] = metadata[cname][1]
+        # top_regions[idx] = metadata[cname][1]
         max_pcts[idx] = metadata[cname][2][:-1] # remove % sign
         map_status[idx] = cnameMapExists
     else:
         cell_classes[idx] = 'NA'
-        top_regions[idx] = 'NA'
+        # top_regions[idx] = 'NA'
         max_pcts[idx] =  '0.0'
         map_status[idx] = cnameMapExists
 
+    if cname in ctype_to_struct:
+        top_structs[idx] = ctype_to_struct[cname]
+    else:
+        top_structs[idx] = '-'
+
 cellClassesArray = metadataGroup.zeros('cellclasses', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 cellClassesArray[:] = cell_classes
-topRegionsArray = metadataGroup.zeros('topregions', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
-topRegionsArray[:] = top_regions
+topStructsArray = metadataGroup.zeros('topstructs', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+topStructsArray[:] = top_structs
 maxPctsArray = metadataGroup.zeros('maxpcts', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 maxPctsArray[:] = max_pcts
 mapStatusArray = metadataGroup.zeros('mapStatus', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
