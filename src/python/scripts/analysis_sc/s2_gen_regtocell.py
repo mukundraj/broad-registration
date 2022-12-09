@@ -48,25 +48,27 @@ with open (region_tree_file, 'r') as f:
 
 
 nodes_list = []
-def traverse(node, nodes_list):
+nodes_dict = {}
+def traverse(node, nodes_list, nodes_dict):
     nodes_list.append(node)
+    nodes_dict[node['value']] = node['label']
     if 'children' in node:
         children = node['children']
         for cur_child_node in children:
-            traverse(cur_child_node, nodes_list)
+            traverse(cur_child_node, nodes_list, nodes_dict)
 
     return
 
 
 # dprint(tree['children'])
-traverse(tree, nodes_list)
+traverse(tree, nodes_list, nodes_dict)
 dprint(len(nodes_list))
 
 
 # initialize region_to_celltype with empty sets for each regionid
 region_to_celltype = {}
 
-dprint(nodes_list)
+# dprint(nodes_list)
 for node in nodes_list:
     region_to_celltype[node['value']] = set()
 
@@ -132,6 +134,7 @@ for pids_idx, pid in enumerate(pids):
             else:
                 id = readdata[x, y, z]
             region_to_celltype[id].add(cell_idx)
+            # dprint(bead_idx, x, y, z, id)
 
 
 
@@ -146,16 +149,20 @@ def hydrate(node):
             if 'celltype_ids' in node:
                 node['celltype_ids'] = node['celltype_ids'].union(cur_child_node['celltype_ids'])
             else:
-                node['celltype_ids'] = cur_child_node['celltype_ids']
+                node['celltype_ids'] = cur_child_node['celltype_ids'].union(region_to_celltype[node['value']])
     else:
-        node['celltype_ids'] = region_to_celltype[node['value']]
+        if 'celltype_ids' not in node:
+            node['celltype_ids'] = region_to_celltype[node['value']]
+        else:
+            node['celltype_ids'] = node['celltype_ids'].union(region_to_celltype[node['value']])
     return
 
 
 hydrate(tree)
 
 nodes_list = []
-traverse(tree, nodes_list)
+nodes_dict = {}
+traverse(tree, nodes_list, nodes_dict)
 
 for node in nodes_list:
     region_to_celltype[node['value']] = node['celltype_ids']
