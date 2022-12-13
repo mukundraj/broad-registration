@@ -207,6 +207,11 @@ with open(avg_csv_file, 'r') as f:
 
 avg_groupX[:] = avg_mat
 
+globalMaxAvgVal = str(round(np.max(avg_mat)))
+dprint('globalMaxAvgVal', globalMaxAvgVal)
+globalMaxAvgValArray = metadataGroup.zeros('globalMaxAvgVal', shape=(1), dtype='object', object_codec=numcodecs.VLenUTF8())
+globalMaxAvgValArray[:] = globalMaxAvgVal
+
 dprint('zarr file', zarr_file)
 z = zarr.open(zarr_file)
 dprint(z.tree())
