@@ -7,7 +7,7 @@ Usage:
 
 python s2d_region_enrich.py
     i/o: data root
-    inp: nonzero, aggregated counts prepared by .analysis_cs/s1e_nz_counts.py
+    inp: nonzero, aggregated counts prepared by .analysis_cs/s1e_gth_scores.py
     out: path to output folder
 
 Usage example:
