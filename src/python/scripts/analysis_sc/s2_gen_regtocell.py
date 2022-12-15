@@ -23,6 +23,10 @@ Supplementary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/s2_regtocell gs://bcdportaldata/singlecell_data/s2/s2_regtocell
 
+References:
+
+https://stackoverflow.com/questions/10461531/merge-and-sum-of-two-dictionaries
+
 Created by Mukund on 2022-11-27
 
 """
@@ -70,7 +74,8 @@ region_to_celltype = {}
 
 # dprint(nodes_list)
 for node in nodes_list:
-    region_to_celltype[node['value']] = set()
+    # region_to_celltype[node['value']] = set()
+    region_to_celltype[node['value']] = {}
 
 dprint(len(region_to_celltype.keys()))
 
@@ -88,6 +93,8 @@ if (77 in pids):
     pids.remove(77)
 if (167 in pids):
     pids.remove(167)
+
+cell_idx_totals = {} # stores the total number of cells of each celltype    
 
 cells = None
 for pids_idx, pid in enumerate(pids):
@@ -133,10 +140,26 @@ for pids_idx, pid in enumerate(pids):
                 id = 0
             else:
                 id = readdata[x, y, z]
-            region_to_celltype[id].add(cell_idx)
+            if (id==0):
+                continue
+
+            if (cell not in region_to_celltype[id]):
+                region_to_celltype[id][cell_idx] = 1
+            else:
+                region_to_celltype[id][cell_idx] += 1
+
+            if (cell_idx not in cell_idx_totals):
+                cell_idx_totals[cell_idx] = 1
+            else:
+                cell_idx_totals[cell_idx] += 1
             # dprint(bead_idx, x, y, z, id)
 
 
+# normalize celltype counts by total number of cells of that celltype
+for region_id in region_to_celltype:
+    for cell_idx in region_to_celltype[region_id]:
+        region_to_celltype[region_id][cell_idx] /= cell_idx_totals[cell_idx]
+        region_to_celltype[region_id][cell_idx] = round(region_to_celltype[region_id][cell_idx], 3)
 
 
 # hydrate sets of nonroot elements with their children's sets
@@ -147,14 +170,24 @@ def hydrate(node):
         for cur_child_node in children:
             hydrate(cur_child_node)
             if 'celltype_ids' in node:
-                node['celltype_ids'] = node['celltype_ids'].union(cur_child_node['celltype_ids'])
+                # node['celltype_ids'] = node['celltype_ids'].union(cur_child_node['celltype_ids'])
+                x = node['celltype_ids']
+                y = cur_child_node['celltype_ids']
+                node['celltype_ids'] = {k: round(x.get(k, 0) + y.get(k, 0), 3) for k in set(x) | set(y)} # merge dicts
             else:
-                node['celltype_ids'] = cur_child_node['celltype_ids'].union(region_to_celltype[node['value']])
+                # node['celltype_ids'] = cur_child_node['celltype_ids'].union(region_to_celltype[node['value']])
+                x = cur_child_node['celltype_ids']
+                y = region_to_celltype[node['value']]
+                node['celltype_ids'] = {k: round(x.get(k, 0) + y.get(k, 0), 3) for k in set(x) | set(y)} # merge dicts
     else:
         if 'celltype_ids' not in node:
             node['celltype_ids'] = region_to_celltype[node['value']]
         else:
-            node['celltype_ids'] = node['celltype_ids'].union(region_to_celltype[node['value']])
+            # node['celltype_ids'] = node['celltype_ids'].union(region_to_celltype[node['value']])
+            x = node['celltype_ids']
+            y = region_to_celltype[node['value']]
+            node['celltype_ids'] = {k: round(x.get(k, 0) + y.get(k, 0), 3) for k in set(x) | set(y)} # merge dicts
+
     return
 
 
@@ -169,7 +202,8 @@ for node in nodes_list:
 
 # convert sets to lists
 for key in region_to_celltype.keys():
-    region_to_celltype[key] = list(region_to_celltype[key])
+    # region_to_celltype[key] = list(region_to_celltype[key])
+    region_to_celltype[key] = region_to_celltype[key]
 
 # write out region_to_celltype as json with no space
 with open(f'{op_folder}/region_to_celltype.json', 'w',) as f:
