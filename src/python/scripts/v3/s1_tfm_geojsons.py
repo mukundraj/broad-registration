@@ -10,6 +10,7 @@ python s1_tfm_geojsons.py \
     inp: id to tiff file path
     inp: tiff dims file path
     out: output path for transformed geojsons
+    out: output path for transformed geojsons images
 
 python src/python/scripts/v3/s1_tfm_geojsons.py \
     ~/Desktop/work/data/mouse_atlas \
@@ -17,6 +18,7 @@ python src/python/scripts/v3/s1_tfm_geojsons.py \
     /data_v3_nissl_post_qc/s2_seg_ids/id_to_tiff_mapper.csv \
     /data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
     /v3/s1/geojson_tfmed \
+    /v3/s1/geojson_tfmed_imgs \
 
 
 Created on 2022-12-19
@@ -35,12 +37,14 @@ from shapely.geometry import Point
 import itertools
 from shapely.ops import unary_union
 import csv
+from shapely.ops import transform
 
 data_root = sys.argv[1]
 geojsons_path = f'{data_root}{sys.argv[2]}'
 id_to_tiff_file_path = f'{data_root}{sys.argv[3]}'
 tiff_dims_file_path = f'{data_root}{sys.argv[4]}'
 geojsons_tfmed_path = f'{data_root}{sys.argv[5]}'
+geojsons_tfmed_imgs = f'{data_root}{sys.argv[6]}'
 dprint(f'geojsons_tfmed_path: {geojsons_tfmed_path}')
 
 
@@ -52,41 +56,44 @@ with open(id_to_tiff_file_path) as f:
 
 
 
-dprint(id_to_tiff)
+# dprint(id_to_tiff)
 
 tiff_dims = {}
 with open(tiff_dims_file_path) as f:
     reader = csv.reader(f)
     for row in reader:
-        tiff_dims[row[0]] = [int(row[2]), int(row[2])]
-dprint(tiff_dims)
+        tiff_dims[row[0]] = [int(row[2]), int(row[3])]
 
 
 # files = os.listdir(geojsons_path)
 # files = [f for f in files if f.endswith('.geojson')]
 files = []
-for i in range (1, 115):
+idxs = []
+start_pid = 1
+end_pid = 207
+for i in range (int((start_pid+1)/2), int((end_pid+1)/2+1)):
     i_str = str(i).zfill(4)
     fname = f'atlas_to_MD743&742-N1-2019.02.13-21.15.52_MD743_1_{i_str}.geojson'
     files.append(fname)
+    idxs.append(i)
 
-for idx, file in enumerate(files):
+print(idxs)
+for idx, file in zip(idxs, files):
     acronym = []
     id = []
     name = []
     geometry = []
 
-    pid = idx*2+1
-    # dprint (pid, file)
+    pid = int(idx*2 - 1)
+    # dprint (idx, pid)
     tiff_file = id_to_tiff[str(pid)]
-    dprint(tiff_file)
     cur_tiff_dims = tiff_dims[f'nis_{tiff_file}'[:-1]]
-    dprint(idx, cur_tiff_dims)
+    dprint(idx, cur_tiff_dims, tiff_file, 'pid', pid)
     file_full_path = f'{geojsons_path}/{file}'
 
     data = geopandas.read_file(file_full_path)
 
-    print(data.head())
+    # print(data.head())
 
     for index, row in data.iterrows():
 
@@ -98,8 +105,16 @@ for idx, file in enumerate(files):
             # dprint(len(mp.geoms))
             polygons = []
             for g in geom_prop.geoms:
-                # polygons.append(g)
-                # g = shapely.transform(g, lambda x: x+1, lambda y: y+1)
+                # rotate
+                g = transform(lambda x, y, z=None: (-y, -x), g)
+
+                # translate
+                dx = (cur_tiff_dims[0] / 0.3428) * 0.5
+                dy = (cur_tiff_dims[1] / 0.3428) * 0.5
+                g = transform(lambda x, y, z=None: (x+dx, y+dy), g)
+
+                # scale
+                g = transform(lambda x, y, z=None: (x/4, y/4), g)
                 polygons.append(g)
 
             # external = [p.exterior.coords[:] for p in polygons]
@@ -130,11 +145,15 @@ for idx, file in enumerate(files):
     out_file = f'{geojsons_tfmed_path}/pid_{pid}.geojson'
     gdf.to_file(out_file, driver='GeoJSON')
 
+    # save a plot
+    data = geopandas.read_file(out_file)
+    # print(data.head())
+    # data.head()
+    data.plot(aspect=1) # https://stackoverflow.com/questions/67693007/valueerror-box-aspect-and-fig-aspect-must-be-positive
+    plt.savefig(f'{geojsons_tfmed_imgs}/pid_{pid}.png')
 
-print (len(geometry))
-print (len(acronym))
-print (len(id))
-print (len(name))
+
+    dprint ('len geom', len(geometry), 'len acronym', len(acronym))
 
 
 

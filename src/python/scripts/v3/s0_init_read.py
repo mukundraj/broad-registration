@@ -8,7 +8,7 @@ python init_read.py
 
 Example:
 
-python src/python/scripts/v3/init_read.py \
+python src/python/scripts/v3/s0_init_read.py \
     ~/Desktop/work/data/mouse_atlas/v3 \
     /s0/geojson \
 
