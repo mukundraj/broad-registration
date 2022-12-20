@@ -3,8 +3,8 @@
 Usage:
 
 python init_read.py
-    data root
-    geojsons_path
+    inp: data root
+    inp: geojsons_path
 
 Example:
 
