@@ -9,6 +9,7 @@ python s1_tfm_geojsons.py \
     inp: geojsons_path
     inp: id to tiff file path
     inp: tiff dims file path
+    inp: acro key map path (from s1_acro_key_map.py)
     out: output path for transformed geojsons
     out: output path for transformed geojsons images
 
@@ -17,6 +18,7 @@ python src/python/scripts/v3/s1_tfm_geojsons.py \
     /v3/s0/geojson \
     /data_v3_nissl_post_qc/s2_seg_ids/id_to_tiff_mapper.csv \
     /data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
+    /v3/s1/acro_key_map.json \
     /v3/s1/geojson_tfmed \
     /v3/s1/geojson_tfmed_imgs \
 
@@ -38,13 +40,15 @@ import itertools
 from shapely.ops import unary_union
 import csv
 from shapely.ops import transform
+import json
 
 data_root = sys.argv[1]
 geojsons_path = f'{data_root}{sys.argv[2]}'
 id_to_tiff_file_path = f'{data_root}{sys.argv[3]}'
 tiff_dims_file_path = f'{data_root}{sys.argv[4]}'
-geojsons_tfmed_path = f'{data_root}{sys.argv[5]}'
-geojsons_tfmed_imgs = f'{data_root}{sys.argv[6]}'
+acro_key_map_path = f'{data_root}{sys.argv[5]}'
+geojsons_tfmed_path = f'{data_root}{sys.argv[6]}'
+geojsons_tfmed_imgs = f'{data_root}{sys.argv[7]}'
 dprint(f'geojsons_tfmed_path: {geojsons_tfmed_path}')
 
 
@@ -63,6 +67,10 @@ with open(tiff_dims_file_path) as f:
     reader = csv.reader(f)
     for row in reader:
         tiff_dims[row[0]] = [int(row[2]), int(row[3])]
+
+# read acro key map
+with open(acro_key_map_path) as f:
+    acro_key_map = json.load(f)
 
 
 # files = os.listdir(geojsons_path)
@@ -98,7 +106,7 @@ for idx, file in zip(idxs, files):
     for index, row in data.iterrows():
 
         acro_prop = row['acronym']
-        id_prop = 0
+        id_prop = acro_key_map[acro_prop]
         name_prop = row['name']
         geom_prop = row['geometry']
         if (len(geom_prop.geoms)>0):
