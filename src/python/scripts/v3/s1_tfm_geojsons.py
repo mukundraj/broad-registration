@@ -10,6 +10,7 @@ python s1_tfm_geojsons.py \
     inp: id to tiff file path
     inp: tiff dims file path
     inp: acro key map path (from s1_acro_key_map.py)
+    inp: orig dims map path (from s1_gen_origdims_map.py)
     out: output path for transformed geojsons
     out: output path for transformed geojsons images
 
@@ -19,6 +20,7 @@ python src/python/scripts/v3/s1_tfm_geojsons.py \
     /data_v3_nissl_post_qc/s2_seg_ids/id_to_tiff_mapper.csv \
     /data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
     /v3/s1/acro_key_map.json \
+    /v3/s1/orig_dims_map.csv \
     /v3/s1/geojson_tfmed \
     /v3/s1/geojson_tfmed_imgs \
 
@@ -47,20 +49,15 @@ geojsons_path = f'{data_root}{sys.argv[2]}'
 id_to_tiff_file_path = f'{data_root}{sys.argv[3]}'
 tiff_dims_file_path = f'{data_root}{sys.argv[4]}'
 acro_key_map_path = f'{data_root}{sys.argv[5]}'
-geojsons_tfmed_path = f'{data_root}{sys.argv[6]}'
-geojsons_tfmed_imgs = f'{data_root}{sys.argv[7]}'
-dprint(f'geojsons_tfmed_path: {geojsons_tfmed_path}')
-
+orig_dims_map_path = f'{data_root}{sys.argv[6]}'
+geojsons_tfmed_path = f'{data_root}{sys.argv[7]}'
+geojsons_tfmed_imgs = f'{data_root}{sys.argv[8]}'
 
 id_to_tiff = {}
 with open(id_to_tiff_file_path) as f:
     reader = csv.reader(f)
     for row in reader:
         id_to_tiff[row[0]] = row[1]
-
-
-
-# dprint(id_to_tiff)
 
 tiff_dims = {}
 with open(tiff_dims_file_path) as f:
@@ -72,6 +69,12 @@ with open(tiff_dims_file_path) as f:
 with open(acro_key_map_path) as f:
     acro_key_map = json.load(f)
 
+# read orig dims map
+orig_dims_map = {}
+with open(orig_dims_map_path) as f:
+    reader = csv.reader(f)
+    for row in reader:
+        orig_dims_map[row[0]] = [int(row[2]), int(row[3])]
 
 # files = os.listdir(geojsons_path)
 # files = [f for f in files if f.endswith('.geojson')]
@@ -93,13 +96,18 @@ for idx, file in zip(idxs, files):
     geometry = []
 
     pid = int(idx*2 - 1)
-    # dprint (idx, pid)
+
+    if (pid==5 or pid==77 or pid==167):
+        continue
+
     tiff_file = id_to_tiff[str(pid)]
     cur_tiff_dims = tiff_dims[f'nis_{tiff_file}'[:-1]]
     dprint(idx, cur_tiff_dims, tiff_file, 'pid', pid)
     file_full_path = f'{geojsons_path}/{file}'
 
     data = geopandas.read_file(file_full_path)
+    # dprint(data.bounds)
+    dprint(data.total_bounds)
 
     # print(data.head())
 
@@ -114,15 +122,27 @@ for idx, file in zip(idxs, files):
             polygons = []
             for g in geom_prop.geoms:
                 # rotate
-                g = transform(lambda x, y, z=None: (-y, -x), g)
+                g = transform(lambda x, y, z=None: (-y, x), g)
+
+                # # convert to img coords
+                # g = transform(lambda x, y, z=None: (x, cur_tiff_dims[1]-y), g)
+
 
                 # translate
-                dx = (cur_tiff_dims[0] / 0.3428) * 0.5
-                dy = (cur_tiff_dims[1] / 0.3428) * 0.5
-                g = transform(lambda x, y, z=None: (x+dx, y+dy), g)
+                full_tiff_dims = [0.3428*orig_dims_map[str(pid)][0], 0.3428*orig_dims_map[str(pid)][1]]
 
-                # scale
-                g = transform(lambda x, y, z=None: (x/4, y/4), g)
+                dx = (full_tiff_dims[0] ) * 0.5 # this needs to be in microns
+                dy = (full_tiff_dims[1] ) * 0.5
+                # g = transform(lambda x, y, z=None: (cur_tiff_dims[0] - (x+dx), y-dy), g)
+                g = transform(lambda x, y, z=None: ((x+dx), y+dy), g)
+
+                # scale to image space (um to pixels) multiply by pixels per um
+                res = 0.3428
+                g = transform(lambda x, y, z=None: (x/res, y/res), g)
+
+                # scale to subsampled space
+                g = transform(lambda x, y, z=None: (x/8, y/8), g)
+
                 polygons.append(g)
 
             # external = [p.exterior.coords[:] for p in polygons]
@@ -158,6 +178,18 @@ for idx, file in zip(idxs, files):
     # print(data.head())
     # data.head()
     data.plot(aspect=1) # https://stackoverflow.com/questions/67693007/valueerror-box-aspect-and-fig-aspect-must-be-positive
+
+    pid_str = str(pid).zfill(3)
+    file = f'/Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s4_bead_to_segid/bead_to_nis_coords/bead_to_nis_coords_{pid_str}.csv'
+    # read csv file
+    with open(file) as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            x = float(row[1])
+            # y = cur_tiff_dims[1] - float(row[2])
+            y = float(row[2])
+            if i%50==0:
+                plt.scatter(x, y, s=1, c='r')
     plt.savefig(f'{geojsons_tfmed_imgs}/pid_{pid}.png')
 
 
@@ -200,6 +232,5 @@ for index, row in data.iterrows():
 
         
         exit(0)
-        
 
 
