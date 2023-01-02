@@ -26,9 +26,21 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg \
     /cell_spatial/s1/cellspatial_data/cellscores/ \
 
+
+python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
+    /Users/mraj/Desktop/work/data/mouse_atlas \
+    /v3/s2/bead_ccf_labels_allbds \
+    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
+    /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
+    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
+    /v3/s2/wireframes_trans \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl/ \
+
 Supplementary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores gs://bcdportaldata/cellspatial_data/cellscores
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/cellspatial_data/cellscores
 
 Created by Mukund on 2022-10-24
 
@@ -75,7 +87,8 @@ def process_pid(pid):
     dprint(counts_X)
 
     nis_id_str = str(apid).zfill(3)
-    labels_csv_file = f'{label_data_folder}/allen_anno_data_{nis_id_str}.csv'
+    # labels_csv_file = f'{label_data_folder}/allen_anno_data_{nis_id_str}.csv'
+    labels_csv_file = f'{label_data_folder}/pid_{apid}.csv'
     # dprint(labels_csv_file)
     region_names = []
     with open(labels_csv_file, newline='\n') as csvfile:
