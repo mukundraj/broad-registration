@@ -210,7 +210,7 @@ def get_histolozee_affine_tfm_contructed(hz_project_ss_file, nis_idx):
             center_i = float(tfm[4].get("i"))
             center_j = float(tfm[4].get("j"))
 
-            print(f"Transforms for id {elm_idx}: rot {rot_deg}, scale_i {scale_i}, scale_j {scale_j}, center_i {center_i}, center_j {center_j}")
+            # print(f"Transforms for id {elm_idx}: rot {rot_deg}, scale_i {scale_i}, scale_j {scale_j}, center_i {center_i}, center_j {center_j}")
             t1 = get_affine_transform(0, [1, 1], [center_i,center_j])
             t2 = get_affine_transform(0, [scale_i, scale_j], [0, 0])
             t3 = get_affine_transform(rot_deg, [1, 1], [0, 0])
@@ -236,7 +236,7 @@ def get_histolozee_affine_tfm_contructed2(hz_project_ss_file, nis_idx):
         if (elm_idx.find(".tif")>0):    # to deal with nissl names witout 01 suffix
             elm_idx = elm_idx.split(".")[0]
         if (elm_idx==nis_idx):
-            print(elm_idx, nis_idx)
+            # print(elm_idx, nis_idx)
             tfm = slide.find("transformation")
             rot_deg = float(tfm[0].get("k"))
             scale_i = float(tfm[1].get("i"))
@@ -246,7 +246,7 @@ def get_histolozee_affine_tfm_contructed2(hz_project_ss_file, nis_idx):
             center_i = float(tfm[4].get("i"))
             center_j = float(tfm[4].get("j"))
 
-            print(f"Transforms for id {elm_idx}: rot {rot_deg}, scale_i {scale_i}, scale_j {scale_j}, center_i {center_i}, center_j {center_j} translation {translation_i} {translation_j}")
+            # print(f"Transforms for id {elm_idx}: rot {rot_deg}, scale_i {scale_i}, scale_j {scale_j}, center_i {center_i}, center_j {center_j} translation {translation_i} {translation_j}")
             t1 = get_affine_transform(0, [1, 1], [center_i,center_j])
             t2 = get_affine_transform(0, [scale_i, scale_j], [0, 0])
             t3 = get_affine_transform(rot_deg, [1, 1], [0, 0])
