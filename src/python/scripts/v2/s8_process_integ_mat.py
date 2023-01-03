@@ -24,6 +24,15 @@ python src/python/scripts/v2/s8_process_integ_mat.py \
     /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg_ofix \
     /data_v3_nissl_post_qc/s9_analysis/gene_exprs
 
+python src/python/scripts/v2/s8_process_integ_mat.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /v3/s2/bead_ccf_labels_allbds \
+    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
+    /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
+    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png_ofix \
+    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg_ofix \
+    /data_v3_nissl_post_qc/s9_analysis/gene_exprs_cshl
+
 Created by Mukund on 2022-05-04
 
 References:
@@ -34,6 +43,8 @@ gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysi
 gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_jsons/puck1 gs://ml_portal2/test_data2/gene_jsons/
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_exprs gs://bcdportaldata/genexp_data/gene_exprs
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/gene_exprs_cshl gs://bcdportaldata/genexp_data/gene_exprs_cshl
 
 """
 
