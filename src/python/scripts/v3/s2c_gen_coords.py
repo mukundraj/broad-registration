@@ -47,9 +47,9 @@ if 167 in pids:
 for pids_idx, pid in enumerate(pids):
     assert(pid!=5 and pid!=77 and pid!=167)
     nis_id_str = str(pid).zfill(3)
-    apid = pid
-    if (pid==5 or pid==77 or pid==167):
-        apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
+    # apid = pid
+    # if (pid==5 or pid==77 or pid==167):
+    #     apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
     # read in bead coords in chuck space
     chuck_sp_img_coords_file = f'{ip_folder_chuck_coords}/chuck_sp_img_coords_{nis_id_str}.csv'
@@ -61,7 +61,7 @@ for pids_idx, pid in enumerate(pids):
 
 
     # read in partha labels
-    partha_labels_file = f'{ip_folder_partha_labels}/pid_{pid}.csv'
+    partha_labels_file = f'{ip_folder_partha_labels}/allen_anno_data_{nis_id_str}.csv'
     partha_labels = []
     out_tissue = []
     with open(partha_labels_file, newline='\n') as csvfile:
