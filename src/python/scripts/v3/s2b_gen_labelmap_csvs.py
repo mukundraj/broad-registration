@@ -96,9 +96,9 @@ for pids_idx, pid in enumerate(pids):
         acronyms[zbidx] = name_to_acro_map[labels[zbidx]]
 
     # save new labelmap csv
-    new_labelmap_csv_file = f'{new_labelmap_csvs_path}/pid_{pid}.csv'
+    new_labelmap_csv_file = f'{new_labelmap_csvs_path}/allen_anno_data_{nis_id_str}.csv'
     with open(new_labelmap_csv_file, 'w', newline='\n') as csvfile:
         writer = csv.writer(csvfile)
         for idx in range(nbeads):
-            writer.writerow(['','','','',acronyms[idx], labels[idx],'','','',outTissueStatus[idx], name_to_id_map[labels[idx]]])
+            writer.writerow(['','','',acronyms[idx], labels[idx],'','','',outTissueStatus[idx], name_to_id_map[labels[idx]]])
 
