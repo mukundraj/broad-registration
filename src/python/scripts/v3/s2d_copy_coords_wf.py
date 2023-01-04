@@ -7,14 +7,18 @@ python s2d_copy_coords_wf.py
     inp: data_root
     inp: path to new wireframes
     inp: path to new coords
-    out: 
+    inp: path to gene expr data on bucket
+    inp: path to cell spatial data on bucket
+    out: path to backup folder for optional backup before copying
+
 Example:
 
 python src/python/scripts/v3/s2d_copy_coords_wf.py \
     ~/Desktop/work/data/mouse_atlas \
-    /v3/s2/wireframes_trans \
+    /v3/s2/wireframes_improved_trans \
     /v3/s2/coords   \
-    gs://bcdportaldata/genexp_data/gene_exprs \
+    gs://bcdportaldata/genexp_data/gene_exprs_cshl \
+    gs://bcdportaldata/cellspatial_data/cellscores \
     /v3/s2/backup \
 
 Created by Mukund on 2022-12-21
@@ -29,7 +33,8 @@ data_root = sys.argv[1]
 ip_folder_wireframes = f'{data_root}{sys.argv[2]}'
 ip_folder_coords = f'{data_root}{sys.argv[3]}'
 op_genexp_folder = sys.argv[4]
-backup_dir = f'{data_root}{sys.argv[5]}'
+op_cellspatial_folder = sys.argv[5]
+backup_dir = f'{data_root}{sys.argv[6]}'
 
 
 
@@ -71,8 +76,15 @@ for pids_idx, pid in enumerate(pids):
     os.system(cmd2)
     dprint(cmd2)
 
-    # copy coords file to gene related folder
-    local_path_coords = f'{ip_folder_coords}/coords_{pid}.csv'
-    cmd4 = f'gsutil cp {local_path_coords} {bucket_path_coords}'
-    dprint(cmd4)
-    os.system(cmd4)
+    # copy wireframe to celltype related folder
+    local_path = f'{ip_folder_wireframes}/{wireframe_file}'
+    bucket_path = f'{op_cellspatial_folder}/puck{pid}/{wireframe_file}'
+    cmd2 = f'gsutil cp {local_path} {bucket_path}'
+    os.system(cmd2)
+
+
+    # # copy coords file to gene related folder
+    # local_path_coords = f'{ip_folder_coords}/coords_{pid}.csv'
+    # cmd4 = f'gsutil cp {local_path_coords} {bucket_path_coords}'
+    # dprint(cmd4)
+    # os.system(cmd4)
