@@ -4,7 +4,7 @@ of num beads expressing gene (array length = number of genes).
 
 Usage:
 
-python s2b_region_enrich.py
+python s9h_region_enrich.py
     i/o: data root
     inp: nonzero, aggregated counts prepared by ./s2a_nz_counts.py
     out: path to output folder

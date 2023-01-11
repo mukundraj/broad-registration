@@ -24,6 +24,13 @@ python src/python/scripts/analysis/s9d_labelgen.py \
     /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels
 
+python src/python/scripts/analysis/s9d_labelgen.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /v3/s2/bead_ccf_labels_allbds \
+    /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/interim_cshl \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels_cshl \
+
 Supplementary:
 
 scp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9d/interim [IP]:~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9d/
