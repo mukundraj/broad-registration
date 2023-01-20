@@ -4,7 +4,7 @@ Usage:
 
 Example:
 
-python s1_tfm_geojsons.py \
+python s1b_tfm_geojsons.py \
     inp: data root
     inp: geojsons_path
     inp: id to tiff file path
@@ -14,7 +14,7 @@ python s1_tfm_geojsons.py \
     out: output path for transformed geojsons
     out: output path for transformed geojsons images
 
-python src/python/scripts/v3/s1_tfm_geojsons.py \
+python src/python/scripts/v3/s1b_tfm_geojsons.py \
     ~/Desktop/work/data/mouse_atlas \
     /v3/s0/geojson \
     /data_v3_nissl_post_qc/s2_seg_ids/id_to_tiff_mapper.csv \
