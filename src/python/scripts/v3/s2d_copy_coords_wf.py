@@ -4,12 +4,12 @@ backing up old version). Copy to both gene and celltype related folders.
 Usage:
 
 python s2d_copy_coords_wf.py
-    inp: data_root
-    inp: path to new wireframes
-    inp: path to new coords
-    inp: path to gene expr data on bucket
-    inp: path to cell spatial data on bucket
-    out: path to backup folder for optional backup before copying
+    ip: data_root
+    ip: path to new wireframes
+    ip: path to new coords
+    op: path to gene expr data on bucket
+    op: path to cell spatial data on bucket
+    op: path to backup folder for optional backup before copying
 
 Example:
 
@@ -17,8 +17,8 @@ python src/python/scripts/v3/s2d_copy_coords_wf.py \
     ~/Desktop/work/data/mouse_atlas \
     /v3/s2/wireframes_improved_trans \
     /v3/s2/coords   \
-    gs://bcdportaldata/genexp_data/gene_exprs_cshl \
-    gs://bcdportaldata/cellspatial_data/cellscores \
+    gs://bcdportaldata/batch_YYMMDD/genexp_data/gene_exprs_cshl \
+    gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores \
     /v3/s2/backup \
 
 Created by Mukund on 2022-12-21
@@ -55,7 +55,7 @@ for pids_idx, pid in enumerate(pids):
 
     wireframe_file = f'chuck_sp_wireframe_{pid_str}.png'
     bucket_path = f'{op_genexp_folder}/puck{pid}/{wireframe_file}'
-    bucket_path_coords = f'{op_genexp_folder}/puck{pid}/coords.csv'
+    # bucket_path_coords = f'{op_genexp_folder}/puck{pid}/coords.csv'
 
     # # backup wireframe
     # backup_localpath = f'{backup_dir}/wireframes/{wireframe_file}'

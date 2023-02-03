@@ -32,9 +32,8 @@ Supplementary:
 
 // gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s0/zarr/scZarr.zarr gs://ml_portal/test_data
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/batch_YYMMDD/singlecell_data/scZarr.zarr
 
-// gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr.zarr/metadata
 
 Created by Mukund on 2022-09-27
 

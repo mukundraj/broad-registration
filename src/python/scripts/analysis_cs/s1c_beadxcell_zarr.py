@@ -40,7 +40,7 @@ Supplementary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores gs://bcdportaldata/cellspatial_data/cellscores
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/cellspatial_data/cellscores
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores
 
 Created by Mukund on 2022-10-24
 
