@@ -12,6 +12,7 @@ python  s1a_data_test.py
     inp: path to celltype metadata file
     inp: path to metadata with celltype cluster [added on 2022-12-08]
     inp: path to CellSpatial tab's score histogram data
+    inp: path to sum counts matrix  [avg is this val / numcells in cluster]
     out: output path
 
 Usage example:
@@ -24,15 +25,16 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/snRNA-seq_metadata.csv \
     /single_cell/s0/raw_v2/max_top_structure.tsv \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
+    /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s1 \
 
 Supplementary:
 
 // gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/single_cell/s0/zarr/scZarr.zarr gs://ml_portal/test_data
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/singlecell_data/scZarr.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr/metadata gs://bcdportaldata/singlecell_data/scZarr.zarr/metadata
+// gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -56,7 +58,8 @@ clustersize_csv_file = data_root+sys.argv[4]
 metadata_file = data_root+sys.argv[5]
 struct_metadata_file = data_root+sys.argv[6]
 hist_data_path = data_root+sys.argv[7]
-op_path = sys.argv[8]
+counts_csv_file = data_root+sys.argv[8]
+op_path = sys.argv[9]
 
 
 # read metadata file
@@ -90,9 +93,14 @@ nGenes = 21899
 zarr_file = f'{data_root}/{op_path}/scZarr.zarr'
 store = zarr.DirectoryStore(zarr_file) # https://zarr.readthedocs.io/en/stable/tutorial.html#storage-alternatives
 root = zarr.group(store=store, overwrite=True)
-nz_group = root.create_group(f'nz', overwrite=True)
-nz_groupX = nz_group.zeros('X', shape=(nClusters, nGenes), chunks=(nClusters, 1), dtype='f4')
+
+nz_pct_group = root.create_group(f'nz_pct', overwrite=True)
+nz_pct_groupX = nz_pct_group.zeros('X', shape=(nClusters, nGenes), chunks=(nClusters, 1), dtype='f4')
 # nz_groupX[:] = 1
+
+# create nx_counts_group
+counts_group = root.create_group('counts', overwrite=True)
+counts_groupX = counts_group.zeros('X', shape=(nClusters, nGenes), chunks=(nClusters, 1), dtype='f4') 
 
 avg_group = root.create_group(f'avg', overwrite=True)
 avg_groupX = avg_group.zeros('X', shape=(nClusters, nGenes), chunks=(nClusters, 1), dtype='f4')
@@ -164,7 +172,8 @@ uniqCellClassesArray = metadataGroup.zeros('uniqcellclasses', shape=(len(uniqCel
 uniqCellClassesArray[:] = uniqCellClasses
 
 
-nz_mat = np.zeros(shape=(nClusters, nGenes))
+nz_pct_mat = np.zeros(shape=(nClusters, nGenes))
+
 # next, populate nz data in zarr file
 with open(nz_csv_file, 'r') as f:
     # pass the file object to reader() to get the reader object
@@ -177,8 +186,7 @@ with open(nz_csv_file, 'r') as f:
             dprint('nzcsv', idx)
             nohead_idx = idx-1
             # nz_groupX[nohead_idx, :] = curcell_nz_counts[:nGenes] / clusterSizes[nohead_idx]
-            nz_mat[nohead_idx, :] = curcell_nz_counts[:nGenes] / clusterSizes[nohead_idx]
-
+            nz_pct_mat[nohead_idx, :] = curcell_nz_counts[:nGenes] / clusterSizes[nohead_idx]
 
         if idx==0:
             geneNames = row[1:]
@@ -188,7 +196,7 @@ with open(nz_csv_file, 'r') as f:
             p = re.compile("(.+?)=.+$")
             geneNamesArray[:] = np.asarray([p.search(x).group(1) for x in geneNamesArray])
 
-nz_groupX[:] = nz_mat
+nz_pct_groupX[:] = nz_pct_mat
 
 avg_mat = np.zeros(shape=(nClusters, nGenes))
 
@@ -206,6 +214,23 @@ with open(avg_csv_file, 'r') as f:
             avg_mat[nohead_idx, :] = curcell_avg_counts[:nGenes]
 
 avg_groupX[:] = avg_mat
+
+counts_mat = np.zeros(shape=(nClusters, nGenes))
+# fourth, populate counts csv
+with open(counts_csv_file, 'r') as f:
+    # pass the file object to reader() to get the reader object
+    csv_reader = csv.reader(f)
+    # Iterate over each row in the csv using reader object
+    for idx,row in enumerate(csv_reader):
+        # row variable is a list that represents a row in csv
+        if (idx>0):
+            curcell_counts = np.array([int(x) for x in row[1:]])
+            dprint('counts', idx)
+            nohead_idx = idx-1
+            counts_mat[nohead_idx, :] = curcell_counts[:nGenes]
+
+
+counts_groupX[:] = counts_mat
 
 globalMaxAvgVal = str(round(np.max(avg_mat)))
 dprint('globalMaxAvgVal', globalMaxAvgVal)
