@@ -5,7 +5,8 @@ Usage:
 
 python s2d_copy_coords_wf.py
     ip: data_root
-    ip: path to new wireframes
+    ip: path to new wireframes (ofixed)
+    ip: path to masked (and ofixed) nissls
     ip: path to new coords
     op: path to gene expr data on bucket
     op: path to cell spatial data on bucket
@@ -15,10 +16,11 @@ Example:
 
 python src/python/scripts/v3/s2d_copy_coords_wf.py \
     ~/Desktop/work/data/mouse_atlas \
-    /v3/s2/wireframes_improved_trans \
+    /v3/s2/wireframes_ofixed \
+    /misc/masked_nissls/s2/masked_nissls \
     /v3/s2/coords   \
-    gs://bcdportaldata/batch_YYMMDD/genexp_data/gene_exprs_cshl \
-    gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores \
+    gs://bcdportaldata/batch_230131/genexp_data/gene_exprs_cshl \
+    gs://bcdportaldata/batch_230131/cellspatial_data/cellscores \
     /v3/s2/backup \
 
 Created by Mukund on 2022-12-21
@@ -31,10 +33,11 @@ import sys
 
 data_root = sys.argv[1]
 ip_folder_wireframes = f'{data_root}{sys.argv[2]}'
-ip_folder_coords = f'{data_root}{sys.argv[3]}'
-op_genexp_folder = sys.argv[4]
-op_cellspatial_folder = sys.argv[5]
-backup_dir = f'{data_root}{sys.argv[6]}'
+ip_folder_nissls = f'{data_root}{sys.argv[3]}'
+ip_folder_coords = f'{data_root}{sys.argv[4]}'
+op_genexp_folder = sys.argv[5]
+op_cellspatial_folder = sys.argv[6]
+backup_dir = f'{data_root}{sys.argv[7]}'
 
 
 
@@ -54,6 +57,7 @@ for pids_idx, pid in enumerate(pids):
     pid_str = str(pid).zfill(3)
 
     wireframe_file = f'chuck_sp_wireframe_{pid_str}.png'
+    nissl_file = f'nis_{pid_str}.png'
     bucket_path = f'{op_genexp_folder}/puck{pid}/{wireframe_file}'
     # bucket_path_coords = f'{op_genexp_folder}/puck{pid}/coords.csv'
 
@@ -72,6 +76,7 @@ for pids_idx, pid in enumerate(pids):
 
     # copy wireframe to gene related folder
     local_path = f'{ip_folder_wireframes}/{wireframe_file}'
+    bucket_path = f'{op_genexp_folder}/puck{pid}/{wireframe_file}'
     cmd2 = f'gsutil cp {local_path} {bucket_path}'
     os.system(cmd2)
     dprint(cmd2)
@@ -81,6 +86,18 @@ for pids_idx, pid in enumerate(pids):
     bucket_path = f'{op_cellspatial_folder}/puck{pid}/{wireframe_file}'
     cmd2 = f'gsutil cp {local_path} {bucket_path}'
     os.system(cmd2)
+
+    # copy nissl to gene related folder
+    local_path = f'{ip_folder_nissls}/{nissl_file}'
+    bucket_path = f'{op_genexp_folder}/puck{pid}/{nissl_file}'
+    cmd2 = f'gsutil cp {local_path} {bucket_path}'
+
+    # copy nissl to celltype related folder
+    local_path = f'{ip_folder_nissls}/{nissl_file}'
+    bucket_path = f'{op_cellspatial_folder}/puck{pid}/{nissl_file}' 
+    cmd2 = f'gsutil cp {local_path} {bucket_path}'
+    os.system(cmd2)
+
 
 
     # # copy coords file to gene related folder
