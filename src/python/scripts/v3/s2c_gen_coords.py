@@ -1,4 +1,7 @@
-"""Generate coords csv file with x,y in Chuck space and region id based on Partha's contours.
+"""Generate coords csv file with x,y in Chuck space and region id based on
+Partha's contours. CAVEAT - Currently this script generates coords.csv files
+only for GeneExp tab. Coords for CellSpatial tab are generaged in
+s1c_beadxcell_zarr.py
 
 Usage:
 
@@ -67,8 +70,8 @@ for pids_idx, pid in enumerate(pids):
     with open(partha_labels_file, newline='\n') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            partha_labels.append(row[5])
-            out_tissue.append(row[9])
+            partha_labels.append(row[4])
+            out_tissue.append(row[8])
 
 
 
