@@ -7,7 +7,9 @@ python s2_gen_regtocell.py
     i/o: data root
     inp: regions tree json file
     inp: input folder with cell x bead anndata files
-    inp: path to 3D nrrd file with CCF region ids
+    inp: path to 3D nrrd file with CCF region ids [REMOVE/OBSOLETE]
+    inp: path toward v3 CCF labels 
+    inp: path to allen name to acronym map
     out: path to output folder
 
 Example:
@@ -17,11 +19,13 @@ python src/python/scripts/analysis_sc/s2_gen_regtocell.py \
     /data_v3_nissl_post_qc/s9_analysis/s9f/regions.json \
     /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
     annotation/ccf_2017/annotation_25.nrrd \
-    /single_cell/s2/s2_regtocell
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl \
+    /v3/s1/allen_name_to_acro_map.csv \
+    /single_cell/s2/s2_regtocell \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/s2_regtocell gs://bcdportaldata/singlecell_data/s2/s2_regtocell
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/s2_regtocell gs://bcdportaldata/batch_230131/singlecell_data/s2/s2_regtocell_230208
 
 References:
 
@@ -38,6 +42,7 @@ import anndata as ann
 from scipy.sparse import csr_matrix, hstack
 import numpy as np
 import nrrd
+import csv
 
 
 data_root = sys.argv[1]
@@ -45,7 +50,9 @@ region_tree_file = data_root+sys.argv[2]
 ip_folder_cxb = data_root+sys.argv[3]
 nrrd_path = sys.argv[4]
 readdata, header = nrrd.read(nrrd_path)
-op_folder = data_root+sys.argv[5]
+cellspatial_puck_folder = data_root+sys.argv[5]
+allen_name_id_map_file = data_root+sys.argv[6]
+op_folder = data_root+sys.argv[7]
 
 with open (region_tree_file, 'r') as f:
     tree = json.load(f)
@@ -77,7 +84,7 @@ for node in nodes_list:
     # region_to_celltype[node['value']] = set()
     region_to_celltype[node['value']] = {}
 
-dprint(len(region_to_celltype.keys()))
+# dprint(len(region_to_celltype.keys()))
 
 # dprint(region_to_celltype)
 # dprint('num regions', len(region_to_celltype.keys()), ctr)
@@ -104,6 +111,37 @@ for pids_idx, pid in enumerate(pids):
     if (pid==5 or pid==77 or pid==167):
         apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
+
+    puck_folder = f'{cellspatial_puck_folder}/puck{pid}'
+    coords_csv_name = f'{puck_folder}/coords.csv'
+    # coords_csv_name = f'{cellspatial_puck_folder}/coords_{pid}.csv'
+
+    nis_id_str = str(apid).zfill(3)
+    # dprint(labels_csv_file)
+
+    # read name_to_acro_map_file csv
+
+    region_name_to_id_map = {}
+    with open(allen_name_id_map_file, newline='\n') as csvfile:
+        reader = csv.reader(csvfile, delimiter='\t')
+        for row in reader:
+            region_name_to_id_map[row[2]] = int(row[0])
+        region_name_to_id_map['OUT'] = 0
+        region_name_to_id_map['NA'] = 0
+
+
+    region_names = []
+    region_ids = []
+    with open(coords_csv_name, newline='\n') as csvfile:
+        reader = csv.reader(csvfile, delimiter=':')
+        next(reader)
+        for row in reader:
+            # split_row = row[0].split(':')
+            region_names.append(row[2])
+            region_ids.append(region_name_to_id_map[row[2]])
+
+
+    dprint('region_names length', len(region_names))
     # iterate over cellidx
     ip_counts_file  = f'{ip_folder_cxb}/dd{str(apid)}_CTMapping.h5ad'
     dprint('pid', pid)
@@ -116,6 +154,8 @@ for pids_idx, pid in enumerate(pids):
 
     cells = list(counts.obs.index)
     cells = [x.split('=')[1] for x in cells]
+    search_cell_idx = 989
+    # dprint(f'check_cell {search_cell_idx}', cells[search_cell_idx])
     for cell_idx, cell in enumerate(cells):
         # get cell_scores for for all beads for this cell
         specific_cell_scores = counts_X.getcol(cell_idx)
@@ -128,22 +168,22 @@ for pids_idx, pid in enumerate(pids):
         # dprint(bead_inds.shape)
         # dprint(bead_inds)
 
+        # if cell_idx==search_cell_idx:
+        #     dprint('bead_inds', bead_inds)
 
         # for chosen beads get region ids and region_to_celltype[region_id].add(cellidx)
         for bead_idx in bead_inds:
-            bead_pos = positions[bead_idx,:]
-            x = int(bead_pos[0])
-            y = int(bead_pos[1])
-            z = int(bead_pos[2])
-            if (x>=readdata.shape[0] or y>= readdata.shape[1] or z>= readdata.shape[2] or \
-                    x<0 or y<0 or z<0):
-                id = 0
-            else:
-                id = readdata[x, y, z]
-            if (id==0):
+            id = 0
+            if region_names[bead_idx]!='OUT':
+                # get region
+                id = region_ids[bead_idx]
+            if id==0:
                 continue
 
-            if (cell not in region_to_celltype[id]):
+            # if(cell_idx==search_cell_idx and id == 581): # 129 - V3, 581 - TRS
+            #     dprint(f'bead_idx in RID {id}', bead_idx, spec_cell_scores_dense[bead_idx])
+            # if (cell not in region_to_celltype[id]): ## check error - cell_idx instead of cell?
+            if (cell_idx not in region_to_celltype[id]): ## check error - cell_idx instead of cell?
                 region_to_celltype[id][cell_idx] = 1
             else:
                 region_to_celltype[id][cell_idx] += 1
