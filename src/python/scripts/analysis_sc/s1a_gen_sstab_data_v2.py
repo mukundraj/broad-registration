@@ -25,11 +25,14 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/celltype_metadata/data_MouseAtlas_Submission_CellType_Metadata.tsv \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
-    /single_cell/s1 \
+    /single_cell/s0/raw_v2/neuropeptide_data \
+    /single_cell/s1/scZarr_230221.zarr \
 
 Supplementary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230221.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230221.zarr
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230221.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230221.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -54,7 +57,8 @@ metadata_file = data_root+sys.argv[5]
 celltype_metadata_file = data_root+sys.argv[6]
 hist_data_path = data_root+sys.argv[7]
 counts_csv_file = data_root+sys.argv[8]
-op_path = sys.argv[9]
+neuropeptide_data_path = data_root+sys.argv[9]
+op_zarr = sys.argv[10]
 
 
 # read metadata file
@@ -70,6 +74,7 @@ dprint('metadata length:', len(metadata))
 
 # read top structure metadata file and populate to dict mapping cellname to structure
 ctype_to_struct = {}
+neuroTrans = {}
 with open(celltype_metadata_file, 'r') as f:
     reader = csv.reader(f, delimiter='\t')
     header = next(reader) # skip header
@@ -77,9 +82,11 @@ with open(celltype_metadata_file, 'r') as f:
     # Imputed_Max_TopStruct_idx = header.index('Imputed_Max_TopStruct')
     # Mapped_Max_TopStruct = header.index('Mapped_Max_TopStruct') 
     NumBeadsConfMapped_idx = header.index('NumBeadsConfMapped') # tells us if imputed or not - if nonzero number of beads confidently mapped
+    NT_binary_idx = header.index('NT_binary') # index of neuropep binary
     for row in reader:
         # dprint(row)
         # ctype_to_struct[row[1]] = row[0]
+
         ctype_to_struct[row[0]] = '-'
         if (row[NumBeadsConfMapped_idx] != ''):
             ctype_to_struct[row[0]] = row[Max_TopStruct_idx]
@@ -88,6 +95,10 @@ with open(celltype_metadata_file, 'r') as f:
             if (len(row[Max_TopStruct_idx])) == 0:
                 ctype_to_struct[row[0]] = '-' # if imputed and yet no structure, then set to '-'
 
+        if (row[NT_binary_idx] != ''): # if neuroTrans is not empty
+            neuroTrans[row[0]] = row[NT_binary_idx]
+        else:
+            neuroTrans[row[0]] = '-'
 
 dprint('struct metadata length:', len(ctype_to_struct))
 # dprint('struct metadata:', ctype_to_struct)
@@ -97,6 +108,28 @@ dprint('struct metadata length:', len(ctype_to_struct))
 #     if v == '-':
 #         dprint(k, v)
 
+neuroPep = {}
+neuroPepReceps = {}
+# read in neuro peptide csv data
+with open(neuropeptide_data_path+'/data_MouseAtlas_Submission_COMBINED_np_making_thresh.tsv', 'r') as f:
+    reader = csv.reader(f, delimiter='\t')
+    # header = next(reader) # skip header
+    for row in reader:
+        if (row[1] != ''):
+            neuroPep[row[0]] = row[1]
+        else:
+            neuroPep[row[0]] = '-'
+
+# read neuro peptide receptor csv data
+with open(neuropeptide_data_path+'/data_MouseAtlas_Submission_COMBINED_np_sensing_thresh.tsv', 'r') as f:
+    reader = csv.reader(f, delimiter='\t')
+    # header = next(reader) # skip header
+    for row in reader:
+        if (row[1] != ''):
+            neuroPepReceps[row[0]] = row[1]
+        else:
+            neuroPepReceps[row[0]] = '-'
+
 
 nClusters = 5030
 nGenes = 21899
@@ -104,7 +137,7 @@ nGenes = 21899
 # nGenesTmp = 5
 
 # create new zarr file
-zarr_file = f'{data_root}/{op_path}/scZarr.zarr'
+zarr_file = f'{data_root}/{op_zarr}'
 store = zarr.DirectoryStore(zarr_file) # https://zarr.readthedocs.io/en/stable/tutorial.html#storage-alternatives
 root = zarr.group(store=store, overwrite=True)
 
@@ -151,6 +184,9 @@ cell_classes = [None]*nClusters
 top_structs = [None]*nClusters
 max_pcts = [None]*nClusters
 map_status = [None]*nClusters # whether the cluster is mapped to a spatial celltype
+neuropep = [None]*nClusters # neuropeptide
+neuropep_recep = [None]*nClusters # neuropeptide receptor
+neurotrans = [None]*nClusters # neurotransmitter binary
 
 for idx, cname in enumerate(clusterNames):
     cname =  cname.split('=')[1]
@@ -172,9 +208,28 @@ for idx, cname in enumerate(clusterNames):
     else:
         top_structs[idx] = '-'
 
+    if cname in neuroTrans:
+        neurotrans[idx] = neuroTrans[cname]
+        top_structs[idx] += f' | {neuroTrans[cname]}'
+    else:
+        neurotrans[idx] = '-'
+
+    if cname in neuroPep:
+        neuropep[idx] = neuroPep[cname]
+        top_structs[idx] += f' | {neuroPep[cname]}'
+    else:
+        neuropep[idx] = '-'
+
+    if cname in neuroPepReceps:
+        neuropep_recep[idx] = neuroPepReceps[cname]
+        top_structs[idx] += f' | {neuroPepReceps[cname]}'
+    else:
+        neuropep_recep[idx] = '-'
+
+
 cellClassesArray = metadataGroup.zeros('cellclasses', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 cellClassesArray[:] = cell_classes
-topStructsArray = metadataGroup.zeros('topstructs', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+topStructsArray = metadataGroup.zeros('topstructs1', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 topStructsArray[:] = top_structs
 maxPctsArray = metadataGroup.zeros('maxpcts', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 maxPctsArray[:] = max_pcts
@@ -185,8 +240,15 @@ uniqCellClasses = list(set(cell_classes))
 uniqCellClassesArray = metadataGroup.zeros('uniqcellclasses', shape=(len(uniqCellClasses)), dtype='object', object_codec=numcodecs.VLenUTF8())
 uniqCellClassesArray[:] = uniqCellClasses
 
+neuroPepArray = metadataGroup.zeros('neuroPep', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+neuroPepArray[:] = neuropep
+neuroPepRecepArray = metadataGroup.zeros('neuroPepRecep', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+neuroPepRecepArray[:] = neuropep_recep
+neuroTransArray = metadataGroup.zeros('neuroTrans', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+neuroTransArray[:] = neurotrans
 
 nz_pct_mat = np.zeros(shape=(nClusters, nGenes))
+
 
 # next, populate nz data in zarr file
 with open(nz_csv_file, 'r') as f:
