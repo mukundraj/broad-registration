@@ -29,7 +29,7 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230207.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230221.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230221.zarr
 
 Created by Mukund on 2022-09-27
 
@@ -85,6 +85,8 @@ with open(celltype_metadata_file, 'r') as f:
             ctype_to_struct[row[0]] = row[Max_TopStruct_idx]
         else:
             ctype_to_struct[row[0]] = row[Max_TopStruct_idx] + ' (imputed)'
+            if (len(row[Max_TopStruct_idx])) == 0:
+                ctype_to_struct[row[0]] = '-' # if imputed and yet no structure, then set to '-'
 
 
 dprint('struct metadata length:', len(ctype_to_struct))
