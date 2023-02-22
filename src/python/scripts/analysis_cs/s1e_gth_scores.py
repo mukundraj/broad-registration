@@ -25,7 +25,7 @@ python src/python/scripts/analysis_cs/s1e_gth_scores.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels_cshl \
     /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
-    /cell_spatial/s1/s1e_gth_aggr_scores \
+    /cell_spatial/s1/s1e_gth_aggr_scores_230222 \
 
 Created by Mukund on 2022-12-04
 

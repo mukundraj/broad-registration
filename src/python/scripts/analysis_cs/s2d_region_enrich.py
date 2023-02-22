@@ -17,9 +17,17 @@ python src/python/scripts/analysis_cs/s2d_region_enrich.py \
     /cell_spatial/s1/s1e_gth_aggr_scores \
     /cell_spatial/s2/s2d_region_enrich \
 
+python src/python/scripts/analysis_cs/s2d_region_enrich.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /cell_spatial/s1/s1e_gth_aggr_scores_230222 \
+    /cell_spatial/s2/s2d_region_enrich/nz_zarr_230222.zarr \
+    /cell_spatial/s2/s2d_region_enrich/name_info_230222.json \
+
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2d_region_enrich gs://bcdportaldata/cellspatial_data/s2d_region_enrich
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2d_region_enrich/nz_zarr_230222.zarr gs://bcdportaldata/batch_230131/cellspatial_data/s2d_region_enrich/nz_zarr_230222.zarr
+
+gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2d_region_enrich/name_info_230222.json gs://bcdportaldata/batch_230131/cellspatial_data/s2d_region_enrich/name_info_230222.json
 
 Created by Mukund on 2022-12-04
 
@@ -44,7 +52,8 @@ import json
 
 data_root = sys.argv[1]
 ip_gth_aggr_data_folder = data_root+sys.argv[2]
-op_path = data_root+sys.argv[3]
+op_zarr_file = data_root+sys.argv[3]
+op_names_file = data_root+sys.argv[4]
 
 
 reference_space_key = 'annotation/ccf_2017/'
@@ -109,7 +118,7 @@ _, nCelltypes = data1Xcsr.shape
 # read total count file for mapping info from local index to rid
 
 
-zarr_filename = f'{op_path}/nz_aggr.zarr'
+zarr_filename = f'{op_zarr_file}'
 store = zarr.DirectoryStore(zarr_filename) # https://zarr.readthedocs.io/en/stable/tutorial.html#storage-alternatives
 root = zarr.group(store=store, overwrite=True)
 
@@ -284,7 +293,7 @@ for pid in pids:
         # Serializing json
         json_object = json.dumps(celltype_names_dict, indent=4)
 
-        celltype_names_file = f'{op_path}/names_info.json'
+        celltype_names_file = f'{op_names_file}'
         # Writing to sample.json
         with open(celltype_names_file, "w") as outfile:
             outfile.write(json_object)
