@@ -19,6 +19,12 @@ python src/python/scripts/analysis/s9g_nz_counts.py \
     /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
     /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts \
 
+python src/python/scripts/analysis/s9g_nz_counts.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels_cshl \
+    /data_v3_nissl_post_qc/s8_raw_data/integrated_mats \
+    /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts_cshl_230222 \
+
 Created by Mukund on 2022-09-13
 """
 

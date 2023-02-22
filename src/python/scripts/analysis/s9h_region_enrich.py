@@ -16,11 +16,17 @@ python src/python/scripts/analysis/s9h_region_enrich.py \
     /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts \
     /data_v3_nissl_post_qc/s9_analysis/s9h \
 
+python src/python/scripts/analysis/s9h_region_enrich.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts_cshl_230222 \
+    /data_v3_nissl_post_qc/s9_analysis/s9h/gene_info_230222.json \
+    /data_v3_nissl_post_qc/s9_analysis/s9h/nz_aggr_230222.zarr \
+
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9h/nz_aggr.zarr gs://bcdportaldata/cellspatial_data/nz_aggr.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9h/nz_aggr_230222.zarr gs://bcdportaldata/batch_230131/genexp_data/s9h/nz_aggr_230222.zarr
 
-gsutil cp ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9h/gene_info.json gs://bcdportaldata/cellspatial_data/gene_info.json
+gsutil cp ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9h/gene_info_230222.json gs://bcdportaldata/batch_230131/genexp_data/s9h/gene_info_230222.json
 
 Created by Mukund on 2022-09-12
 """
@@ -46,7 +52,8 @@ import json
 
 data_root = sys.argv[1]
 ip_nz_aggr_data_folder = data_root+sys.argv[2]
-op_path = data_root+sys.argv[3]
+op_gene_info_file = data_root+sys.argv[3]
+op_zarr = data_root+sys.argv[4]
 
 reference_space_key = 'annotation/ccf_2017/'
 # resolution = 10
@@ -152,7 +159,7 @@ _, nGenes = data1Xcsr.shape
 # tree_nodes_info_idxed = [{ **x, 'idx':i} for i, x in enumerate(tree_nodes_info)]
 
 
-zarr_filename = f'{op_path}/nz_aggr.zarr'
+zarr_filename = f'{op_zarr}'
 store = zarr.DirectoryStore(zarr_filename) # https://zarr.readthedocs.io/en/stable/tutorial.html#storage-alternatives
 root = zarr.group(store=store, overwrite=True)
 
@@ -319,7 +326,7 @@ for pid in pids:
         # Serializing json
         json_object = json.dumps(gene_names_dict, indent=4)
 
-        gene_names_file = f'{op_path}/gene_info.json'
+        gene_names_file = f'{op_gene_info_file}'
         # Writing to sample.json
         with open(gene_names_file, "w") as outfile:
             outfile.write(json_object)
