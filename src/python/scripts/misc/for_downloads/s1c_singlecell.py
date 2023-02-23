@@ -66,7 +66,7 @@ print(scZarr.tree())
 readme_file = f'{op_folder}/readme.txt'
 shutil.copy(readme_file, scdata_folder)
 
-for srno in range(1, 102):
+for srno in range(1, 2):
 # for srno in range(1, 3):
     pid = srnoToPid[str(srno).zfill(3)]
 
