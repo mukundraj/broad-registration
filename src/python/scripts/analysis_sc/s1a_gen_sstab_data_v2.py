@@ -22,17 +22,17 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_avg_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
     /single_cell/s0/raw_v2/snRNA-seq_metadata.csv \
-    /single_cell/s0/raw_v2/celltype_metadata/data_MouseAtlas_Submission_CellType_Metadata.tsv \
+    /single_cell/s0/raw_v2/celltype_metadata/CellType_Metadata__withSetCover.tsv \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s0/raw_v2/neuropeptide_data \
-    /single_cell/s1/scZarr_230221.zarr \
+    /single_cell/s1/scZarr_230223.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230221.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230221.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230223.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230223.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230221.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230221.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230223.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230223.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -75,6 +75,7 @@ dprint('metadata length:', len(metadata))
 # read top structure metadata file and populate to dict mapping cellname to structure
 ctype_to_struct = {}
 neuroTrans = {}
+geneCovers = {}
 with open(celltype_metadata_file, 'r') as f:
     reader = csv.reader(f, delimiter='\t')
     header = next(reader) # skip header
@@ -83,6 +84,9 @@ with open(celltype_metadata_file, 'r') as f:
     # Mapped_Max_TopStruct = header.index('Mapped_Max_TopStruct') 
     NumBeadsConfMapped_idx = header.index('NumBeadsConfMapped') # tells us if imputed or not - if nonzero number of beads confidently mapped
     NT_binary_idx = header.index('NT_binary') # index of neuropep binary
+
+    GeneCover_idx = header.index('Displayed_Gene_List_Cover') # index of gene list cover
+
     for row in reader:
         # dprint(row)
         # ctype_to_struct[row[1]] = row[0]
@@ -99,6 +103,11 @@ with open(celltype_metadata_file, 'r') as f:
             neuroTrans[row[0]] = row[NT_binary_idx]
         else:
             neuroTrans[row[0]] = '-'
+
+        if (row[GeneCover_idx] != ''): # if gene cover is not empty
+            geneCovers[row[0]] = row[GeneCover_idx].replace('|', '_') # to avoid mix up with | in SC table column
+        else:
+            geneCovers[row[0]] = '-'
 
 dprint('struct metadata length:', len(ctype_to_struct))
 # dprint('struct metadata:', ctype_to_struct)
@@ -187,6 +196,7 @@ map_status = [None]*nClusters # whether the cluster is mapped to a spatial cellt
 neuropep = [None]*nClusters # neuropeptide
 neuropep_recep = [None]*nClusters # neuropeptide receptor
 neurotrans = [None]*nClusters # neurotransmitter binary
+genecovers = [None]*nClusters # gene covers
 
 for idx, cname in enumerate(clusterNames):
     cname =  cname.split('=')[1]
@@ -207,6 +217,12 @@ for idx, cname in enumerate(clusterNames):
         top_structs[idx] = ctype_to_struct[cname]
     else:
         top_structs[idx] = '-'
+
+    if cname in geneCovers:
+        top_structs[idx] += f' | {geneCovers[cname]}'
+        genecovers[idx] = geneCovers[cname]
+    else:
+        genecovers[idx] = '-'
 
     if cname in neuroTrans:
         neurotrans[idx] = neuroTrans[cname]
@@ -246,6 +262,9 @@ neuroPepRecepArray = metadataGroup.zeros('neuroPepRecep', shape=(nClusters), dty
 neuroPepRecepArray[:] = neuropep_recep
 neuroTransArray = metadataGroup.zeros('neuroTrans', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 neuroTransArray[:] = neurotrans
+
+geneCoversArray = metadataGroup.zeros('geneCovers', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+geneCoversArray[:] = genecovers
 
 nz_pct_mat = np.zeros(shape=(nClusters, nGenes))
 
