@@ -26,13 +26,13 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s0/raw_v2/neuropeptide_data \
-    /single_cell/s1/scZarr_230223.zarr \
+    /single_cell/s1/scZarr_230321.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230223.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230223.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230321.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230321.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230223.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230223.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230321.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230321.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -219,26 +219,26 @@ for idx, cname in enumerate(clusterNames):
         top_structs[idx] = '-'
 
     if cname in geneCovers:
-        top_structs[idx] += f' | {geneCovers[cname]}'
+        # top_structs[idx] += f' | {geneCovers[cname]}'
         genecovers[idx] = geneCovers[cname]
     else:
         genecovers[idx] = '-'
 
     if cname in neuroTrans:
         neurotrans[idx] = neuroTrans[cname]
-        top_structs[idx] += f' | {neuroTrans[cname]}'
+        # top_structs[idx] += f' | {neuroTrans[cname]}'
     else:
         neurotrans[idx] = '-'
 
     if cname in neuroPep:
         neuropep[idx] = neuroPep[cname]
-        top_structs[idx] += f' | {neuroPep[cname]}'
+        # top_structs[idx] += f' | {neuroPep[cname]}'
     else:
         neuropep[idx] = '-'
 
     if cname in neuroPepReceps:
         neuropep_recep[idx] = neuroPepReceps[cname]
-        top_structs[idx] += f' | {neuroPepReceps[cname]}'
+        # top_structs[idx] += f' | {neuroPepReceps[cname]}'
     else:
         neuropep_recep[idx] = '-'
 
