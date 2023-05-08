@@ -4,7 +4,7 @@ project(coordinate_mapper)
 
 # Find Cairo
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
-find_package(Cairo REQUIRED)
+# find_package(Cairo REQUIRED)
 
 find_package(ITK REQUIRED)
 
