@@ -17,7 +17,7 @@ python src/python/scripts/misc/for_nih/get_gene_cpms.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_avg_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
     /misc/for_nih/s0/mouse_GPCR_Targets.csv \
-    /misc/for_nih/s1/gene_cpm.csv \
+    /misc/for_nih/s1/gene_cpm_v2.csv \
 
 Created by Mukund on 2023-08-29
 """
@@ -52,19 +52,19 @@ nGenes = 21899
 clusterSizes = []
 clusterNames = []
 
-# # read clusterSize file
-# with open(clustersize_csv_file, 'r') as f:
-#     # pass the file object to reader() to get the reader object
-#     csv_reader = csv.reader(f)
-#     # Iterate over each row in the csv using reader object
-#     for idx,row in enumerate(csv_reader):
-#         # row variable is a list that represents a row in csv
-#         if (idx>0):
-#             clusterSizes.append(int(row[1]))
-#             clusterNames.append(row[0])
+# read clusterSize file
+with open(clustersize_csv_file, 'r') as f:
+    # pass the file object to reader() to get the reader object
+    csv_reader = csv.reader(f)
+    # Iterate over each row in the csv using reader object
+    for idx,row in enumerate(csv_reader):
+        # row variable is a list that represents a row in csv
+        if (idx>0):
+            clusterSizes.append(int(row[1]))
+            clusterNames.append(row[0])
 
 
-# clusterSizes = np.array(clusterSizes)
+clusterSizes = np.array(clusterSizes)
 
 # read avg csv file
 geneNames = None
@@ -102,19 +102,20 @@ for idx, gene in enumerate(genes_list):
 
 
 
-# # multiply avg_mat with clusterSizes
-# sum_mat = avg_mat * clusterSizes[:, np.newaxis]
+# multiply avg_mat with clusterSizes
+sum_mat = avg_mat * clusterSizes[:, np.newaxis]
 
-# row_sums = sum_mat.sum(axis=1)
+row_sums = sum_mat.sum(axis=1)
 
-# divide by row_sums
-# ppm_mat = (sum_mat / row_sums[:, np.newaxis]) * 1000000
+# # divide by row_sums
+# cpm_mat = (sum_mat / row_sums[:, np.newaxis]) * 1000000
 
 # divide each row by corresponding row_sum and multiply by 1e6
-# ppm_mat = np.zeros(shape=(nClusters, nGenes))
-# for idx, row in enumerate(sum_mat):
-#     ppm_mat[idx, :] = row / row_sums[idx] # get parts per unit
-#     ppm_mat[idx, :] = ppm_mat[idx, :] * 1000000 # get parts per million units
+cpm_mat = np.zeros(shape=(nClusters, nGenes))
+normed_counts_mat = np.zeros(shape=(nClusters, nGenes))
+for idx, row in enumerate(sum_mat):
+    normed_counts_mat[idx, :] = row / row_sums[idx] # get parts per unit
+    cpm_mat[idx, :] = normed_counts_mat[idx, :] * 1000000 # get parts per million units
 
 # sum across rows in avg_mat
 # gene_avg = np.sum(avg_mat, axis=0)
@@ -122,7 +123,7 @@ for idx, gene in enumerate(genes_list):
 
 # get ppm for each gene and append to a dataframe
 
-cpm_mat = avg_mat * 1000000
+# cpm_mat = avg_mat * 1000000
 out_mat = np.zeros(shape=(nClusters, len(geneIndices)))
 
 for gene_idx in geneIndices:
