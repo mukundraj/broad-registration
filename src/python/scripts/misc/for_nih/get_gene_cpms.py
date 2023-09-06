@@ -1,4 +1,5 @@
 """
+Generates CPM data matrices for genes specified in request from NIH
 
 Usage:
 
@@ -17,7 +18,7 @@ python src/python/scripts/misc/for_nih/get_gene_cpms.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_avg_mtx.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
     /misc/for_nih/s0/mouse_GPCR_Targets.csv \
-    /misc/for_nih/s1/gene_cpm_v2.csv \
+    /misc/for_nih/s1/gene_cpm_v3.csv \
 
 Created by Mukund on 2023-08-29
 """
@@ -97,6 +98,13 @@ for idx, gene in enumerate(genes_list):
     if gene in geneNames:
         geneIndices.append(geneNames.index(gene))
         chosenGeneNames.append(gene)
+    elif gene == 'Agtr1a|Agtr1b':
+        g1 = 'Agtr1a'
+        g2 = 'Agtr1b'
+        geneIndices.append(geneNames.index(g1))
+        geneIndices.append(geneNames.index(g2))
+        chosenGeneNames.append(g1)
+        chosenGeneNames.append(g2)
     else:
         genesNotInGeneNames.append([idx+3,gene])
 
