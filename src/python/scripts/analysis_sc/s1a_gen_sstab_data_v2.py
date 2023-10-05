@@ -28,13 +28,13 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s0/raw_v2/neuropeptide_data \
     /single_cell/s1/processed_clade_info.csv \
-    /single_cell/s1/scZarr_231021.zarr \
+    /single_cell/s1/scZarr_231005.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231004.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231004.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231005.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231005.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231004.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231004.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231005.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231005.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -74,7 +74,6 @@ with open(metadata_file, 'r') as f:
         metadata[row[0]] = [row[2], row[7], row[8]] # [celltype, top_level_region, pct of cells in cluster from tlr]
 
 dprint('metadata length:', len(metadata))
-
 
 # read top structure metadata file and populate to dict mapping cellname to structure
 ctype_to_struct = {}
@@ -192,15 +191,19 @@ with open(clustersize_csv_file, 'r') as f:
     clustersArray[:] = clusterNames
 
 clade_names = []
+clade_annotations = []
 # read proc_clade_file
 with open(proc_clade_file, 'r') as f:
     reader = csv.reader(f, delimiter=',')
     for row in reader:
         clade_names.append(row[1])
+        clade_annotations.append(row[2])
 
     cladesArray = metadataGroup.zeros('clades', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
     cladesArray[:] = clade_names
 
+    cladeAnnotationsArray = metadataGroup.zeros('cladeAnnotations', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+    cladeAnnotationsArray[:] = clade_annotations
 
 # next, create metadata arrays
 cell_classes = [None]*nClusters
