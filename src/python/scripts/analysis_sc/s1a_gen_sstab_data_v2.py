@@ -1,5 +1,5 @@
 """
-Generates zarr files (nonzero counts and avg expr) for SingleCell viewer tab from version of data (csv files) generated on 2022-09-23. Also including celltype metadata on 2022-11-07.
+Generates zarr files (nonzero counts and avg expr) for SingleCell viewer tab from version of data (csv files) generated on 2022-09-23. Also including celltype metadata on 2022-11-07. Added clade info on 2023-10-04.
 
 Usage:
 
@@ -12,6 +12,7 @@ python  s1a_data_test.py
     inp: path to metadata with celltype cluster [added on 2022-12-08, updated on 2023-02-06]
     inp: path to CellSpatial tab's score histogram data
     inp: path to sum counts matrix  [avg is this val / numcells in cluster]
+    inp: processed clade file
     out: output path
 
 Usage example:
@@ -26,13 +27,14 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s0/raw_v2/neuropeptide_data \
-    /single_cell/s1/scZarr_230321.zarr \
+    /single_cell/s1/processed_clade_info.csv \
+    /single_cell/s1/scZarr_231021.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230321.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230321.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231004.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231004.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_230321.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_230321.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231004.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231004.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -58,7 +60,8 @@ celltype_metadata_file = data_root+sys.argv[6]
 hist_data_path = data_root+sys.argv[7]
 counts_csv_file = data_root+sys.argv[8]
 neuropeptide_data_path = data_root+sys.argv[9]
-op_zarr = sys.argv[10]
+proc_clade_file = data_root+sys.argv[10]
+op_zarr = sys.argv[11]
 
 
 # read metadata file
@@ -71,6 +74,7 @@ with open(metadata_file, 'r') as f:
         metadata[row[0]] = [row[2], row[7], row[8]] # [celltype, top_level_region, pct of cells in cluster from tlr]
 
 dprint('metadata length:', len(metadata))
+
 
 # read top structure metadata file and populate to dict mapping cellname to structure
 ctype_to_struct = {}
@@ -186,6 +190,16 @@ with open(clustersize_csv_file, 'r') as f:
     # clustersArray = obs_group.zeros('clusters', shape=(nClusters), dtype='object', object_codec=numcodecs.JSON())
     clustersArray = obs_group.zeros('clusters', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
     clustersArray[:] = clusterNames
+
+clade_names = []
+# read proc_clade_file
+with open(proc_clade_file, 'r') as f:
+    reader = csv.reader(f, delimiter=',')
+    for row in reader:
+        clade_names.append(row[1])
+
+    cladesArray = metadataGroup.zeros('clades', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+    cladesArray[:] = clade_names
 
 
 # next, create metadata arrays
