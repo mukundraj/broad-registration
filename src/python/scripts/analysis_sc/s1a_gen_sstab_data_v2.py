@@ -27,14 +27,14 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /cell_spatial/s2/s2c/cell_jsons_s2c \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s0/raw_v2/neuropeptide_data \
-    /single_cell/s1/processed_clade_info.csv \
-    /single_cell/s1/scZarr_231005.zarr \
+    /single_cell/s1/processed_clade_info_v2.csv \
+    /single_cell/s1/scZarr_231011.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231005.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231005.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231011.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231011.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231005.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231005.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231011.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231011.zarr/metadata
 
 Created by Mukund on 2022-09-27
 

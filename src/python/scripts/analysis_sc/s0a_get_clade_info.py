@@ -14,10 +14,10 @@ Example:
 
 python src/python/scripts/analysis_sc/s0a_get_clade_info.py \
     ~/Desktop/work/data/mouse_atlas \
-    /single_cell/s0/CellType_Clades.csv \
+    /single_cell/s0/CellType_MetaCluster.csv \
     /single_cell/s0/raw_v2/20220912_QC_summary/clusterSize.csv \
-    /single_cell/s1/processed_clade_info.csv \
-    /single_cell/s1/unmapped_cells.csv \
+    /single_cell/s1/processed_clade_info_v2.csv \
+    /single_cell/s1/unmapped_cells_v2.csv \
 
 Created by Mukund on 2023-10-04
 """
