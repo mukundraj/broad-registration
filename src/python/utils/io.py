@@ -146,3 +146,22 @@ def get_img_dimensions(mapperfile_csv):
                 img_dims[nissl_id] = [int(row[2]), int(row[3])]
 
     return img_dims
+
+""" Reads in new single cell cluster metadata file and returns a dict mapping.
+Cluster metadata was provided on 2023-10-16 via Evan slack.
+
+Created by Mukund on 2023-10-17
+"""
+
+def get_additional_cluster_metadata(filename):
+    additional_metadata = {}
+    with open(filename, newline='\n') as csvfile:
+        reader = csv.reader(csvfile)
+        next(reader)
+        for row in reader:
+            clustername = row[0].split('\t')[1]
+            metadata = row[1]
+            additional_metadata[clustername] = metadata
+
+    return additional_metadata
+

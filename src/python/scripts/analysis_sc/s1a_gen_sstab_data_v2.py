@@ -4,16 +4,17 @@ Generates zarr files (nonzero counts and avg expr) for SingleCell viewer tab fro
 Usage:
 
 python  s1a_data_test.py
-    inp: data root
-    inp: path to nonzero counts file
-    inp: path to avg vals file
-    inp: path to cluster metadata file (for numcells for each cluster)
-    inp: path to celltype metadata file
-    inp: path to metadata with celltype cluster [added on 2022-12-08, updated on 2023-02-06]
-    inp: path to CellSpatial tab's score histogram data
-    inp: path to sum counts matrix  [avg is this val / numcells in cluster]
-    inp: processed clade file
-    out: output path
+    ip: data root
+    ip: path to nonzero counts file
+    ip: path to avg vals file
+    ip: path to cluster metadata file (for numcells for each cluster)
+    ip: path to celltype metadata file
+    ip: path to metadata with celltype cluster [added on 2022-12-08, updated on 2023-02-06]
+    ip: path to CellSpatial tab's score histogram data
+    ip: path to sum counts matrix  [avg is this val / numcells in cluster]
+    ip: processed clade file
+    ip: additional cluster metadata file
+    op: output path
 
 Usage example:
 
@@ -28,13 +29,14 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/20220912_QC_summary/cluster_sumCounts_mtx.csv \
     /single_cell/s0/raw_v2/neuropeptide_data \
     /single_cell/s1/processed_clade_info_v2.csv \
-    /single_cell/s1/scZarr_231011.zarr \
+    /single_cell/s0/additional_metadata.csv \
+    /single_cell/s1/scZarr_321017.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231011.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231011.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_321017.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231011.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_231011.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_321017.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -51,6 +53,15 @@ import numcodecs
 import re
 import os
 
+from pathlib import Path
+import sys
+path_root = Path(__file__).parents[4]
+sys.path.append(str(path_root))
+
+import src.python.utils.io as io
+
+
+
 data_root = sys.argv[1]
 nz_csv_file = data_root+sys.argv[2]
 avg_csv_file = data_root+sys.argv[3]
@@ -61,8 +72,10 @@ hist_data_path = data_root+sys.argv[7]
 counts_csv_file = data_root+sys.argv[8]
 neuropeptide_data_path = data_root+sys.argv[9]
 proc_clade_file = data_root+sys.argv[10]
-op_zarr = sys.argv[11]
+addtl_metadata_file = data_root+sys.argv[11]
+op_zarr = sys.argv[12]
 
+additional_metadata_dict = io.get_additional_cluster_metadata(addtl_metadata_file)
 
 # read metadata file
 metadata = {}
@@ -214,6 +227,7 @@ neuropep = [None]*nClusters # neuropeptide
 neuropep_recep = [None]*nClusters # neuropeptide receptor
 neurotrans = [None]*nClusters # neurotransmitter binary
 genecovers = [None]*nClusters # gene covers
+additional_metadata = [None]*nClusters # additional metadata
 
 for idx, cname in enumerate(clusterNames):
     cname =  cname.split('=')[1]
@@ -259,6 +273,10 @@ for idx, cname in enumerate(clusterNames):
     else:
         neuropep_recep[idx] = '-'
 
+    if cname in additional_metadata_dict:
+        additional_metadata[idx] = additional_metadata_dict[cname]
+    else:
+        additional_metadata[idx] = ''
 
 cellClassesArray = metadataGroup.zeros('cellclasses', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 cellClassesArray[:] = cell_classes
@@ -282,6 +300,9 @@ neuroTransArray[:] = neurotrans
 
 geneCoversArray = metadataGroup.zeros('geneCovers', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 geneCoversArray[:] = genecovers
+
+additionalMetadataArray = metadataGroup.zeros('additionalMetadata', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+additionalMetadataArray[:] = additional_metadata
 
 nz_pct_mat = np.zeros(shape=(nClusters, nGenes))
 
