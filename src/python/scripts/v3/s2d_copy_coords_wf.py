@@ -74,29 +74,30 @@ for pids_idx, pid in enumerate(pids):
     # os.system(cmd3)
 
 
-    # copy wireframe to gene related folder
-    local_path = f'{ip_folder_wireframes}/{wireframe_file}'
-    bucket_path = f'{op_genexp_folder}/puck{pid}/{wireframe_file}'
-    cmd2 = f'gsutil cp {local_path} {bucket_path}'
-    os.system(cmd2)
-    dprint(cmd2)
+    # # copy wireframe to gene related folder
+    # local_path = f'{ip_folder_wireframes}/{wireframe_file}'
+    # bucket_path = f'{op_genexp_folder}/puck{pid}/{wireframe_file}'
+    # cmd2 = f'gsutil cp {local_path} {bucket_path}'
+    # os.system(cmd2)
+    # dprint(cmd2)
 
-    # copy wireframe to celltype related folder
-    local_path = f'{ip_folder_wireframes}/{wireframe_file}'
-    bucket_path = f'{op_cellspatial_folder}/puck{pid}/{wireframe_file}'
-    cmd2 = f'gsutil cp {local_path} {bucket_path}'
-    os.system(cmd2)
+    # # copy wireframe to celltype related folder
+    # local_path = f'{ip_folder_wireframes}/{wireframe_file}'
+    # bucket_path = f'{op_cellspatial_folder}/puck{pid}/{wireframe_file}'
+    # cmd2 = f'gsutil cp {local_path} {bucket_path}'
+    # os.system(cmd2)
 
     # copy nissl to gene related folder
     local_path = f'{ip_folder_nissls}/{nissl_file}'
     bucket_path = f'{op_genexp_folder}/puck{pid}/{nissl_file}'
     cmd2 = f'gsutil cp {local_path} {bucket_path}'
-
-    # copy nissl to celltype related folder
-    local_path = f'{ip_folder_nissls}/{nissl_file}'
-    bucket_path = f'{op_cellspatial_folder}/puck{pid}/{nissl_file}' 
-    cmd2 = f'gsutil cp {local_path} {bucket_path}'
     os.system(cmd2)
+
+    # # copy nissl to celltype related folder
+    # local_path = f'{ip_folder_nissls}/{nissl_file}'
+    # bucket_path = f'{op_cellspatial_folder}/puck{pid}/{nissl_file}' 
+    # cmd2 = f'gsutil cp {local_path} {bucket_path}'
+    # os.system(cmd2)
 
 
 
