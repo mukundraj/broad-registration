@@ -10,6 +10,7 @@ python s2c_gen_coords.py \
     inp: path to bead_ccf_coords_allbds with bead coords in chuck space in csv format \
     inp: path to bead_ccf_coords_allbds with partha labels
     out: file path to save coords in chuck space with partha region id
+    out: file path for josh welch lab data [includes index of bead in the original csv file]
 
 
 Example:
@@ -19,6 +20,8 @@ python src/python/scripts/v3/s2c_gen_coords.py \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /v3/s2/bead_ccf_labels_allbds \
     /v3/s2/coords \
+    /v3/s2/coords_with_idx \
+
 
 
 
@@ -33,6 +36,8 @@ import csv
 data_root = sys.argv[1]
 ip_folder_chuck_coords = f'{data_root}{sys.argv[2]}'
 ip_folder_partha_labels = f'{data_root}{sys.argv[3]}'
+op_folder_with_idx = f'{data_root}{sys.argv[5]}'
+
 
 dprint(data_root)
 
@@ -85,3 +90,14 @@ for pids_idx, pid in enumerate(pids):
             if (status=='F'):
                 # writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
                 writer.writerow([chuck_sp_img_coords[i][0], chuck_sp_img_coords[i][1], partha_labels[i]])
+
+    # generate celltype coords file with indices
+    coords_csv_name = f'{op_folder_with_idx}/coords_{pid}.csv'
+    with open(coords_csv_name, 'w') as outfile:
+        writer = csv.writer(outfile, delimiter=',')
+        # writer.writerow(['x', 'y', 'z', 'rname'])
+        writer.writerow(['x', 'y', 'idx'])
+        for i, status in enumerate(out_tissue):
+            if (status=='F'):
+                # writer.writerow([xs[i], ys[i], zs[i], region_names[i]])
+                writer.writerow([chuck_sp_img_coords[i][0], chuck_sp_img_coords[i][1], i])
