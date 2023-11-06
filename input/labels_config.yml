@@ -1,0 +1,13 @@
+hz-xml-group1: /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/ahistoproject.zee
+
+hz-xml-group2: /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/ahistoproject.zee
+
+group1:
+  - /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/nis_1_02.svg
+  - /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/nis_2_01.svg
+  - /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/nis_3_01.svg
+
+group2:
+  - /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/anew/nis_0.tif
+  - /Users/mraj/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s0_start_formatted_data/tiff_from_vsi_testlabels/anew/nis_1.tif
+

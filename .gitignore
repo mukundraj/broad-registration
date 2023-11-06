@@ -39,7 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 /output/
-/input/
+#/input/
 build
 
 .DS_Store
