@@ -1,9 +1,13 @@
 # R script to generate zarr file for SingleCell tab data aggregated by clades and cell classes
 #
+# Example:
+#
+# Rscript ./src/python/scripts/analysis_sc/s2b_gen_aggr_sstab_data.R
 #
 # Supplementary:
 #
 # gsutil rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/agged_zarr gs://bcdportaldata/batch_231112/single_cell
+# gsutil rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/agged_zarr/aggedSCdata.zarr/bycellclasss/counts gs://bcdportaldata/batch_231112/single_cell/bycellclass/counts
 #
 # Created by Mukund on 2023-11-13
 #
@@ -15,16 +19,12 @@
 
 avg_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/avg/X'
 nzpct_loc  <-  '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/nz_pct/X'
+counts_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/counts/X'
 cladeloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata/clades'
 cellclassloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata/cellclasses'
 op_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s2/agged_zarr/'
 
 # Params end
-
-
-
-# zloc <- '/Users/mraj/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr'
-# zloc <- '/Users/mraj/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/counts/X'
 
 
 library(Rarr)
@@ -34,17 +34,17 @@ library(Matrix.utils)
 
 # read_array_metadata(zloc)
 
-# avg_array  <- zarr_overview(zloc)
-avg_array  <- read_zarr_array(avg_loc)
-
 clades  <- read_zarr_array(cladeloc)
 # convert clades to list
 clades_factor  <- factor(clades)
 
+# avg_array  <- zarr_overview(zloc)
+# avg_array  <- read_zarr_array(avg_loc)
 
-# aggregate by zo by clades
+## agg by clades
+# aggregate avg by clades
 
-agg_avg  <- aggregate.Matrix(avg_array, clades_factor, FUN = 'mean')
+agg_avg  <- aggregate.Matrix(read_zarr_array(avg_loc), clades_factor, FUN = 'mean')
 agg_avg_array  <- as.matrix(agg_avg)
 
 # # write to file
@@ -67,14 +67,26 @@ agged_nz_pct_loc  <- file.path(op_loc, "aggedSCdata.zarr/byclades/nz_pct/X")
 dir.create(agged_nz_pct_loc, recursive = TRUE, showWarnings = FALSE)
 write_zarr_array( x=agg_nz_pct_array, zarr_array_path=agged_nz_pct_loc, chunk_dim=chunk_dim,)
 
+## aggregate counts by clades
 
-## aggregate avg by cell classes
+agg_counts = aggregate.Matrix(read_zarr_array(counts_loc), clades_factor, FUN = 'sum')
+agg_counts_array  <- as.matrix(agg_counts)
+
+# write to file
+chunk_dim = c(dim(agg_counts)[1], 1)
+agged_counts_loc  <- file.path(op_loc, "aggedSCdata.zarr/byclades/counts/X")
+# create folder if not exists
+dir.create(agged_counts_loc, recursive = TRUE, showWarnings = FALSE)
+write_zarr_array( x=agg_counts_array, zarr_array_path=agged_counts_loc, chunk_dim=chunk_dim,)
+
+## agg by cell classes
+# aggregate avg by cell classes
 
 cellclasses  <- read_zarr_array(cellclassloc)
 # convert clades to list
 cellclasses_factor  <- factor(cellclasses)
 
-agg_avg  <- aggregate.Matrix(avg_array, cellclasses_factor, FUN = 'mean')
+agg_avg  <- aggregate.Matrix(read_zarr_array(avg_loc), cellclasses_factor, FUN = 'mean')
 agg_avg_array  <- as.matrix(agg_avg)
   
 # write to file
@@ -96,5 +108,16 @@ agged_nz_pct_loc  <- file.path(op_loc, "aggedSCdata.zarr/bycellclasss/nz_pct/X")
 dir.create(agged_nz_pct_loc, recursive = TRUE, showWarnings = FALSE)
 write_zarr_array( x=agg_nz_pct_array, zarr_array_path=agged_nz_pct_loc, chunk_dim=chunk_dim,)
 
+# aggregate counts by cell classes
+
+agg_counts = aggregate.Matrix(read_zarr_array(counts_loc), cellclasses_factor, FUN = 'sum')
+agg_counts_array  <- as.matrix(agg_counts)
+
+# write to file
+chunk_dim = c(dim(agg_counts)[1], 1)
+agged_counts_loc  <- file.path(op_loc, "aggedSCdata.zarr/bycellclasss/counts/X")
+# create folder if not exists
+dir.create(agged_counts_loc, recursive = TRUE, showWarnings = FALSE)
+write_zarr_array( x=agg_counts_array, zarr_array_path=agged_counts_loc, chunk_dim=chunk_dim,)
 
 print("Done")
