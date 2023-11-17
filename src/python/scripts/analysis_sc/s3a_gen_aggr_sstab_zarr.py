@@ -48,8 +48,11 @@ for fname in fnames:
     adata = anndata.read_h5ad(ipath+'/'+fname+'.h5ad')
 
     print(f'Writing {fname}')
-    z[fname] = adata.X
-
+    nAggedClusters = adata.shape[0]
+    nGenes = adata.shape[1]
+    cur_group = z.create_group(f'{fname}', overwrite=True)
+    X = cur_group.zeros('X', shape=(nAggedClusters, nGenes), chunks=(nAggedClusters, 1), dtype='f4')
+    X[:] = adata.X
 
 
 metadataGroup = z.create_group(f'metadata', overwrite=True)
