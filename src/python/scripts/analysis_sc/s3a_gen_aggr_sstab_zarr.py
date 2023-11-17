@@ -25,6 +25,8 @@ Created by Mukund on 2023-11-15
 import zarr
 import anndata
 import numcodecs
+import numpy as np
+from produtils import dprint
 
 import sys
 
@@ -41,21 +43,44 @@ fnames = [
     'cellclasses_agged_nz_pct',
 ]
 
-z = zarr.open( op_zarr_path, mode='w')
+outgroup = [
+    'clades/avg',
+    'clades/counts',
+    'clades/nz_pct',
+    'cellclasses/avg',
+    'cellclasses/counts',
+    'cellclasses/nz_pct',
+]
 
-for fname in fnames:
+z = zarr.open( op_zarr_path, mode='w')
+metadataGroup = z.create_group(f'metadata', overwrite=True)
+
+for fname,outgroup in zip(fnames, outgroup):
     print(f'Loading {fname}')
     adata = anndata.read_h5ad(ipath+'/'+fname+'.h5ad')
 
     print(f'Writing {fname}')
     nAggedClusters = adata.shape[0]
     nGenes = adata.shape[1]
-    cur_group = z.create_group(f'{fname}', overwrite=True)
+    cur_group = z.create_group(f'{outgroup}', overwrite=True)
     X = cur_group.zeros('X', shape=(nAggedClusters, nGenes), chunks=(nAggedClusters, 1), dtype='f4')
     X[:] = adata.X
 
+    # get global max avg val for clades and cellclasses
+    if (fname == 'clades_agged_avgs'):
+        # get global max avg val
+        globalMaxAvgVal = str(round(np.max(adata.X)))
+        dprint('globalMaxAvgVal', globalMaxAvgVal)
+        globalMaxAvgValArray = metadataGroup.zeros('clades_globalMaxAvgVal', shape=(1), dtype='object', object_codec=numcodecs.VLenUTF8())
+        globalMaxAvgValArray[:] = globalMaxAvgVal
 
-metadataGroup = z.create_group(f'metadata', overwrite=True)
+    elif (fname == 'cellclasses_agged_avgs'):
+        # get global max avg val
+        globalMaxAvgVal = str(round(np.max(adata.X)))
+        dprint('globalMaxAvgVal', globalMaxAvgVal)
+        globalMaxAvgValArray = metadataGroup.zeros('cellclasses_globalMaxAvgVal', shape=(1), dtype='object', object_codec=numcodecs.VLenUTF8())
+
+
 
 # get clade names
 clade_names = []
@@ -75,5 +100,8 @@ for cellclass in adata.obs.to_numpy():
 nCellclasses = len(cellclass_names)
 cellclassesArray = metadataGroup.zeros('cellclasses', shape=(nCellclasses), dtype='object', object_codec=numcodecs.VLenUTF8())
 cellclassesArray[:] = cellclass_names
+
+
+dprint(z.tree())
 
 print('Done!')
