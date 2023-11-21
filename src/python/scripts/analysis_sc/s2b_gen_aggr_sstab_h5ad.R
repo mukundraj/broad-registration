@@ -49,14 +49,13 @@ cladeAnnotations  <- data.frame(clades, cladeAnnotations)
 # write to csv
 write.csv(cladeAnnotations, file = op_cladeanno_loc)
 
-quit()
 # avg_array  <- zarr_overview(zloc)
 # avg_array  <- read_zarr_array(avg_loc)
 
 ## agg by clades
 # aggregate avg by clades
 
-agg_avg  <- aggregate.Matrix(read_zarr_array(avg_loc), clades_factor, FUN = 'mean')
+agg_avg  <- aggregate.Matrix(read_zarr_array(avg_loc), clades_factor, fun = 'mean')
 agg_avg_array  <- as.matrix(agg_avg)
 ad <- AnnData(X = agg_avg_array, obs = data.frame(group = rownames(agg_avg_array), row.names = rownames(agg_avg_array)) )
 agged_avgs_loc  <- file.path(op_loc, "/clades_agged_avgs.h5ad")
@@ -73,7 +72,7 @@ write_h5ad(ad, agged_avgs_loc, )
 # write_zarr_array( x=agg_avg_array, zarr_array_path=agged_avgs_loc, chunk_dim=chunk_dim,)
 
 # aggregage nz_pct by clades
-agg_nz_pct  <- aggregate.Matrix(read_zarr_array(nzpct_loc), clades_factor, FUN = 'mean')
+agg_nz_pct  <- aggregate.Matrix(read_zarr_array(nzpct_loc), clades_factor, fun = 'mean')
 agg_nz_pct_array  <- as.matrix(agg_nz_pct)
 ad <- AnnData(X = agg_nz_pct_array, obs = data.frame(group = rownames(agg_nz_pct_array), row.names = rownames(agg_nz_pct_array)) )
 agged_nz_pct_loc  <- file.path(op_loc, "/clades_agged_nz_pct.h5ad")
@@ -88,7 +87,7 @@ write_h5ad(ad, agged_nz_pct_loc, )
 
 ## aggregate counts by clades
 
-agg_counts = aggregate.Matrix(read_zarr_array(counts_loc), clades_factor, FUN = 'sum')
+agg_counts = aggregate.Matrix(read_zarr_array(counts_loc), clades_factor, fun = 'sum')
 agg_counts_array  <- as.matrix(agg_counts)
 ad <- AnnData(X = agg_counts_array, obs = data.frame(group = rownames(agg_counts_array), row.names = rownames(agg_counts_array)) )
 agged_counts_loc  <- file.path(op_loc, "/clades_agged_counts.h5ad")
@@ -109,7 +108,7 @@ cellclasses  <- read_zarr_array(cellclassloc)
 # convert clades to list
 cellclasses_factor  <- factor(cellclasses)
 
-agg_avg  <- aggregate.Matrix(read_zarr_array(avg_loc), cellclasses_factor, FUN = 'mean')
+agg_avg  <- aggregate.Matrix(read_zarr_array(avg_loc), cellclasses_factor, fun = 'mean')
 agg_avg_array  <- as.matrix(agg_avg)
 ad <- AnnData(X = agg_avg_array, obs = data.frame(group = rownames(agg_avg_array), row.names = rownames(agg_avg_array)) )
 agged_avgs_loc  <- file.path(op_loc, "/cellclasses_agged_avgs.h5ad")
@@ -124,7 +123,7 @@ write_h5ad(ad, agged_avgs_loc, )
 
 
 # aggregage nz_pct by cell classes
-agg_nz_pct  <- aggregate.Matrix(read_zarr_array(nzpct_loc), cellclasses_factor, FUN = 'mean')
+agg_nz_pct  <- aggregate.Matrix(read_zarr_array(nzpct_loc), cellclasses_factor, fun = 'mean')
 agg_nz_pct_array  <- as.matrix(agg_nz_pct)
 ad <- AnnData(X = agg_nz_pct_array, obs = data.frame(group = rownames(agg_nz_pct_array), row.names = rownames(agg_nz_pct_array)) )
 agged_nz_pct_loc  <- file.path(op_loc, "/cellclasses_agged_nz_pct.h5ad")
@@ -139,7 +138,7 @@ write_h5ad(ad, agged_nz_pct_loc, )
 
 # # aggregate counts by cell classes
 
-agg_counts = aggregate.Matrix(read_zarr_array(counts_loc), cellclasses_factor, FUN = 'sum')
+agg_counts = aggregate.Matrix(read_zarr_array(counts_loc), cellclasses_factor, fun = 'sum')
 agg_counts_array  <- as.matrix(agg_counts)
 ad <- AnnData(X = agg_counts_array, obs = data.frame(group = rownames(agg_counts_array), row.names = rownames(agg_counts_array)) )
 agged_counts_loc  <- file.path(op_loc, "/cellclasses_agged_counts.h5ad")
