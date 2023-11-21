@@ -1,8 +1,8 @@
-# R script to generate anndata files for SingleCell tab data aggregated by clades and cell classes - this data is reformatted to zarr format in s3a_gen_aggr_sstab_zarr.py
+# R script to generate anndata files for SingleCell tab data aggregated by clades and cell classes - this data is reformatted to zarr format in s3a_gen_aggr_sstab_zarr.py. Also creates cladeAnnotations.csv for downstream processing by s3a_gen_aggr_sstab_zarr.py
 #
 # Example:
 #
-# Rscript ./src/python/scripts/analysis_sc/s2b_gen_aggr_sstab_data.R
+# Rscript ./src/python/scripts/analysis_sc/s2b_gen_aggr_sstab_h5ad.R
 #
 # Supplementary:
 #
@@ -21,8 +21,10 @@ avg_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/a
 nzpct_loc  <-  '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/nz_pct/X'
 counts_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/counts/X'
 cladeloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata/clades'
+cladeAnnotationsloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata/cladeAnnotations'
 cellclassloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata/cellclasses'
 op_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s2/agged_h5ad'
+op_cladeanno_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s2/cladeAnnotations.csv'
 
 # Params end
 
@@ -39,6 +41,15 @@ clades  <- read_zarr_array(cladeloc)
 # convert clades to list
 clades_factor  <- factor(clades)
 
+cladeAnnotations  <- read_zarr_array(cladeAnnotationsloc)
+
+# create a new dataframe with clades and cladeAnnotations as columns
+cladeAnnotations  <- data.frame(clades, cladeAnnotations)
+
+# write to csv
+write.csv(cladeAnnotations, file = op_cladeanno_loc)
+
+quit()
 # avg_array  <- zarr_overview(zloc)
 # avg_array  <- read_zarr_array(avg_loc)
 
