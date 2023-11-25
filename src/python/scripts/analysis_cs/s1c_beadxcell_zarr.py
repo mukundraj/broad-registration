@@ -12,7 +12,9 @@ python s1c_beadxcell_zarr.py
     inp: input folder with cell x bead anndata files
     inp: path to nissl images folder
     inp: path to atlas wireframe images folder
-    out: path to output zarr file
+    inp: path to scZarr file created by analysis_sc/s1a_gen_sstab_data_v2.py
+    out: path to cell_to_clade_and_class.csv 
+    out: path to output puckwise folder (including zarr files)
 
 
 Usage example:
@@ -34,13 +36,17 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /v3/s2/wireframes_improved_trans \
-    /cell_spatial/s1/cellspatial_data/cellscores_cshl/ \
+    /single_cell/s1/scZarr_321017.zarr \
+    /single_cell/s1/cell_to_clade_and_class.csv \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231124/ \
 
 Supplementary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores gs://bcdportaldata/cellspatial_data/cellscores
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124 gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124
 
 Created by Mukund on 2022-10-24
 
@@ -66,7 +72,9 @@ ip_folder_chuck_coords = data_root+sys.argv[3]
 ip_folder_cxb = f'{data_root}/{sys.argv[4]}'
 ip_folder_nissl = data_root+sys.argv[5]
 ip_folder_atlas = data_root+sys.argv[6]
-op_folder = f'{data_root}/{sys.argv[7]}'
+ip_folder_scZarr = f'{data_root}/{sys.argv[7]}'
+op_folder_cell_map = f'{data_root}/{sys.argv[8]}'
+op_folder = f'{data_root}/{sys.argv[9]}'
 
 def process_pid(pid):
 
@@ -149,19 +157,56 @@ def process_pid(pid):
     with open(cellOptions_json_file, 'w') as outfile:
         json.dump(gene_options_dict, outfile, separators=(',', ':'))
 
+    # read ccindices json file
+    ccindices_json_file = f'{op_folder}/ccindices.json'
+    with open(ccindices_json_file) as json_file:
+        cc_indices = json.load(json_file)
+
     # write out zarr with cell score values
     zarr_filename = f'{puck_folder}/cellxbead.zarr'
     store = zarr.DirectoryStore(zarr_filename) # https://zarr.readthedocs.io/en/stable/tutorial.html#storage-alternatives
     nCells, nBeads = counts_X.shape
     dprint('nCells nBeads', nCells, nBeads)
+    nAggrs = len(cc_indices) # number of clades and cellclasses aka number of aggretations
     dprint(counts_X)
     root = zarr.group(store=store, overwrite=True)
-    zarrX = root.zeros('X', shape=(nCells, nBeads), chunks=(1, nBeads), dtype='f4')
-    zarrX[:] = np.asarray(counts_X.todense())
+    zarrX = root.zeros('X', shape=(nCells+nAggrs, nBeads), chunks=(1, nBeads), dtype='f4')
+    zarrX[:nCells,:] = np.asarray(counts_X.todense())
     dprint(counts_X.todense())
     maxScoresGroup = root.create_group('maxScores', overwrite=True)
     maxScoresX = maxScoresGroup.zeros('X', shape=(1, nCells), chunks=(1, nCells), dtype='f4')
     # metadata_groupX[:] = np.array([0.0]*nCells);
+
+    # loop over cells and update clade and cellclass contributions from each cell
+    tmp_clade_cell_mat = np.zeros((nAggrs, nBeads))
+    for cell_idx, cell in enumerate(cells):
+        cell_row = counts_X.getrow(cell_idx)
+        cell_row_dense = np.squeeze(np.array(cell_row.todense())).astype(float)
+        clade, cellclass = cell2cc[cell]
+        clade_idx = cc_indices[clade]
+        cellclass_idx = cc_indices[cellclass]
+        tmp_clade_cell_mat[clade_idx, :] += cell_row_dense
+        tmp_clade_cell_mat[cellclass_idx, :] += cell_row_dense
+
+    zarrX[nCells:, :] = tmp_clade_cell_mat
+
+        # zarrX[nCells+clade_idx, :] += cell_row_dense
+        # zarrX[nCells+cellclass_idx, :] += cell_row_dense
+
+
+    # record score sums for each clade and cellclass in current puck
+    # cc_score_sums = np.zeros(len(cc_indices)) # write out for each puckid
+
+    cc_score_sums = np.sum(zarrX[nCells:, :], axis=1)
+
+    # make a tmp dir in parent of parent of puck folder if it doesn't exist
+    tmp_dir = f'{os.path.dirname(puck_folder)}/../tmp'
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
+    # write out tmp file with score sums
+    tmp_cc_score_sums_file = f'{tmp_dir}/cc_score_sums_{pid}.npy'
+    np.save(tmp_cc_score_sums_file, cc_score_sums)
 
     # write out metadata json files
     for cell_idx, cell in enumerate(cells):
@@ -185,11 +230,71 @@ def process_pid(pid):
         #     json.dump(tmp_dict, outfile, separators=(',', ':'))
 
 
+# get cell to clade and class mapping
+cell2cc = {}
+
+z = zarr.open(ip_folder_scZarr, mode='r')
+cells =  z.obs.clusters[:]
+clades = z.metadata.clades[:]
+cellclasses = z.metadata.cellclasses[:]
+
+unique_clades = np.unique(clades)
+unique_cellclasses = np.unique(cellclasses)
+
+
+for cell,clade,cellclass in zip(cells,clades,cellclasses):
+    cellname = cell.split('=')[1]
+    cell2cc[cellname] = [clade, cellclass]
+
+# create a list of clades and classes
+uniq_clades_and_classes = unique_clades.tolist() + unique_cellclasses.tolist()
+
+cc_indices = {} # clade and class indices
+for idx,cc in enumerate(uniq_clades_and_classes):
+    cc_indices[cc] = idx
+
+# write out ccindices json file
+ccindices_json_file = f'{op_folder}/ccindices.json'
+with open(ccindices_json_file, 'w') as outfile:
+    json.dump(cc_indices, outfile, separators=(',', ':'))
 
 pids = list(range(1,208,2))
+# pids = list(range(1,5,2))
 if __name__ == '__main__':
     start = time.time()
     with Pool(1) as p:
         p.map(process_pid, pids)
     end = time.time()
+
+    # after all pucks are done, process score sums in tmp files to get puckids
+    # with max score sum for each clade and cellclass
+
+    # combine tmp files
+    tmp_dir = f'{os.path.dirname(op_folder)}/../tmp'
+
+    # get all tmp files
+    tmp_files = os.listdir(tmp_dir)
+    tmp_files = [f for f in tmp_files if f.startswith('cc_score_sums_')]
+    tmp_files = [f for f in tmp_files if f.endswith('.npy')]
+    tmp_files = [f'{tmp_dir}/{f}' for f in tmp_files]
+
+    # combine tmp files
+    cc_score_sum_mat = np.zeros((len(cc_indices), len(pids)))
+    for i,tmp_file in enumerate(tmp_files):
+        tmp_arr = np.load(tmp_file)
+        cc_score_sum_mat[:, i] = tmp_arr
+
+    # for each clade and cellclass, get puckid with max score sum
+    puckinds = np.argmax(cc_score_sum_mat, axis=1)
+
+    # get puckids
+    puckids = [pids[i] for i in puckinds]
+
+    # write out puckids and cc_indices in a aggr_info json file
+    aggr_info_json_file = f'{op_folder}/aggr_info.json'
+    with open(aggr_info_json_file, 'w') as outfile:
+        json.dump({'puckids':puckids, 'cc_indices':cc_indices}, outfile, separators=(',', ':'))
+
+
+    dprint('puckids', puckids)
     dprint(f'Total time {end - start} seconds.')
