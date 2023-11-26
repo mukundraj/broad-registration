@@ -174,7 +174,7 @@ def process_pid(pid):
     zarrX[:nCells,:] = np.asarray(counts_X.todense())
     dprint(counts_X.todense())
     maxScoresGroup = root.create_group('maxScores', overwrite=True)
-    maxScoresX = maxScoresGroup.zeros('X', shape=(1, nCells), chunks=(1, nCells), dtype='f4')
+    maxScoresX = maxScoresGroup.zeros('X', shape=(1, nCells+nAggrs), chunks=(1, nCells), dtype='f4')
     # metadata_groupX[:] = np.array([0.0]*nCells);
 
     # loop over cells and update clade and cellclass contributions from each cell
@@ -228,6 +228,11 @@ def process_pid(pid):
         # with open(metadata_json_file, 'w') as outfile:
         #     tmp_dict = {'maxCount':str(cell_metadata['maxCount'])}
         #     json.dump(tmp_dict, outfile, separators=(',', ':'))
+
+    # get maxScores for clades and cellclasses
+    for idx, (cc,cc_idx) in enumerate(cc_indices.items()):
+        # maxScoresX[0, nCells+cc_idx] = np.max(zarrX[nCells+cc_idx, :])
+        maxScoresX[0, nCells+cc_idx] = np.max(tmp_clade_cell_mat[cc_idx, :])
 
 
 # get cell to clade and class mapping
