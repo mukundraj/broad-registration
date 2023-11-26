@@ -48,6 +48,9 @@ gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_d
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124 gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124
 
+cd ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124
+fd -p cladeOptions -x  gsutil cp -r {} gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124/{}
+
 Created by Mukund on 2022-10-24
 
 """
@@ -156,6 +159,16 @@ def process_pid(pid):
     gene_options_dict = {'cellOptions':cells}
     with open(cellOptions_json_file, 'w') as outfile:
         json.dump(gene_options_dict, outfile, separators=(',', ':'))
+
+    # write of cladeOptions json file
+    cladeOptions_json_file = f'{puck_folder}/cladeOptions.json'
+    with open(cladeOptions_json_file, 'w') as outfile:
+        json.dump({'cladeOptions':list(unique_clades)}, outfile, separators=(',', ':'))
+
+    # write of cellclassOptions json file
+    cellclassOptions_json_file = f'{puck_folder}/cellclassOptions.json'
+    with open(cellclassOptions_json_file, 'w') as outfile:
+        json.dump({'cellclassOptions':list(unique_cellclasses)}, outfile, separators=(',', ':'))
 
     # read ccindices json file
     ccindices_json_file = f'{op_folder}/ccindices.json'
