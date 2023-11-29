@@ -29,7 +29,8 @@ if (pid==5 || pid==77 || pid==167)
   apid = pid - 2 ## adjusted pid todo: modify viewer to not require this adjustment
 
 # get data matrix of puck
-ip_counts_file = paste0(ip_folder_counts, "/dd", apid, "_CTMapping.h5ad")
+# ip_counts_file = paste0(ip_folder_counts, "/dd", apid, "_CTMapping.h5ad")
+ip_counts_file = paste0(ip_folder_counts, "/dd", apid, "_aggr_cladeclass.h5ad")
 # print(ip_counts_file)
 ad <- read_h5ad(ip_counts_file)
 

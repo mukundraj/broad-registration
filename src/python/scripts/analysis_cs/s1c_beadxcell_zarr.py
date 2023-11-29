@@ -13,8 +13,9 @@ python s1c_beadxcell_zarr.py
     inp: path to nissl images folder
     inp: path to atlas wireframe images folder
     inp: path to scZarr file created by analysis_sc/s1a_gen_sstab_data_v2.py
-    out: path to cell_to_clade_and_class.csv 
+    out: path to cell_to_clade_and_class.csv
     out: path to output puckwise folder (including zarr files)
+    out: path to folder after appending scores aggregated by clade and cellclass
 
 
 Usage example:
@@ -33,12 +34,13 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /Users/mraj/Desktop/work/data/mouse_atlas \
     /v3/s2/bead_ccf_labels_allbds \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
+    /cell_spatial/s0/raw_beadxctype/forMukund_CTMapping_PostSTR \
     /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
     /v3/s2/wireframes_improved_trans \
     /single_cell/s1/scZarr_321017.zarr \
     /single_cell/s1/cell_to_clade_and_class.csv \
-    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231124/ \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231128/ \
+    /cell_spatial/s1/s1c_aggr_data_231128 \
 
 Supplementary:
 
@@ -46,7 +48,7 @@ gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_d
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124 gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231128 gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231128
 
 cd ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124
 fd -p cladeOptions -x  gsutil cp -r {} gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124/{}
@@ -58,7 +60,7 @@ Created by Mukund on 2022-10-24
 import sys
 import time
 from multiprocessing import Pool
-from scipy.sparse import csr_matrix, hstack
+from scipy.sparse import csr_matrix, hstack, vstack
 from produtils import dprint
 import anndata as ann
 import os
@@ -68,6 +70,7 @@ import subprocess
 import json
 import zarr
 import numpy as np
+import pandas as pd
 
 data_root = sys.argv[1]
 label_data_folder = data_root+sys.argv[2]
@@ -78,6 +81,7 @@ ip_folder_atlas = data_root+sys.argv[6]
 ip_folder_scZarr = f'{data_root}/{sys.argv[7]}'
 op_folder_cell_map = f'{data_root}/{sys.argv[8]}'
 op_folder = f'{data_root}/{sys.argv[9]}'
+op_folder_aggr = f'{data_root}{sys.argv[10]}'
 
 def process_pid(pid):
 
@@ -206,6 +210,39 @@ def process_pid(pid):
         # zarrX[nCells+clade_idx, :] += cell_row_dense
         # zarrX[nCells+cellclass_idx, :] += cell_row_dense
 
+    # check if op_folder_aggr exists
+    if not os.path.exists(op_folder_aggr):
+        os.mkdir(op_folder_aggr)
+
+    # create and write out new anndata in op_folder_aggr
+    agg_mat = vstack([counts_X, csr_matrix(tmp_clade_cell_mat)])
+    # adata.var["rowName"] = counts.var["rowName"].values.tolist()
+
+    rowName = counts.var["rowName"].values.tolist()
+    # convert rowName to string
+    rowName_str = [str(x) for x in rowName]
+    names = cells + uniq_clades_and_classes
+
+    
+    # transpose data
+
+    # create pd dataframe with uniq_clades_and_classes
+    # df_with_row_index = pd.DataFrame(index=cells+uniq_clades_and_classes, data=cells+uniq_clades_and_classes, columns = ['name'])
+    df_with_row_index = pd.DataFrame(index=cells+uniq_clades_and_classes, data=names, columns = ['name'])
+
+    df_var = pd.DataFrame(index=rowName_str, data=rowName, columns = ['rowName'])
+
+    # adata = ann.AnnData(agg_mat, obs=df_with_row_index)
+    adata = ann.AnnData(agg_mat)
+    adata.obs = df_with_row_index
+    adata.var = df_var
+
+
+    # cluster_names = cells + uniq_clades_and_classes
+    # adata.obs["cluster_names"] = cluster_names
+
+    # write out annData
+    adata.write(f'{op_folder_aggr}/dd{str(apid)}_aggr_cladeclass.h5ad')
 
     # record score sums for each clade and cellclass in current puck
     # cc_score_sums = np.zeros(len(cc_indices)) # write out for each puckid

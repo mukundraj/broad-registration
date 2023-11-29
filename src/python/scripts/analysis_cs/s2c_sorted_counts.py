@@ -15,14 +15,16 @@ Usage example:
 
 python src/python/scripts/analysis_cs/s2c_sorted_counts.py \
     ~/Desktop/work/data/mouse_atlas \
-    /cell_spatial/s1/s1d_region_agg \
+    /cell_spatial/s1/s1d_region_agg_231128 \
     /data_v3_nissl_post_qc/s9_analysis/ccf_regions.json \
     1 207 \
-    /cell_spatial/s2/s2c/cell_jsons_s2c \
+    /cell_spatial/s2/s2c/cell_jsons_s2c_231128 \
 
 Supplementary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2c/cell_jsons_s2c gs://bcdportaldata/cellspatial_data/freqbars/cell_jsons_s2c
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2c/cell_jsons_s2c_231128 gs://bcdportaldata/batch_231112/cellspatial_data/freqbars/cell_jsons_s2c_231128
 
 Created by Mukund on 2022-10-27
 
@@ -218,7 +220,8 @@ for cell in region_aggred_counts.keys():
     out_data = {"regionwise_cnts":reg_aggred_vals, "sorted_puckwise_cnts":puck_aggred_vals}
 
     # write out outdata as json
-    cellname = cell.split('=')[1]
+    # cellname = cell.split('=')[1]
+    cellname = cell
     op_file = f'{op_folder}/{cellname}.json'
     with open(op_file, 'w') as outfile:
         
