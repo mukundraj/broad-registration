@@ -16,6 +16,8 @@ Supplemenary:
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/idAcroNameMap gs://bcdportaldata/batch_230131/singlecell_data/s1/idAcroNameMap
 
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/idAcroNameMap gs://bcdportaldata/batch_231112/single_cell/s1/idAcroNameMap
+
 Created by Mukund on 2023-02-07
 """
 

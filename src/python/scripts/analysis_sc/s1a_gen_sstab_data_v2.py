@@ -30,11 +30,11 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/neuropeptide_data \
     /single_cell/s1/processed_clade_info_v2.csv \
     /single_cell/s0/additional_metadata.csv \
-    /single_cell/s1/scZarr_321017.zarr \
+    /single_cell/s1/scZarr_231207.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr gs://bcdportaldata/batch_230131/singlecell_data/scZarr_321017.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr gs://bcdportaldata/batch_231112/single_cell/s1/scZarr_231207.zarr
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_321017.zarr/metadata
 
@@ -155,11 +155,72 @@ with open(neuropeptide_data_path+'/data_MouseAtlas_Submission_COMBINED_np_sensin
         else:
             neuroPepReceps[row[0]] = '-'
 
+portalClusterNames = []
+indicesToRemove = []
 
-nClusters = 5030
+clade_names = []
+clade_annotations = []
+# read proc_clade_file
+with open(proc_clade_file, 'r') as f:
+    reader = csv.reader(f, delimiter=',')
+    for row in reader:
+        if (row[1]=='Clade0' or row[2]==''):
+            clade_names.append('-')
+        else:
+            clade_names.append(row[1]) # check for Clade0
+        # clade_names.append(row[1]) # check for Clade0
+        clade_annotations.append(row[2])
+
+        # if (row[1]=='Clade0' or row[2]==''): # remove Clade0 and clades with no human readable name
+        #     indicesToRemove.append(len(clade_names)-1)
+
+
+clusterSizes = []
+clusterNames = []
+
+# first, read clusterSize file
+with open(clustersize_csv_file, 'r') as f:
+    # pass the file object to reader() to get the reader object
+    csv_reader = csv.reader(f)
+    # Iterate over each row in the csv using reader object
+    for idx,row in enumerate(csv_reader):
+        # row variable is a list that represents a row in csv
+        if (idx>0):
+            clusterSizes.append(int(row[1]))
+            clusterNames.append(row[0])
+
+
+
+
+# create a new list of cluster names (portalClusterNames) removing 
+# - cells missing in metadata (meadata_file)
+# - cells present in metadata but with cellclass = ''
+# - metadata with no human readable clade name (clade_annotation)
+# also set the  nClusters as len of portalClusterNames
+# also make sure cladesArray and cellclasses array are of same length as portalClusterNames
+
+
+# first, remove cells missing in metadata
+for cluster in clusterNames: 
+    cname =  cluster.split('=')[1]
+    if cname in metadata:
+        if metadata[cname][0] == '':
+            indicesToRemove.append(clusterNames.index(cluster))
+    else:
+        indicesToRemove.append(clusterNames.index(cluster))
+
+dprint('indicesToRemove', len(indicesToRemove))
+dprint('len unique indicesToRemove', len(set(indicesToRemove)))
+uniqIndicesToRemove = list(set(indicesToRemove))
+
+# portalClusterNames by removing indicesToRemove from clusterNames
+portalClusterNames = [i for j, i in enumerate(clusterNames) if j not in uniqIndicesToRemove]
+portalCladeAnnotations = [i for j, i in enumerate(clade_annotations) if j not in uniqIndicesToRemove]
+portalCladeNames = [i for j, i in enumerate(clade_names) if j not in uniqIndicesToRemove]
+
+# nClusters = 5030
+nClusters = len(clusterNames) - len(uniqIndicesToRemove)
 nGenes = 21899
-
-# nGenesTmp = 5
 
 # create new zarr file
 zarr_file = f'{data_root}/{op_zarr}'
@@ -183,40 +244,18 @@ var_group = root.create_group(f'var', overwrite=True)
 
 metadataGroup = root.create_group(f'metadata', overwrite=True)
 
-clusterSizes = []
-clusterNames = []
+cladesArray = metadataGroup.zeros('clades', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+cladesArray[:] = portalCladeNames
 
-# first, read clusterSize file
-with open(clustersize_csv_file, 'r') as f:
-    # pass the file object to reader() to get the reader object
-    csv_reader = csv.reader(f)
-    # Iterate over each row in the csv using reader object
-    for idx,row in enumerate(csv_reader):
-        # row variable is a list that represents a row in csv
-        if (idx>0):
-            clusterSizes.append(int(row[1]))
-            clusterNames.append(row[0])
+cladeAnnotationsArray = metadataGroup.zeros('cladeAnnotations', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+cladeAnnotationsArray[:] = portalCladeAnnotations
 
 
 
-    # clustersArray = obs_group.zeros('clusters', shape=(nClusters), dtype='object', object_codec=numcodecs.JSON())
-    clustersArray = obs_group.zeros('clusters', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
-    clustersArray[:] = clusterNames
+# clustersArray = obs_group.zeros('clusters', shape=(nClusters), dtype='object', object_codec=numcodecs.JSON())
+clustersArray = obs_group.zeros('clusters', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
+clustersArray[:] = portalClusterNames
 
-clade_names = []
-clade_annotations = []
-# read proc_clade_file
-with open(proc_clade_file, 'r') as f:
-    reader = csv.reader(f, delimiter=',')
-    for row in reader:
-        clade_names.append(row[1])
-        clade_annotations.append(row[2])
-
-    cladesArray = metadataGroup.zeros('clades', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
-    cladesArray[:] = clade_names
-
-    cladeAnnotationsArray = metadataGroup.zeros('cladeAnnotations', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
-    cladeAnnotationsArray[:] = clade_annotations
 
 # next, create metadata arrays
 cell_classes = [None]*nClusters
@@ -229,7 +268,8 @@ neurotrans = [None]*nClusters # neurotransmitter binary
 genecovers = [None]*nClusters # gene covers
 additional_metadata = [None]*nClusters # additional metadata
 
-for idx, cname in enumerate(clusterNames):
+
+for idx, cname in enumerate(portalClusterNames):
     cname =  cname.split('=')[1]
     mapFilename = f'{hist_data_path}/{cname}.json'
     cnameMapExists = 'Y' if os.path.isfile(mapFilename)==True else 'N'
@@ -239,10 +279,12 @@ for idx, cname in enumerate(clusterNames):
         max_pcts[idx] = metadata[cname][2][:-1] # remove % sign
         map_status[idx] = cnameMapExists
     else:
-        cell_classes[idx] = 'NA'
+        # cell_classes[idx] = 'NA'
+        cell_classes[idx] = '-' # make empty if not found
         # top_regions[idx] = 'NA'
         max_pcts[idx] =  '0.0'
         map_status[idx] = cnameMapExists
+        dprint(cname, 'not found in metadata file')
 
     if cname in ctype_to_struct:
         top_structs[idx] = ctype_to_struct[cname]
@@ -304,9 +346,10 @@ geneCoversArray[:] = genecovers
 additionalMetadataArray = metadataGroup.zeros('additionalMetadata', shape=(nClusters), dtype='object', object_codec=numcodecs.VLenUTF8())
 additionalMetadataArray[:] = additional_metadata
 
-nz_pct_mat = np.zeros(shape=(nClusters, nGenes))
 
 
+nClustersFull = 5030
+nz_pct_mat = np.zeros(shape=(nClustersFull, nGenes))
 # next, populate nz data in zarr file
 with open(nz_csv_file, 'r') as f:
     # pass the file object to reader() to get the reader object
@@ -329,9 +372,13 @@ with open(nz_csv_file, 'r') as f:
             p = re.compile("(.+?)=.+$")
             geneNamesArray[:] = np.asarray([p.search(x).group(1) for x in geneNamesArray])
 
+# remove rows in nz_pct_mat that are in indicesToRemove
+nz_pct_mat = np.delete(nz_pct_mat, uniqIndicesToRemove, axis=0)
+
 nz_pct_groupX[:] = nz_pct_mat
 
-avg_mat = np.zeros(shape=(nClusters, nGenes))
+
+avg_mat = np.zeros(shape=(nClustersFull, nGenes))
 
 # third, populate avgs data in zarr file
 with open(avg_csv_file, 'r') as f:
@@ -346,9 +393,12 @@ with open(avg_csv_file, 'r') as f:
             nohead_idx = idx-1
             avg_mat[nohead_idx, :] = curcell_avg_counts[:nGenes]
 
+# remove rows in avg_mat that are in indicesToRemove
+avg_mat = np.delete(avg_mat, uniqIndicesToRemove, axis=0)
 avg_groupX[:] = avg_mat
 
-counts_mat = np.zeros(shape=(nClusters, nGenes))
+
+counts_mat = np.zeros(shape=(nClustersFull, nGenes))
 # fourth, populate counts csv
 with open(counts_csv_file, 'r') as f:
     # pass the file object to reader() to get the reader object
@@ -363,6 +413,8 @@ with open(counts_csv_file, 'r') as f:
             counts_mat[nohead_idx, :] = curcell_counts[:nGenes]
 
 
+# remove rows in counts_mat that are in indicesToRemove
+counts_mat = np.delete(counts_mat, uniqIndicesToRemove, axis=0)
 counts_groupX[:] = counts_mat
 
 globalMaxAvgVal = str(round(np.max(avg_mat)))

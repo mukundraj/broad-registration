@@ -17,12 +17,12 @@ python src/python/scripts/analysis_sc/s3a_gen_aggr_sstab_zarr.py \
     ~/Desktop/work/data/mouse_atlas \
     /single_cell/s2/agged_h5ad \
     /single_cell/s2/cladeAnnotations.csv \
-    /single_cell/s1/scZarr_321017.zarr \
-    /single_cell/s3 \
+    /single_cell/s1/scZarr_231207.zarr \
+    /single_cell/s3/aggedSCdata_231207.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata.zarr gs://bcdportaldata/batch_231112/single_cell/v3/aggedSCdata.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata_231207.zarr gs://bcdportaldata/batch_231112/single_cell/s3/aggedSCdata_231207.zarr
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata.zarr/metadata gs://bcdportaldata/batch_231112/single_cell/v3/aggedSCdata.zarr/metadata
 
@@ -42,7 +42,36 @@ data_root = sys.argv[1]
 ipath = data_root+sys.argv[2]
 ipath_clade_annotations = data_root+sys.argv[3]
 input_zarr_path = data_root+sys.argv[4]
-op_zarr_path = data_root+sys.argv[5]+'/aggedSCdata.zarr'
+op_zarr_path = data_root+sys.argv[5]
+
+# get clade additional metadata
+# get clade annotations and store in dict
+clade_annotations = {}
+with open(ipath_clade_annotations, 'r') as f:
+    # skip header
+    next(f)
+
+    for line in f:
+        line = line.strip().split(',')
+
+        clade = line[1].replace('"', '')
+        anno = line[2].replace('"', '')
+        clade_annotations[clade] = anno
+
+# find index of to-be-removed clades ('-' occurs in place of 'Clade0' and
+# 'MC_223' that have no human friendly desc) and remove those rows from clade
+# data.
+
+indices_to_remove = []
+clade_names = []
+clade_annnotations_list = []
+adata = anndata.read_h5ad(ipath+'/clades_agged_avgs.h5ad')
+for idx,clade in enumerate(adata.obs.to_numpy()):
+    clade_names.append(clade[0])
+    clade_annnotations_list.append(clade_annotations[clade[0]])
+    if (clade[0] == '-'):
+        indices_to_remove.append(idx)
+
 
 fnames = [
     'clades_agged_avgs',
@@ -82,10 +111,19 @@ for fname,outgroup in zip(fnames, outgroup):
 
     print(f'Writing {fname}')
     nAggedClusters = adata.shape[0]
+    if (fname == 'clades_agged_avgs' or fname == 'clades_agged_counts' or fname == 'clades_agged_nz_pct'):
+        nAggedClusters = adata.shape[0] - len(indices_to_remove)
     nGenes = adata.shape[1]
     cur_group = z.create_group(f'{outgroup}', overwrite=True)
     X = cur_group.zeros('X', shape=(nAggedClusters, nGenes), chunks=(nAggedClusters, 1), dtype='f4')
-    X[:] = adata.X
+
+    # if fname has clades prefix then remove rows corresponding to indices_to_remove
+    if (fname == 'clades_agged_avgs' or fname == 'clades_agged_counts' or fname == 'clades_agged_nz_pct'):
+        X_new = np.delete(adata.X, indices_to_remove, axis=0)
+        X[:] = X_new
+    else:
+        X[:] = adata.X
+
 
     # get global max avg val for clades and cellclasses
     if (fname == 'clades_agged_avgs'):
@@ -102,34 +140,15 @@ for fname,outgroup in zip(fnames, outgroup):
         globalMaxAvgValArray = metadataGroup.zeros('cellclasses_globalMaxAvgVal', shape=(1), dtype='object', object_codec=numcodecs.VLenUTF8())
         globalMaxAvgValArray[:] = globalMaxAvgVal
 
-# get clade additional metadata
 
-# get clade annotations and store in dict
-clade_annotations = {}
-with open(ipath_clade_annotations, 'r') as f:
-    # skip header
-    next(f)
+nClades = len(clade_names) - len(indices_to_remove)
+# remove indices_to_remove from clade_names and clade_annnotations_list
+for idx in sorted(indices_to_remove, reverse=True):
+    del clade_names[idx]
+    del clade_annnotations_list[idx]
 
-    for line in f:
-        line = line.strip().split(',')
-
-        clade = line[1].replace('"', '')
-        anno = line[2].replace('"', '')
-        clade_annotations[clade] = anno
-
-# get clade names from agged list and create clade annotations list in same order
-clade_names = []
-clade_annnotations_list = []
-adata = anndata.read_h5ad(ipath+'/clades_agged_avgs.h5ad')
-for clade in adata.obs.to_numpy():
-    clade_names.append(clade[0])
-    clade_annnotations_list.append(clade_annotations[clade[0]])
-
-nClades = len(clade_names)
 cladesArray = metadataGroup.zeros('clades', shape=(nClades), dtype='object', object_codec=numcodecs.VLenUTF8())
 cladesArray[:] = clade_names
-
-nClades = len(clade_names)
 cladesAnnotationsArray = metadataGroup.zeros('cladesAnnotations', shape=(nClades), dtype='object', object_codec=numcodecs.VLenUTF8())
 cladesAnnotationsArray[:] = clade_annnotations_list
 

@@ -23,7 +23,18 @@ python src/python/scripts/analysis_sc/s2_gen_regtocell.py \
     /v3/s1/allen_name_to_acro_map.csv \
     /single_cell/s2/s2_regtocell \
 
+python src/python/scripts/analysis_sc/s2_gen_regtocell.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /data_v3_nissl_post_qc/s9_analysis/s9f/regions.json \
+    /cell_spatial/s0/raw_beadxctype/jlanglie_scp_mukund_changed_partha \
+    annotation/ccf_2017/annotation_25.nrrd \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231207 \
+    /v3/s1/allen_name_to_acro_map.csv \
+    /single_cell/s2/s2_regtocell_231207 \
+
 Supplementary:
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/s2_regtocell_231207 gs://bcdportaldata/batch_231112/single_cell/s2/s2_regtocell_231207
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s2/s2_regtocell gs://bcdportaldata/batch_230131/singlecell_data/s2/s2_regtocell_230208
 
