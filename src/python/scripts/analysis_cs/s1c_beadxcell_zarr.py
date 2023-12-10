@@ -3,6 +3,9 @@ Creates a zarr file for portal from bead x cell anndata files. Also, place
 auxaliary files in the same folder - wireframe, nissl, coords data with region
 info, cell options json.
 
+CAUTION: This needs to be run for all pucks together to complete successfuly.
+May not complete successfully for sum pucks if only run for some subset pucks.
+
 Usage:
 
 python s1c_beadxcell_zarr.py
@@ -13,7 +16,6 @@ python s1c_beadxcell_zarr.py
     inp: path to nissl images folder
     inp: path to atlas wireframe images folder
     inp: path to scZarr file created by analysis_sc/s1a_gen_sstab_data_v2.py
-    out: path to cell_to_clade_and_class.csv
     out: path to output puckwise folder (including zarr files)
     out: path to folder after appending scores aggregated by clade and cellclass
 
@@ -42,13 +44,24 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /cell_spatial/s1/cellspatial_data/cellscores_cshl_231128/ \
     /cell_spatial/s1/s1c_aggr_data_231128 \
 
+python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
+    /Users/mraj/Desktop/work/data/mouse_atlas \
+    /v3/s2/bead_ccf_labels_allbds \
+    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
+    /cell_spatial/s0/raw_beadxctype/jlanglie_scp_mukund_changed_partha \
+    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
+    /v3/s2/wireframes_improved_trans \
+    /single_cell/s1/scZarr_231207.zarr \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231207/ \
+    /cell_spatial/s1/s1c_aggr_data_231207 \
+
 Supplementary:
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207 gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores gs://bcdportaldata/cellspatial_data/cellscores
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores
-
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231128 gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231128
 
 cd ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124
 fd -p cladeOptions -x  gsutil cp -r {} gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124/{}
@@ -79,9 +92,8 @@ ip_folder_cxb = f'{data_root}/{sys.argv[4]}'
 ip_folder_nissl = data_root+sys.argv[5]
 ip_folder_atlas = data_root+sys.argv[6]
 ip_folder_scZarr = f'{data_root}/{sys.argv[7]}'
-op_folder_cell_map = f'{data_root}/{sys.argv[8]}'
-op_folder = f'{data_root}/{sys.argv[9]}'
-op_folder_aggr = f'{data_root}{sys.argv[10]}'
+op_folder = f'{data_root}/{sys.argv[8]}'
+op_folder_aggr = f'{data_root}{sys.argv[9]}'
 
 def process_pid(pid):
 
@@ -199,6 +211,10 @@ def process_pid(pid):
     for cell_idx, cell in enumerate(cells):
         cell_row = counts_X.getrow(cell_idx)
         cell_row_dense = np.squeeze(np.array(cell_row.todense())).astype(float)
+        
+        # check if cell is in cell2cc (present in scZarr file)
+        if cell not in cell2cc:
+            continue
         clade, cellclass = cell2cc[cell]
         clade_idx = cc_indices[clade]
         cellclass_idx = cc_indices[cellclass]
@@ -285,7 +301,7 @@ def process_pid(pid):
         maxScoresX[0, nCells+cc_idx] = np.max(tmp_clade_cell_mat[cc_idx, :])
 
 
-# get cell to clade and class mapping
+# get cell to clade and class mapping from scZarr file
 cell2cc = {}
 
 z = zarr.open(ip_folder_scZarr, mode='r')
@@ -314,7 +330,7 @@ with open(ccindices_json_file, 'w') as outfile:
     json.dump(cc_indices, outfile, separators=(',', ':'))
 
 pids = list(range(1,208,2))
-# pids = list(range(1,5,2))
+# pids = list(range(157, 158, 2))
 if __name__ == '__main__':
     start = time.time()
     with Pool(1) as p:

@@ -1,12 +1,13 @@
 """
 Generate regionally aggregated cell score data using R script ./s1d_prep.R
+Output needed for interactive barplot data produced in ./s2c_sorted_counts.py
 
 Usage:
 
 python s1d_region_agg.py \
     inp: data root
     inp: path to processed region labels created by s9d_labelgen.py
-    inp: path to scores data in anndata/h5ad format
+    inp: path to scores data in anndata/h5ad format (after 231207includes aggrBy celltype and clade in same matrix)
     inp inp: start_pid and end_pid
     out: path to output folder for R script to write into
 
@@ -22,9 +23,9 @@ python src/python/scripts/analysis_cs/s1d_region_agg.py \
 python src/python/scripts/analysis_cs/s1d_region_agg.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels_cshl \
-    /cell_spatial/s1/s1c_aggr_data_231128 \
+    /cell_spatial/s1/s1c_aggr_data_231207 \
     1 207 \
-    /cell_spatial/s1/s1d_region_agg_231128 \
+    /cell_spatial/s1/s1d_region_agg_231207 \
 
 Created by Mukund on 2022-10-28
 

@@ -5,6 +5,9 @@ zero) score matrix for cell scores. Also, generates a csv file with regionwise
 total scores mapped to Allen regionids. Uses analysis_cs/s2e_prep.R for fast
 aggregation R subroutines.
 
+Output is intermediate data for regionEnrichment component data produced in
+s2d_region_enrich.py
+
 Usage:
 
 python s1e_gth_scores.py
