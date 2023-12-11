@@ -63,8 +63,8 @@ gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_d
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores
 
-cd ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231124
-fd -p cladeOptions -x  gsutil cp -r {} gs://bcdportaldata/batch_231112/cellspatial_data/cellscores_cshl_231124/{}
+cd ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207
+fd -p cladeOptions -x  gsutil cp -r {} gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207/{}
 
 Created by Mukund on 2022-10-24
 
@@ -179,7 +179,8 @@ def process_pid(pid):
     # write of cladeOptions json file
     cladeOptions_json_file = f'{puck_folder}/cladeOptions.json'
     with open(cladeOptions_json_file, 'w') as outfile:
-        json.dump({'cladeOptions':list(unique_clades)}, outfile, separators=(',', ':'))
+        json.dump({'cladeOptions':list(unique_clades), 
+                   'cladeAnnos': clade_annos}, outfile, separators=(',', ':'))
 
     # write of cellclassOptions json file
     cellclassOptions_json_file = f'{puck_folder}/cellclassOptions.json'
@@ -213,7 +214,7 @@ def process_pid(pid):
         cell_row_dense = np.squeeze(np.array(cell_row.todense())).astype(float)
         
         # check if cell is in cell2cc (present in scZarr file)
-        if cell not in cell2cc:
+        if cell not in cell2cc or cell2cc[cell][0] == '-':
             continue
         clade, cellclass = cell2cc[cell]
         clade_idx = cc_indices[clade]
@@ -307,10 +308,23 @@ cell2cc = {}
 z = zarr.open(ip_folder_scZarr, mode='r')
 cells =  z.obs.clusters[:]
 clades = z.metadata.clades[:]
+cladeAnnotations = z.metadata.cladeAnnotations[:]
+
+cladeAnnoMap = {}
+for clade,cladeAnno in zip(clades,cladeAnnotations):
+    cladeAnnoMap[clade] = cladeAnno
+
 cellclasses = z.metadata.cellclasses[:]
 
 unique_clades = np.unique(clades)
+# remove '-' from unique_clades
+unique_clades = unique_clades[unique_clades != '-']
+
 unique_cellclasses = np.unique(cellclasses)
+
+clade_annos = []
+for clade in list(unique_clades):
+    clade_annos.append(cladeAnnoMap[clade])
 
 
 for cell,clade,cellclass in zip(cells,clades,cellclasses):
