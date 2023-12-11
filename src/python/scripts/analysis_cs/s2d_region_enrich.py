@@ -19,11 +19,13 @@ python src/python/scripts/analysis_cs/s2d_region_enrich.py \
 
 python src/python/scripts/analysis_cs/s2d_region_enrich.py \
     ~/Desktop/work/data/mouse_atlas \
-    /cell_spatial/s1/s1e_gth_aggr_scores_230222 \
-    /cell_spatial/s2/s2d_region_enrich/nz_zarr_230222.zarr \
-    /cell_spatial/s2/s2d_region_enrich/name_info_230222.json \
+    /cell_spatial/s1/s1e_gth_aggr_scores_231207 \
+    /cell_spatial/s2/s2d_region_enrich/nz_zarr_231207.zarr \
+    /cell_spatial/s2/s2d_region_enrich/name_info_231207.json \
 
 Supplementary:
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2d_region_enrich gs://bcdportaldata/batch_231112/cell_spatial/s2/s2d_region_enrich
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s2/s2d_region_enrich/nz_zarr_230222.zarr gs://bcdportaldata/batch_230131/cellspatial_data/s2d_region_enrich/nz_zarr_230222.zarr
 
