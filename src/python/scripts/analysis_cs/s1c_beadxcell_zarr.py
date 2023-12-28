@@ -49,17 +49,20 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /v3/s2/bead_ccf_labels_allbds \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /cell_spatial/s0/raw_beadxctype/jlanglie_scp_mukund_changed_partha \
-    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /v3/s2/wireframes_improved_trans \
+    /misc/masked_nissls/s2/masked_nissls \
+    /v3/s2/wireframes_ofixed \
     /single_cell/s1/scZarr_231207.zarr \
-    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231207/ \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c \
     /cell_spatial/s1/s1c_aggr_data_231207 \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207 gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores gs://bcdportaldata/cellspatial_data/cellscores
+gsutil -m cp ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/aggr_info.json gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/aggr_info.json
+gsutil -m cp ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/ccindices.json gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/ccindices.json
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/puck1 gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/puck1
 
 gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl gs://bcdportaldata/batch_YYMMDD/cellspatial_data/cellscores
 
@@ -212,14 +215,17 @@ def process_pid(pid):
     for cell_idx, cell in enumerate(cells):
         cell_row = counts_X.getrow(cell_idx)
         cell_row_dense = np.squeeze(np.array(cell_row.todense())).astype(float)
-        
+
         # check if cell is in cell2cc (present in scZarr file)
-        if cell not in cell2cc or cell2cc[cell][0] == '-':
+        if cell not in cell2cc:
             continue
+
         clade, cellclass = cell2cc[cell]
-        clade_idx = cc_indices[clade]
-        cellclass_idx = cc_indices[cellclass]
-        tmp_clade_cell_mat[clade_idx, :] += cell_row_dense
+        if cell2cc[cell][0] != '-': # if clade is not '-' process it
+            clade_idx = cc_indices[clade]
+            tmp_clade_cell_mat[clade_idx, :] += cell_row_dense
+
+        cellclass_idx = cc_indices[cellclass] # process cellclass regardless of whether clade is '-'
         tmp_clade_cell_mat[cellclass_idx, :] += cell_row_dense
 
     zarrX[nCells:, :] = tmp_clade_cell_mat
