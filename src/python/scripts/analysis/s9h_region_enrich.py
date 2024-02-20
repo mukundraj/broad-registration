@@ -19,8 +19,8 @@ python src/python/scripts/analysis/s9h_region_enrich.py \
 python src/python/scripts/analysis/s9h_region_enrich.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9g/nz_aggr_counts_cshl_230222 \
-    /data_v3_nissl_post_qc/s9_analysis/s9h/gene_info_230222.json \
-    /data_v3_nissl_post_qc/s9_analysis/s9h/nz_aggr_230222.zarr \
+    /data_v3_nissl_post_qc/s9_analysis/s9h/gene_info_240220.json \
+    /data_v3_nissl_post_qc/s9_analysis/s9h/nz_aggr_240220.zarr \
 
 Supplementary:
 
@@ -231,12 +231,16 @@ for pid in pids:
         globalGroupX = globalGroup.zeros('X', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
         globalGroupX[:] = 0
         globalGroupXout = globalGroup.zeros('Xout', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='f4')
+        # maxExprPuck2DX = globalGroup.zeros('maxExprPuck2D', shape=(nRids, nGenes), chunks=(1, nGenes), dtype='i4')
+        # maxExprPuck2DX[:] = 1
         # globalGroupXout = np.tile(all_region_nz_array, (nRids, 1))  # initializing here to prevent multiple inclusion of exterior beads
         gzVal = np.zeros(nRids)
         gzValOut = np.zeros(nRids)
 
         maxExpr = np.zeros(nGenes)
         maxExprPuck = np.ones(nGenes)
+        # maxExpr2D = np.zeros((nRids, nGenes))
+        # maxExprPuck2D = np.ones((nRids, nGenes))
 
 
     # write dict info to zarr
@@ -254,6 +258,8 @@ for pid in pids:
     # dprint(np.shape(all_region_nz_array_hydrated))
     # exit(0)
 
+    curGlobalGroupX = np.zeros((nRids, nGenes))
+
     for rid in rid_to_idx_map: 
         global_region_idx = rid_to_idx_map[rid]
 
@@ -263,6 +269,7 @@ for pid in pids:
         # pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']
         globalGroupX[global_region_idx,:] += tree_nodes_info[global_region_idx]['nz_counts'] # will be normalized later
         pgroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']/zval # normalized her to determine puck with max expr per 10k beads
+        curGlobalGroupX[global_region_idx,:] = tree_nodes_info[global_region_idx]['nz_counts']
 
         # now calculate % nonzero outsize region
         zvalOut = tree_nodes_info[rid_to_idx_map[997]]['num_beads'] - tree_nodes_info[global_region_idx]['num_beads'] # denomminator -> num of beads outside current region
@@ -279,15 +286,21 @@ for pid in pids:
     dprint("DEBUG", pid, tree_nodes_info[1098]['nz_counts'][8198] , gzVal[1098], pgroupXout[1098, 8198], gzValOut[1098])
     sys.stdout.flush()
 
-    curPuckSums = np.sum(np.nan_to_num(pgroupX[:,:]), axis=0) # summmation over regions of regionwise normalized expression counts for all genes in current puck
+
+    # curPuckSums = np.sum(np.nan_to_num(pgroupX[:,:]), axis=0) # summmation over regions of regionwise normalized expression counts for all genes in current puck
+    curPuckSums = np.sum(np.nan_to_num(curGlobalGroupX[:,:]), axis=0) # summmation over regions of genes
     # dprint('pgroupX ', np.nan_to_num(pgroupX[:]))
     # dprint('curPuckSums', curPuckSums)
     # dprint(' max curPuckSums', np.max(curPuckSums))
     curGreaterIdxs = np.where(curPuckSums > maxExpr)
+    curGreaterIdxs2D = np.where(curGlobalGroupX > maxExpr2D)
     # dprint('num genes greatest in curPuck', np.sum(curGreaterIdxs))
 
     maxExpr[curGreaterIdxs] = curPuckSums[curGreaterIdxs]
     maxExprPuck[curGreaterIdxs] = pid
+
+    # maxExpr2D[curGreaterIdxs2D] = curGlobalGroupX[curGreaterIdxs2D]
+    # maxExprPuck2D[curGreaterIdxs2D] = pid
 
     pgroup_genes = root.create_group('genes', overwrite=True)
     # pgroup_genes = zarr.empty(5, dtype=object, object_codec=numcodecs.JSON())
@@ -315,6 +328,9 @@ for pid in pids:
 
         gzValOutX= globalGroup.zeros('gzValOut', shape=(nRids), chunks=(nRids), dtype='f4')
         gzValOutX[:] = gzValOut[:]
+
+        # maxExprPuck2DX[:] = maxExprPuck2D
+
 
         # dprint(gzVal, gzValOut)
 
