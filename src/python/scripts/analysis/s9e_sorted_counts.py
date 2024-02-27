@@ -20,6 +20,13 @@ python src/python/scripts/analysis/s9e_sorted_counts.py \
     1 207 \
     /data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e \
 
+python src/python/scripts/analysis/s9e_sorted_counts.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/interim_cshl \
+    /data_v3_nissl_post_qc/s9_analysis/ccf_regions.json \
+    1 207 \
+    /data_v3_nissl_post_qc/s9_analysis/s9e/gene_jsons_s9e_240227 \
+
 Created by Mukund on 2022-07-12
 
 Supplementary:
