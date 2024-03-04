@@ -14,13 +14,11 @@ Usage example:
 
 python src/python/scripts/analysis/s9f_dendro_bar.py \
     ~/Desktop/work/data/mouse_atlas \
-    /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/interim_cshl \
     1 207 \
     /data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f \
 
 Supplementary:
-
-gsutil -m cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f gs://ml_portal2/test_data2/s9f/
 
 References: 
 
@@ -85,7 +83,7 @@ def initial_populate_data():
         aggr_counts = ann.read_h5ad(aggr_counts_file)
 
         csr_gene_reagg_cnts = csr_matrix(aggr_counts.X)
-        # all_gene_count = csr_gene_reagg_cnts.sum()
+        all_gene_count = csr_gene_reagg_cnts.sum()
 
         # iterate over each gene
         # if len(genes_list)>0 and genes_list[0] !="":
@@ -96,7 +94,7 @@ def initial_populate_data():
 
         for gene_idx, gene in enumerate(genes):
 
-            if gene=='Pcp4' or gene=='Tph1':
+            if gene=='Pcp4' or gene=='Tph1' or gene=='Frmd7':
                 dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
             else:
                 continue
@@ -124,10 +122,12 @@ def initial_populate_data():
                 if rid not in data[gene].keys():
                     data[gene][rid] = {"puck_dist":[int(0)] * len(pids)}
 
-                spec_region_regagg_cnts = csr_gene_reagg_cnts.getrow(rid_idx)
-                normalizer_val = spec_region_regagg_cnts.sum()/10000 # to get counts per 10K
+                # spec_region_regagg_cnts = csr_gene_reagg_cnts.getrow(rid_idx)
+                # normalizer_val = spec_region_regagg_cnts.sum()/10000 # to get counts per 10K
+                normalizer_val = all_gene_count/10000 # to get counts per 10K
                 cur_gene_region_cnt = spec_gene_regagg_cnts_dense[region_to_idx[int(rid)]]
-                data[gene][rid]["puck_dist"][pids_idx]=round(float(int(cur_gene_region_cnt))/normalizer_val, 3)
+                # data[gene][rid]["puck_dist"][pids_idx]=round(float(int(cur_gene_region_cnt))/normalizer_val, 3)
+                data[gene][rid]["puck_dist"][pids_idx]=float(cur_gene_region_cnt)/normalizer_val
 
     # exit(0)
     ## hydrate parent regions with no direct assignment of beads

@@ -4,7 +4,7 @@ Usage example:
 
 python src/python/scripts/analysis/s9f_dendro_bar_b.py \
     ~/Desktop/work/data/mouse_atlas \
-    /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/interim_cshl \
     1 207 \
     /data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f \
 
@@ -87,12 +87,21 @@ for gene_idx, gene in enumerate(list(processed_genes)):
                     sub_data = np.array(data[gene][sub_rid]["puck_dist"])
                     # dprint(ances_data)
                     # dprint(sub_data)
-                    ancestors_data[rid]["puck_dist"] = [int(x) for x in list(ances_data+sub_data)]
+                    ancestors_data[rid]["puck_dist"] = [round(float(x),4) for x in list(ances_data+sub_data)]
 
-    # merge ancestor data dict with descendent data dict
-    data[gene] = {**data[gene], **ancestors_data}
+    # merge ancestor data dict with descendent data dict by adding puck_dist
+    # data[gene] = {**data[gene], **ancestors_data}
+            # data[gene] = {**data[gene], **ancestors_data}
+            for rid in ancestors_data.keys():
+                str_rid = str(rid)
+                data[gene][str_rid] = ancestors_data[rid]
 
 
+
+# convert all puck_dist values to string to rounding issue in float array in viewer
+for gene in data.keys():
+    for rid in data[gene].keys():
+        data[gene][rid]["puck_dist"] = [str(x) for x in data[gene][rid]["puck_dist"]]
 
 # write out genewise json files after updating max_count_idx field
 for gene in data.keys():
