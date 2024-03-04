@@ -13,7 +13,7 @@ Usage example:
 
 python src/python/scripts/analysis/s9f_dendro.py \
     ~/Desktop/work/data/mouse_atlas \
-    /data_v3_nissl_post_qc/s9_analysis/s9d/interim \
+    /data_v3_nissl_post_qc/s9_analysis/s9d/interim_cshl \
     1 207 \
     /data_v3_nissl_post_qc/s9_analysis/s9f \
 
