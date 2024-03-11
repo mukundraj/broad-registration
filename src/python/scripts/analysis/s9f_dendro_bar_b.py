@@ -67,6 +67,7 @@ if (77 in pids):
 if (167 in pids):
     pids.remove(167)
 
+total_genes = len(processed_genes)
 
 for gene_idx, gene in enumerate(list(processed_genes)):
     data[gene].pop(str(0), None) # removing rid for beads outside tissue
@@ -74,7 +75,8 @@ for gene_idx, gene in enumerate(list(processed_genes)):
     # for each region id
     for ind, rid in enumerate(all_region_ids):
         if (ind%1000==0):
-            dprint("hydrating parents - gene_idx", gene_idx, ",region: ", ind, "outof", len(all_region_ids))
+            dprint("hydrating parents - gene_idx", gene_idx, "/", total_genes,",region: ", ind, "outof", len(all_region_ids))
+            sys.stdout.flush()
         ancestors_data[rid] = {"puck_dist":[int(0)] * len(pids)}
         # if not leaf then loop through all possible descendents
         if not data[gene].get(rid):
@@ -97,18 +99,23 @@ for gene_idx, gene in enumerate(list(processed_genes)):
                 data[gene][str_rid] = ancestors_data[rid]
 
 
+# write out data dict to pickle file
+with open(op_folder+'/data_hydrated.obj', 'wb') as f:
+    pickle.dump(data, f);
+    dprint("wrote data_hydrated.obj")
 
-# convert all puck_dist values to string to rounding issue in float array in viewer
-for gene in data.keys():
-    for rid in data[gene].keys():
-        data[gene][rid]["puck_dist"] = [str(x) for x in data[gene][rid]["puck_dist"]]
 
-# write out genewise json files after updating max_count_idx field
-for gene in data.keys():
-    # for rid in data[gene].keys():
-    #     puck_counts = np.array(data[gene][rid]['puck_dist'])
-    #     max_idx = np.argmax(puck_counts)
-    #     data[gene][rid]["max_count_idx"] = int(max_idx)
-    op_file = f'{op_folder}/{gene}.json'
-    with open(op_file, 'w') as outfile:
-        json.dump(data[gene], outfile, separators=(',', ':'))
+# # convert all puck_dist values to string to rounding issue in float array in viewer
+# for gene in data.keys():
+#     for rid in data[gene].keys():
+#         data[gene][rid]["puck_dist"] = [str(x) for x in data[gene][rid]["puck_dist"]]
+
+# # write out genewise json files after updating max_count_idx field
+# for gene in data.keys():
+#     # for rid in data[gene].keys():
+#     #     puck_counts = np.array(data[gene][rid]['puck_dist'])
+#     #     max_idx = np.argmax(puck_counts)
+#     #     data[gene][rid]["max_count_idx"] = int(max_idx)
+#     op_file = f'{op_folder}/{gene}.json'
+#     with open(op_file, 'w') as outfile:
+#         json.dump(data[gene], outfile, separators=(',', ':'))

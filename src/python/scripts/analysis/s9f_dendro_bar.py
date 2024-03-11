@@ -94,7 +94,7 @@ def initial_populate_data():
 
         for gene_idx, gene in enumerate(genes):
 
-            if gene=='Pcp4' or gene=='Tph1' or gene=='Frmd7':
+            if gene=='Pcp4' or gene=='Tph1' or gene=='Frmd7' or gene=='Gad2':
                 dprint(f'Found {gene} at {gene_idx}, pid: {pid}')
             else:
                 continue
