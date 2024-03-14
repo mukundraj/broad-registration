@@ -26,19 +26,30 @@ with open(data_hydrated_file, 'rb') as f:
     data = pickle.load(f);
     dprint("read data_hydrated")
 
+genes = list(data.keys())
+genes = genes[23255:]
 # convert all puck_dist values to string to rounding issue in float array in viewer
-for idx, gene in enumerate(data.keys()):
+for idx, gene in enumerate(genes):
     dprint(f"processing gene {gene} {idx+1}/{len(data.keys())}")
-    for rid in data[gene].keys():
-        data[gene][rid]["puck_dist"] = [str(x) for x in data[gene][rid]["puck_dist"]]
-
-# write out genewise json files after updating max_count_idx field
-for idx, gene in enumerate(data.keys()):
+    current_gene_data = data[gene]
     # for rid in data[gene].keys():
-    #     puck_counts = np.array(data[gene][rid]['puck_dist'])
-    #     max_idx = np.argmax(puck_counts)
-    #     data[gene][rid]["max_count_idx"] = int(max_idx)
-    dprint(f"writing gene {gene} {idx+1}/{len(data.keys())}")
+    #     data[gene][rid]["puck_dist"] = [str(round(x,3)) for x in data[gene][rid]["puck_dist"]]
+    current_gene_data_rids = list(current_gene_data.keys())
+    for rid in current_gene_data_rids:
+        current_gene_data[rid]["puck_dist"] = [str(round(x,4)) for x in current_gene_data[rid]["puck_dist"]]
+
+    dprint(f"writing gene {gene} {idx+1}/{len(data.keys())}", "num rids", len(current_gene_data_rids))
     op_file = f'{op_folder}/{gene}.json'
     with open(op_file, 'w') as outfile:
-        json.dump(data[gene], outfile, separators=(',', ':'))
+        json.dump(current_gene_data, outfile, separators=(',', ':'))
+
+# # write out genewise json files after updating max_count_idx field
+# for idx, gene in enumerate(data.keys()):
+#     # for rid in data[gene].keys():
+#     #     puck_counts = np.array(data[gene][rid]['puck_dist'])
+#     #     max_idx = np.argmax(puck_counts)
+#     #     data[gene][rid]["max_count_idx"] = int(max_idx)
+#     dprint(f"writing gene {gene} {idx+1}/{len(data.keys())}")
+#     op_file = f'{op_folder}/{gene}.json'
+#     with open(op_file, 'w') as outfile:
+#         json.dump(data[gene], outfile, separators=(',', ':'))
