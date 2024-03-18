@@ -27,7 +27,7 @@ with open(data_hydrated_file, 'rb') as f:
     dprint("read data_hydrated")
 
 genes = list(data.keys())
-genes = genes[23255:]
+# genes = genes[23255:]
 # convert all puck_dist values to string to rounding issue in float array in viewer
 for idx, gene in enumerate(genes):
     dprint(f"processing gene {gene} {idx+1}/{len(data.keys())}")
@@ -35,8 +35,16 @@ for idx, gene in enumerate(genes):
     # for rid in data[gene].keys():
     #     data[gene][rid]["puck_dist"] = [str(round(x,3)) for x in data[gene][rid]["puck_dist"]]
     current_gene_data_rids = list(current_gene_data.keys())
+
+    current_gene_data_tmp = {}
     for rid in current_gene_data_rids:
-        current_gene_data[rid]["puck_dist"] = [str(round(x,4)) for x in current_gene_data[rid]["puck_dist"]]
+        current_gene_data_tmp[rid] = {}
+
+    for rid in current_gene_data_rids:
+        current_gene_data_tmp[rid]["puck_dist"] = [str(round(x,4)) for x in current_gene_data[rid]["puck_dist"]]
+
+    current_gene_data = current_gene_data_tmp
+
 
     dprint(f"writing gene {gene} {idx+1}/{len(data.keys())}", "num rids", len(current_gene_data_rids))
     op_file = f'{op_folder}/{gene}.json'
