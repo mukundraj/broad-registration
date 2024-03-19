@@ -5,7 +5,11 @@ Usage example:
 python src/python/scripts/analysis/s9f_dendro_bar_c.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9f \
-    /data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f \
+    /data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f_240318 \
+
+Supplementary:
+
+gcloud storage cp -r ~/Desktop/work/data/mouse_atlas/data_v3_nissl_post_qc/s9_analysis/s9f/gene_jsons_s9f_240318 gs://bcdportaldata/batch_231112/geneexp/s9_analysis/s9f
 
 Created by Mukund on 2024-03-14
 """
