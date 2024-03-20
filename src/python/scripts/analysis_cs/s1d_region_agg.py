@@ -23,9 +23,9 @@ python src/python/scripts/analysis_cs/s1d_region_agg.py \
 python src/python/scripts/analysis_cs/s1d_region_agg.py \
     ~/Desktop/work/data/mouse_atlas \
     /data_v3_nissl_post_qc/s9_analysis/s9d/region_labels_cshl \
-    /cell_spatial/s1/s1c_aggr_data_231207 \
+    /cell_spatial/s1/s1c_aggr_data_240318 \
     1 207 \
-    /cell_spatial/s1/s1d_region_agg_231207 \
+    /cell_spatial/s1/s1d_region_agg_240318 \
 
 Created by Mukund on 2022-10-28
 

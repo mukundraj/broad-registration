@@ -17,12 +17,19 @@
 # nzpct_loc - location of nz_pct (percent nonzero) values
 # cladeloc - location of clades info
 
-avg_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/avg/X'
-nzpct_loc  <-  '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/nz_pct/X'
-counts_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/counts/X'
-cladeloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/metadata/clades'
-cladeAnnotationsloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/metadata/cladeAnnotations'
-cellclassloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/metadata/cellclasses'
+# avg_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/avg/X'
+# nzpct_loc  <-  '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/nz_pct/X'
+# counts_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/counts/X'
+# cladeloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/metadata/clades'
+# cladeAnnotationsloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/metadata/cladeAnnotations'
+# cellclassloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr/metadata/cellclasses'
+
+avg_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/avg/X'
+nzpct_loc  <-  '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/nz_pct/X'
+counts_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/counts/X'
+cladeloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/metadata/clades'
+cladeAnnotationsloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/metadata/cladeAnnotations'
+cellclassloc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/metadata/cellclasses'
 op_loc  <- '~/Desktop/work/data/mouse_atlas/single_cell/s2/agged_h5ad'
 op_cladeanno_loc <- '~/Desktop/work/data/mouse_atlas/single_cell/s2/cladeAnnotations.csv'
 

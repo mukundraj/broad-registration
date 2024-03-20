@@ -30,13 +30,13 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/neuropeptide_data \
     /single_cell/s1/processed_clade_info_v2.csv \
     /single_cell/s0/additional_metadata.csv \
-    /single_cell/s1/scZarr_231207.zarr \
+    /single_cell/s1/scZarr_240318.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr gs://bcdportaldata/batch_231112/single_cell/s1/scZarr_231207.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr gs://bcdportaldata/batch_231112/single_cell/s1/scZarr_240318.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_321017.zarr/metadata gs://bcdportaldata/batch_230131/singlecell_data/scZarr_321017.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/metadata gs://bcdportaldata/batch_231112/singlecell_data/scZarr_240318.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -166,10 +166,15 @@ with open(proc_clade_file, 'r') as f:
     for row in reader:
         if (row[1]=='Clade0' or row[2]==''):
             clade_names.append('-')
+            indicesToRemove.append(len(clade_names)-1)
         else:
             clade_names.append(row[1]) # check for Clade0
         # clade_names.append(row[1]) # check for Clade0
-        clade_annotations.append(row[2])
+        if (row[1]=='MC_37' or row[1]=='MC_39'):
+            # Change clade names based on Jonah S's request on 230313
+            clade_annotations.append('Isocortical Neurons')
+        else:
+            clade_annotations.append(row[2])
 
         # if (row[1]=='Clade0' or row[2]==''): # remove Clade0 and clades with no human readable name
         #     indicesToRemove.append(len(clade_names)-1)

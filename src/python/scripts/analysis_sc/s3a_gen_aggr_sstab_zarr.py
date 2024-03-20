@@ -17,16 +17,12 @@ python src/python/scripts/analysis_sc/s3a_gen_aggr_sstab_zarr.py \
     ~/Desktop/work/data/mouse_atlas \
     /single_cell/s2/agged_h5ad \
     /single_cell/s2/cladeAnnotations.csv \
-    /single_cell/s1/scZarr_231207.zarr \
-    /single_cell/s3/aggedSCdata_231207.zarr \
+    /single_cell/s1/scZarr_240318.zarr \
+    /single_cell/s3/aggedSCdata_240318.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata_231207.zarr gs://bcdportaldata/batch_231112/single_cell/s3/aggedSCdata_231207.zarr
-
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata.zarr/metadata gs://bcdportaldata/batch_231112/single_cell/v3/aggedSCdata.zarr/metadata
-
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata.zarr/var gs://bcdportaldata/batch_231112/single_cell/v3/aggedSCdata.zarr/var
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s3/aggedSCdata_240318.zarr gs://bcdportaldata/batch_231112/single_cell/s3/aggedSCdata_240318.zarr
 
 Created by Mukund on 2023-11-15
 """

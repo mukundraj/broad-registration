@@ -51,13 +51,13 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /cell_spatial/s0/raw_beadxctype/jlanglie_scp_mukund_changed_partha \
     /misc/masked_nissls/s2/masked_nissls \
     /v3/s2/wireframes_ofixed \
-    /single_cell/s1/scZarr_231207.zarr \
-    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c \
-    /cell_spatial/s1/s1c_aggr_data_231207 \
+    /single_cell/s1/scZarr_240318.zarr \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_240318 \
+    /cell_spatial/s1/s1c_aggr_data_240318 \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_240318 gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_240318
 
 gsutil -m cp ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/aggr_info.json gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/aggr_info.json
 gsutil -m cp ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/ccindices.json gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/ccindices.json
