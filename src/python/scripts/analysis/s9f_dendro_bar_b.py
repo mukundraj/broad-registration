@@ -1,4 +1,5 @@
 """
+Second script in series to create dendro bars. Needs to be run after s9f_dendro_bar_a.py but before s9f_dendro_bar_b.py. Previously run with 240GB ram and 240GB swap space.
 
 Usage example:
 

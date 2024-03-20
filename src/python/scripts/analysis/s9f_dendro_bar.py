@@ -1,6 +1,9 @@
 """
 Script to generate genewise jsons for dendrogram linked barplot. For each gene, 
 creates a file with json containing data sorted regionwise.
+Also needs s9f_dendro_bar_b.py and s9f_dendro_bar_c.py to be run after this.
+Might need more than 120GB RAM to run this script. However, can be modified to 
+to run will less memory. Previously run 240GB RAM and 240GB swap space.
 
 Usage:
 
@@ -20,7 +23,7 @@ python src/python/scripts/analysis/s9f_dendro_bar.py \
 
 Supplementary:
 
-References: 
+References:
 
 https://stackoverflow.com/questions/1312331/using-a-global-dictionary-with-threads-in-python
 https://stackoverflow.com/questions/38795826/optimizing-multiprocessing-pool-with-expensive-initialization
