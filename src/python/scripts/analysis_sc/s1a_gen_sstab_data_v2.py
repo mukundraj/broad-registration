@@ -30,13 +30,13 @@ python src/python/scripts/analysis_sc/s1a_gen_sstab_data_v2.py \
     /single_cell/s0/raw_v2/neuropeptide_data \
     /single_cell/s1/processed_clade_info_v2.csv \
     /single_cell/s0/additional_metadata.csv \
-    /single_cell/s1/scZarr_240318.zarr \
+    /single_cell/s1/scZarr_240531.zarr \
 
 Supplementary:
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr gs://bcdportaldata/batch_231112/single_cell/s1/scZarr_240318.zarr
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240531.zarr gs://bcdportaldata/batch_231112/single_cell/s1/scZarr_240531.zarr
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240318.zarr/metadata gs://bcdportaldata/batch_231112/singlecell_data/scZarr_240318.zarr/metadata
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240531.zarr/metadata gs://bcdportaldata/batch_231112/singlecell_data/scZarr_240531.zarr/metadata
 
 Created by Mukund on 2022-09-27
 
@@ -164,7 +164,8 @@ clade_annotations = []
 with open(proc_clade_file, 'r') as f:
     reader = csv.reader(f, delimiter=',')
     for row in reader:
-        if (row[1]=='Clade0' or row[2]==''):
+        # if (row[1]=='Clade0' or row[2]==''):
+        if (False and (row[1]=='Clade0' or row[2]=='')): # this check is disabled on 2024-06-03
             clade_names.append('-')
             indicesToRemove.append(len(clade_names)-1)
         else:
@@ -210,6 +211,7 @@ for cluster in clusterNames:
     cname =  cluster.split('=')[1]
     if cname in metadata:
         if metadata[cname][0] == '':
+        # also remove cells with cellclass = '' . cellclass obtained from metadata[cname][0]
             indicesToRemove.append(clusterNames.index(cluster))
     else:
         indicesToRemove.append(clusterNames.index(cluster))
@@ -431,3 +433,5 @@ dprint('zarr file', zarr_file)
 z = zarr.open(zarr_file)
 dprint(z.tree())
 # z.avg.X[:5, :2] z.nz.X[:5, :2] exit(0)
+
+#endif /* S1A_GEN_SSTAB_DATA_V2_PY */

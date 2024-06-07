@@ -24,28 +24,6 @@ Usage example:
 
 python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /Users/mraj/Desktop/work/data/mouse_atlas \
-    /data_v3_nissl_post_qc/s7_annotations/bead_ccf_labels_allbds \
-    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    /cell_spatial/s0/raw_beadxctype/03_All_MBASS_Mapping_Mega_Matrix_NEW \
-    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /data_v3_nissl_post_qc/s7_annotations/allen_labels_imgs/wireframe_trans_bg \
-    /cell_spatial/s1/cellspatial_data/cellscores/ \
-
-
-python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
-    /Users/mraj/Desktop/work/data/mouse_atlas \
-    /v3/s2/bead_ccf_labels_allbds \
-    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
-    /cell_spatial/s0/raw_beadxctype/forMukund_CTMapping_PostSTR \
-    /data_v3_nissl_post_qc/s0_start_formatted_data/transformed_hz_png \
-    /v3/s2/wireframes_improved_trans \
-    /single_cell/s1/scZarr_321017.zarr \
-    /single_cell/s1/cell_to_clade_and_class.csv \
-    /cell_spatial/s1/cellspatial_data/cellscores_cshl_231128/ \
-    /cell_spatial/s1/s1c_aggr_data_231128 \
-
-python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
-    /Users/mraj/Desktop/work/data/mouse_atlas \
     /v3/s2/bead_ccf_labels_allbds \
     /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
     /cell_spatial/s0/raw_beadxctype/jlanglie_scp_mukund_changed_partha \
@@ -55,9 +33,18 @@ python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
     /cell_spatial/s1/cellspatial_data/cellscores_cshl_240318 \
     /cell_spatial/s1/s1c_aggr_data_240318 \
 
-Supplementary:
+python src/python/scripts/analysis_cs/s1c_beadxcell_zarr.py \
+    /Users/mraj/Desktop/work/data/mouse_atlas \
+    /v3/s2/bead_ccf_labels_allbds \
+    /data_v3_nissl_post_qc/s3_registered_ss/chuck_img_coords_allbds \
+    /cell_spatial/s0/raw_beadxctype/jlanglie_scp_mukund_changed_partha \
+    /misc/masked_nissls/s2/masked_nissls \
+    /v3/s2/wireframes_ofixed \
+    /single_cell/s1/scZarr_240531.zarr \
+    /cell_spatial/s1/cellspatial_data/cellscores_cshl_240531 \
+    /cell_spatial/s1/s1c_aggr_data_240531 \
 
-gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_240318 gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_240318
+Supplementary:
 
 gsutil -m cp ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/aggr_info.json gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/aggr_info.json
 gsutil -m cp ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207c/ccindices.json gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207c/ccindices.json
@@ -68,6 +55,8 @@ gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_d
 
 cd ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_231207
 fd -p cladeOptions -x  gsutil cp -r {} gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_231207/{}
+
+gsutil -m rsync -r ~/Desktop/work/data/mouse_atlas/cell_spatial/s1/cellspatial_data/cellscores_cshl_240531 gs://bcdportaldata/batch_231112/cell_spatial/s1/cellscores_cshl_240531
 
 Created by Mukund on 2022-10-24
 
