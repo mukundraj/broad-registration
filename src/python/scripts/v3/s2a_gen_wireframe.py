@@ -9,6 +9,7 @@ python s2_gen_wireframe.py \
     inp: geojsons_path \
     inp: path to nissl histolozee .zee file
     out: path to output wireframes
+    out: path to geojsons tfmed to chuck space
 
 Example:
 
@@ -17,7 +18,8 @@ python src/python/scripts/v3/s2a_gen_wireframe.py \
     /data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
     /v3/s1/geojson_tfmed \
     /data_v3_nissl_post_qc/s0_start_formatted_data/hz-project.zee \
-    /v3/s2/wireframes
+    /v3/s2/wireframes \
+    /v3/s2/geojsons_tfmed_chksp_ofixed
 
 
 Created by Mukund on 2022-12-21
@@ -41,6 +43,7 @@ sys.path.append(str(path_root))
 import src.python.utils.io as io
 import src.python.utils.transforms as tfms
 import numpy as np
+from src.python.utils.misc import get_ofixed_nis_idx
 
 
 data_root = sys.argv[1]
@@ -48,6 +51,7 @@ mapperfile_csv = f'{data_root}{sys.argv[2]}'
 geojsons_path = f'{data_root}{sys.argv[3]}'
 hz_project_file = f'{data_root}{sys.argv[4]}'
 wireframes_path = f'{data_root}{sys.argv[5]}'
+geojsons_tfmed_chksp_path = f'{data_root}{sys.argv[6]}'
 
 
 
@@ -172,8 +176,10 @@ for file in os.listdir(geojsons_path)[:]:
 
         d = {'acronym': acronym, 'id': id, 'name': name, 'geometry': geometry}
         gdf = geopandas.GeoDataFrame(d)
-        # out_file = f'{geojsons_tfmed_path}/pid_{pid}.geojson'
-        # gdf.to_file(out_file, driver='GeoJSON')
+        cnis_id = str(get_ofixed_nis_idx(pid))
+        out_file = f'{geojsons_tfmed_chksp_path}/pid_{cnis_id}.geojson'
+        gdf.to_file(out_file, driver='GeoJSON')
+        dprint(f'writing {out_file}')
 
         # # save a plot
         # data = geopandas.read_file(out_file)
