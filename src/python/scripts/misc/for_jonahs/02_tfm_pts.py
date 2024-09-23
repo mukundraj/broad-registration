@@ -7,7 +7,7 @@ python \
     op: op folder
 
 python src/python/scripts/misc/for_jonahs/02_tfm_pts.py \
-     "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/ip_dlgn/dlgn_markers_bead_coords_df.csv" \
+     "~/Desktop/work/data/mouse_atlas/misc/for_jonahs/ip_dlgn/dlgn_markers_bead_coords_df.csv" \
      "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/v2/tfm.txt" \
      "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/v2"
 

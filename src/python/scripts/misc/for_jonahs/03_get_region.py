@@ -86,7 +86,7 @@ for i, x in enumerate(coords):
 
 # write out coords with new column region
 print(regions)
-out_file = tfmed_coords.replace('.csv', '_region.csv')
+out_file = tfmed_coords.replace('.csv', f'_with_regions_{sno}.csv')
 np.savetxt(out_file, np.column_stack((coords, regions)), delimiter='|', fmt='%s')
 
 # x = [1000,1000]

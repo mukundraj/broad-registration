@@ -8,8 +8,8 @@ python 04_plot_region.py \
 
 python src/python/scripts/misc/for_jonahs/04_plot_region.py \
     'Dentate gyrus, granule cell layer' \
-     "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/v2/tfmed_region.csv" \
-     "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/v2/tfmed_region.tif" \
+     "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/v2/tfmed_with_regions_048.csv" \
+     "/Users/mraj/Desktop/work/data/mouse_atlas/misc/for_jonahs/v2/tfmed_with_regions_048.tif" \
 
 Created by Mukund on 2024-09-20
 """
