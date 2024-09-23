@@ -19,7 +19,7 @@ python src/python/scripts/v3/s2a_gen_wireframe.py \
     /v3/s1/geojson_tfmed \
     /data_v3_nissl_post_qc/s0_start_formatted_data/hz-project.zee \
     /v3/s2/wireframes \
-    /v3/s2/geojsons_tfmed_chksp_ofixed
+    /v3/s2/geojsons_tfmed_chksp
 
 
 Created by Mukund on 2022-12-21
@@ -176,8 +176,8 @@ for file in os.listdir(geojsons_path)[:]:
 
         d = {'acronym': acronym, 'id': id, 'name': name, 'geometry': geometry}
         gdf = geopandas.GeoDataFrame(d)
-        cnis_id = str(get_ofixed_nis_idx(pid))
-        out_file = f'{geojsons_tfmed_chksp_path}/pid_{cnis_id}.geojson'
+        # cnis_id = str(get_ofixed_nis_idx(pid))
+        out_file = f'{geojsons_tfmed_chksp_path}/pid_{pid}.geojson'
         gdf.to_file(out_file, driver='GeoJSON')
         dprint(f'writing {out_file}')
 
