@@ -9,11 +9,14 @@
 library(anndata)
 library(qs)
 
-ipfile <- "/Users/mraj/Desktop/temp1/avg_mat.h5ad"
-ipfile_genes  <- "/Users/mraj/Desktop/temp1/genes.csv"
-ipfile_cells  <- "/Users/mraj/Desktop/temp1/clusters.csv"
+ipfile <- "/Users/mraj/Desktop/work/data/temp1/avg_mat.h5ad"
+ipfile_pct <- "/Users/mraj/Desktop/work/data/temp1/pct_mat.h5ad" 
+ipfile_genes  <- "/Users/mraj/Desktop/work/data/temp1/genes.csv"
+ipfile_cells  <- "/Users/mraj/Desktop/work/data/temp1/clusters.csv"
 
-opfile <- "/Users/mraj/Desktop/temp1/avg_mat.qs"
+opfile <- "/Users/mraj/Desktop/work/data/temp1/avg_clusters.qs"
+opfile_pct <- "/Users/mraj/Desktop/work/data/temp1/pct_clusters.qs"
+
 
 # Read in the file
 ip <- read_h5ad(ipfile)
@@ -31,4 +34,8 @@ colnames(ip) <- ip_genes$V1
 # write to qs file
 qsave(ip, opfile)
 
+
+ip_pct <- read_h5ad(ipfile_pct)
+ip_pct <- as.data.frame(as.matrix(ip_pct), row.names = ip_cells$V1, col.names = ip_genes$V1)
+qsave(ip_pct, opfile_pct)
 

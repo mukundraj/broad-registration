@@ -14,9 +14,11 @@ Created by Mukund on 2024-01-13
 import zarr
 import anndata as an
 import os
+from pathlib import Path
 
-ip_fname = "~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_231207.zarr"
-op_dir = '~/Desktop/temp1'
+
+ip_fname = Path("~/Desktop/work/data/mouse_atlas/single_cell/s1/scZarr_240531.zarr").expanduser()
+op_dir = Path('~/Desktop/work/data/temp1').expanduser()
 
 
 # read zarr file
@@ -29,12 +31,16 @@ if not os.path.exists(op_dir):
 
 
 avg_mat = z.avg.X[:]
+nz_pct = z.nz_pct.X[:]
+
 
 # convert to anndata
 adata = an.AnnData(avg_mat)
+nz_pct_adata = an.AnnData(nz_pct)
 
 # write to h5ad
 adata.write(f'{op_dir}/avg_mat.h5ad')
+nz_pct_adata.write(f'{op_dir}/pct_mat.h5ad')
 
 
 genes = z.var.genes[:]
