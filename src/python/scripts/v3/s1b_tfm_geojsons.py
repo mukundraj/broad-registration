@@ -24,6 +24,15 @@ python src/python/scripts/v3/s1b_tfm_geojsons.py \
     /v3/s1/geojson_tfmed \
     /v3/s1/geojson_tfmed_imgs \
 
+python src/python/scripts/v3/s1b_tfm_geojsons.py \
+    ~/Desktop/work/data/mouse_atlas \
+    /v3/s0/geojson_231207 \
+    /data_v3_nissl_post_qc/s2_seg_ids/id_to_tiff_mapper.csv \
+    /data_v3_nissl_post_qc/s2_seg_ids/filenames_map.csv \
+    /v3/s1/acro_key_map.json \
+    /v3/s1/orig_dims_map.csv \
+    /v3/s1/geojson_tfmed_231207 \
+    /v3/s1/geojson_tfmed_imgs_231207 \
 
 Created on 2022-12-19
 """
